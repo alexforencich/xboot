@@ -38,7 +38,6 @@
 #include <util/delay.h>
 #include "sp_driver.h"
 #include "eeprom_driver.h"
-#include "stk500v2.h"
 
 // Configuration
 
