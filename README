@@ -1,0 +1,185 @@
+XBoot Readme
+
+XBoot is an extensible, modular bootloader for the ATMEL XMEGA processor
+series.  It is compatible with the AVR109 (butterfly) bootloader protocol with
+a few XMEGA specific extensions for access to the user and production signature
+rows.  One of its main features is support for multiple serialbusses.  Many
+bootloaders only support RS232 for programming from a PC, but XBoot's
+modularity allows it to support the exact same set of commands over any
+hardware serial port.  Currently, I2C support has been incorporated.  This
+allows for easy in-system reconfiguration of XBoot equipped chips with little
+additional time investment.  Also, XBoot includes support for I2C address
+autonegotiation for when multiple, identically configured processors sit on
+the same I2C bus.  Autonegotiation requires one extra shared open-drain
+connection, but many systems will have IRQ lines in them anyway and those can
+usually be repurposed at boot time.
+
+---- Using XBoot ----
+
+To build XBoot, open up the Makefile and make sure the MCU line for the target
+processor is the only one uncommented.  Then type "make".  This will compile
+the whole package and generate xboot.hex, which can be downloaded with any
+programming cable capable of programming XMEGA chips.  If you want to save some
+time and just program the boot section, type "make xboot-boot.hex" and then
+write the new file xboot-boot.hex to the boot section.  The makefile includes
+built-in support for the Atmel JTAGICE mkII programmer over USB via avrdude, so
+if you have one connected you can type "make program" and it will take care of
+everything.  If you don't have one of these but still want to use avrdude,
+modify the avrdude parameters in the makefile.  
+
+NOTE: At this time, avrdude (currently 5.10) does NOT support programming the
+XMEGA flash boot section (see https://savannah.nongnu.org/bugs/?28744).  If you
+want to use avrdude, you will need to compile it from source with one of the
+patches listed on the bug report.
+
+Thanks for using XBoot!
+
+Alex Forencich
+alex@alexforencich.com
+
+---- Configuring XBoot ----
+
+XBoot is designed to be reconfigured to suit specific needs.  Out of the box,
+everything is turned on.  Turning off features and reassigning pins is easy,
+open up xboot.h and change the #defines.  
+
+--- Bootloader entrance options
+
+-- USE_ENTER_PIN
+
+If this is defined, XBoot will check the state of a pin, specified with the
+ENTRY_PORT and ENTRY_PIN_* variables, when it starts (and possibly throughout
+the startup delay loop) to determine if it should start or just jump into the
+main program.
+
+Options
+
+ENTER_PORT defines the port that the in is in, e.g. PORTC
+ENTER_PIN defines the pin in the port, an integer from 0 to 7
+ENTER_PIN_CTRL defines the PINnCTRL register for the pin, e.g. ENTER_PORT.PIN0CTRL
+ENTER_PIN_STATE defines the "asserted" state of the pin, 0 or 1
+ENTER_PIN_PUEN enables a pull-up resistor on the pin if nonzero
+
+-- USE_ENTER_DELAY
+
+If this is defined, XBoot will run a loop, specified with the ENTER_BLINK_*
+variables, and check for an entry condition.  If none is found, it jumps into
+the main code.  
+
+Options
+
+ENTER_BLINK_COUNT defines the number of times to blink the LED, e.g. 3
+ENTER_BLINK_WAIT defines the number of loops to make between blinks, e.g. 30000
+
+-- USE_ENTER_UART
+
+If this is defined, XBoot will poll for received characters over the UART.  
+If one is received, it will enter the bootloader code.  USE_UART must be
+defined.
+
+-- USE_ENTER_I2C
+
+If this is defined, XBoot will poll for received characters over the I2C
+interface.  If one is received, it will enter the bootloader code. USE_I2C
+must be defined.
+
+--- Bootloader exit options
+
+-- LOCK_SPM_ON_EXIT
+
+If this is defined, SPM instructions will be locked on bootloader exit.
+
+--- Bootloader communication
+
+-- USE_LED
+
+If this is defined, XBoot will use an LED for feedback, specified by the
+LED_* variables.
+
+Options
+
+LED_PORT defines the port, e.g. PORTA
+LED_PIN defines the pin, e.g. 0
+LED_INV inverts the LED state if nonzero
+
+-- USE_UART
+
+If this is defined, XBoot will configure and use a UART for communication.
+
+Options
+
+UART_BAUD_RATE defines the baud rate of the UART, e.g. 19200
+UART_PORT defines the port that the UART is connected to, e.g. PORTD
+UART_DEVICE defines the UART device, e.g. USARTD1
+UART_TX_PIN defines the UART TX bin bit mask, e.g. PIN7_bm
+
+UART_BSEL_VALUE defines the value of BSEL, e.g. 12
+UART_BSCALE_VALUE defines the value of BSCALE, e.g. 0
+[these two parameters depend on the selected baud rate and processor frequency.
+There is a calculation included in the header file for automatically generating
+BAUD rates, but it is preferred to use a predefined set of parameters that is
+known good at the specified frequency.]
+
+-- USE_I2C
+
+If this is defined, XBoot will configure and use an I2C/TWI controller in
+slave mode for communication.
+
+Options
+
+I2C_MATCH_ANY will enable the I2C controller promiscuous mode (match any
+  address) if nonzero
+I2C_ADDRESS defines the default I2C address 0x10
+I2C_GC_ENABLE enables the I2C bus general call capability (address 0) if nonzero
+
+I2C_DEVICE defines the I2C interface to use, e.g. TWIE
+
+-- USE_I2C_ADDRESS_NEGOTIATION
+
+Enables I2C address autonegotiation if defined.  Requires USE_I2C.  
+
+Options
+
+I2C_AUTONEG_DIS_PROMISC will disable I2C promiscuous mode after completion of
+  autonegotiation routine if nonzero
+I2C_AUTONEG_DIS_GC will disable I2C general call detection after completion of
+  autonegotiation routine if nonzero
+I2C_AUTONEG_PORT defines the port in which the autonegotiation pin is located, e.g. PORTA
+I2C_AUTONEG_PIN defines the pin, e.g. 2
+
+-- USE_ATTACH_LED
+
+Enables the autonegotiation code to turn on a light when a new I2C address is received.
+
+Options
+
+ATTACH_LED_PORT defines the port, e.g. PORTA
+ATTACH_LED_PIN defines the pin, e.g. 1
+ATTACH_LED_INV inverts the LED state if nonzero
+
+--- Bootloader features
+
+Generally, these are all enabled, but they can be disabled to save code space.
+
+-- ENABLE_BLOCK_SUPPORT
+
+Enables flash block access support
+
+-- ENABLE_FLASH_BYTE_SUPPORT
+
+Enables flash byte access support
+
+-- ENABLE_EEPROM_BYTE_SUPPORT
+
+Enables EEPROM byte access support
+
+-- ENABLE_LOCK_BITS
+
+Enables lock bit read and write support (note: cannot clear lock bits to 1,
+  complete chip erase from external programmer needed to do that)
+
+-- ENABLE_FUSE_BITS
+
+Enables fuse bit read support (cannot write fuse bits outside of
+  hardware programming)
+

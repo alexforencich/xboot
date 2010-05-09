@@ -61,6 +61,12 @@ MCU = atxmega64a3
 #MAKE_BOOTLOADER=no
 MAKE_BOOTLOADER=yes
 
+# Only program boot section
+# This will relocate the program to address 0
+# and program it to the boot section directly
+# Note: ignored if MAKE_BOOTLOADER is not set
+PROG_BOOT_ONLY=yes
+
 # CPU Frequency
 F_CPU=2000000
 
@@ -206,7 +212,6 @@ AVRDUDE_PORT = usb
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
-
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,
 # see avrdude manual.
@@ -241,6 +246,14 @@ AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
+
+ifeq ($(MAKE_BOOTLOADER), yes)
+ifeq ($(PROG_BOOT_ONLY), yes)
+  BOOT_TARGET=$(TARGET)-boot.hex
+  AVRDUDE_WRITE_FLASH = -U boot:w:$(TARGET)-boot.hex
+  AVRDUDE_FLAGS += -e
+endif
+endif
 
 # ---------------------------------------------------------------------------
 
@@ -335,6 +348,7 @@ MSG_SIZE_AFTER = Size after:
 MSG_COFF = Converting to AVR COFF:
 MSG_EXTENDED_COFF = Converting to AVR Extended COFF:
 MSG_FLASH = Creating load file for Flash:
+MSG_BOOT = Creating load file for boot section:
 MSG_EEPROM = Creating load file for EEPROM:
 MSG_EXTENDED_LISTING = Creating Extended Listing:
 MSG_SYMBOL_TABLE = Creating Symbol Table:
@@ -412,7 +426,7 @@ gccversion :
 
 
 # Program the device.
-program: $(TARGET).hex $(TARGET).eep
+program: $(TARGET).hex $(TARGET).eep $(BOOT_TARGET)
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM) $(AVRDUDE_USERSIG) $(AVRDUDE_FUSES)
 
 
@@ -444,6 +458,11 @@ extcoff: $(TARGET).elf
 	@echo
 	@echo $(MSG_FLASH) $@
 	$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
+
+%-boot.hex: %.hex
+	@echo
+	@echo $(MSG_BOOT) $@
+	$(OBJCOPY) -O $(FORMAT) --change-addresses -$(BOOT_SECTION_START) $< $@
 
 %.eep: %.elf
 	@echo
@@ -501,6 +520,7 @@ clean_list :
 	@echo
 	@echo $(MSG_CLEANING)
 	$(REMOVE) $(TARGET).hex
+	$(REMOVE) $(TARGET)-boot.hex
 	$(REMOVE) $(TARGET).eep
 	$(REMOVE) $(TARGET).obj
 	$(REMOVE) $(TARGET).cof
