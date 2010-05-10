@@ -66,7 +66,66 @@ XBoot is designed to be reconfigured to suit specific needs.  Out of the box,
 everything is turned on.  Turning off features and reassigning pins is easy,
 open up xboot.h and change the #defines.  
 
+Recommended configuration:
+
+// bootloader entrace
+#define USE_ENTER_DELAY
+#define USE_ENTER_UART
+
+// bootloader communication
+#define USE_LED
+#define USE_UART
+
+// bootloader features
+#define ENABLE_BLOCK_SUPPORT
+#define ENABLE_FLASH_BYTE_SUPPORT
+#define ENABLE_EEPROM_BYTE_SUPPORT
+#define ENABLE_LOCK_BITS
+#define ENABLE_FUSE_BITS
+
+This configuration will make the bootloader work similarly to an Arduino.  It
+will blink its light a few times, polling for a character.  If none is
+received, it starts the application.  If one shows up, it enters the bootloader
+and processes it.  
+
+--- Bootloader clock options
+
+-- USE_DFLL
+
+This will turn on the DFLL for the selected oscillator, improving its accuracy.
+Recommended for high serial baud rates.
+
+-- USE_32MHZ_RC
+
+This will switch to the 32MHz RC oscillator on start.  In the default
+configuration of xboot.h, this will be defined automatically when F_CPU is set
+to 32000000.  
+
+--- AVR 1008 fixes
+
+If you're using a device affected by AVR1008, then you may need to enable these
+for the bootloader to successfully program the chip.  Affected chips are the
+ATXMEGA256A3 rev A, ATXMEGA256A3B rev B, ATXMEGA256A3 rev B, and possibly
+the ATXMEGA192A3.  
+
+-- USE_AVR1008_EEPROM
+
+This enables the AVR1008 fix for the EEPROM controller
+
 --- Bootloader entrance options
+
+-- USE_ENTER_DELAY
+
+If this is defined, XBoot will run a loop, specified with the ENTER_BLINK_*
+variables, and check for an entry condition.  If none is found, it jumps into
+the main code.  (BTW, they're called ENTER_BLINK_* because they assume
+USE_LED is defined.  If it isn't, it will still work, but the variable
+names don't make a whole lot of sense...)
+
+Options
+
+ENTER_BLINK_COUNT defines the number of times to blink the LED, e.g. 3
+ENTER_BLINK_WAIT defines the number of loops to make between blinks, e.g. 30000
 
 -- USE_ENTER_PIN
 
@@ -82,17 +141,6 @@ ENTER_PIN defines the pin in the port, an integer from 0 to 7
 ENTER_PIN_CTRL defines the PINnCTRL register for the pin, e.g. ENTER_PORT.PIN0CTRL
 ENTER_PIN_STATE defines the "asserted" state of the pin, 0 or 1
 ENTER_PIN_PUEN enables a pull-up resistor on the pin if nonzero
-
--- USE_ENTER_DELAY
-
-If this is defined, XBoot will run a loop, specified with the ENTER_BLINK_*
-variables, and check for an entry condition.  If none is found, it jumps into
-the main code.  
-
-Options
-
-ENTER_BLINK_COUNT defines the number of times to blink the LED, e.g. 3
-ENTER_BLINK_WAIT defines the number of loops to make between blinks, e.g. 30000
 
 -- USE_ENTER_UART
 
@@ -167,18 +215,26 @@ I2C_AUTONEG_DIS_PROMISC will disable I2C promiscuous mode after completion of
   autonegotiation routine if nonzero
 I2C_AUTONEG_DIS_GC will disable I2C general call detection after completion of
   autonegotiation routine if nonzero
-I2C_AUTONEG_PORT defines the port in which the autonegotiation pin is located, e.g. PORTA
+I2C_AUTONEG_PORT defines the port in which the autonegotiation pin is located,
+  e.g. PORTA
 I2C_AUTONEG_PIN defines the pin, e.g. 2
 
 -- USE_ATTACH_LED
 
-Enables the autonegotiation code to turn on a light when a new I2C address is received.
+Enables the autonegotiation code to turn on a light when a new I2C address is
+received.
 
 Options
 
 ATTACH_LED_PORT defines the port, e.g. PORTA
 ATTACH_LED_PIN defines the pin, e.g. 1
 ATTACH_LED_INV inverts the LED state if nonzero
+
+-- USE_INTERRUPTS
+
+Defining this will configure XBoot to use interrupts instead of polled I/O for
+serial communications.  This will increase code size and won't offer much
+advantage at the time being, so only use if you know what you're doing.
 
 --- Bootloader features
 

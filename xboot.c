@@ -33,12 +33,118 @@
 
 #include "xboot.h"
 
+#ifdef USE_INTERRUPTS
+volatile unsigned char comm_mode;
+
+volatile unsigned char rx_buff0;
+volatile unsigned char rx_buff1;
+volatile unsigned char rx_char_cnt;
+
+volatile unsigned char tx_buff0;
+volatile unsigned char tx_char_cnt;
+#else
 unsigned char comm_mode;
+#endif // USE_INTERRUPTS
 
 #ifdef USE_I2C
 unsigned char first_byte;
 #endif
 
+// Interrupts
+#ifdef USE_INTERRUPTS
+#ifdef USE_UART
+ISR(UART_DEVICE_RXC_ISR)
+{
+        if (comm_mode == MODE_UNDEF)
+        {
+                comm_mode = MODE_UART;
+                #ifdef USE_I2C
+                #ifdef __AVR_XMEGA__
+                // disable I2C interrupt
+                I2C_DEVICE.SLAVE.CTRLA = 0;
+                #endif // __AVR_XMEGA__
+                #endif // USE_I2C
+        }
+        if (rx_char_cnt == 0)
+        {
+                rx_buff0 = UART_DEVICE.DATA;
+                rx_char_cnt = 1;
+        }
+        else
+        {
+                rx_buff1 = UART_DEVICE.DATA;
+                rx_char_cnt = 2;
+        }
+}
+
+ISR(UART_DEVICE_TXC_ISR)
+{
+        tx_char_cnt = 0;
+}
+#endif // USE_UART
+
+#ifdef USE_I2C
+ISR(I2C_DEVICE_ISR)
+{
+        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_APIF_bm) && 
+                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_AP_bm))
+        {
+                // Address match, send ACK
+                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+                comm_mode = MODE_I2C;
+                #ifdef USE_UART
+                #ifdef __AVR_XMEGA__
+                // disable I2C interrupt
+                UART_DEVICE.CTRLA = 0;
+                #endif // __AVR_XMEGA__
+                #endif // USE_UART
+                first_byte = 1;
+        }
+        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
+                !(I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
+        {
+                // Data has arrived
+                if (rx_char_cnt == 0)
+                {
+                        rx_buff0 = I2C_DEVICE.SLAVE.DATA;
+                        rx_char_cnt = 1;
+                }
+                else
+                {
+                        rx_buff1 = I2C_DEVICE.SLAVE.DATA;
+                        rx_char_cnt = 2;
+                }
+                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+        }
+        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
+                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
+        {
+                if (!first_byte && I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_RXACK_bm)
+                {
+                        I2C_DEVICE.SLAVE.CTRLB = 0b00000010; // end transaction
+                }
+                else
+                {
+                        first_byte = 0;
+                        if (tx_char_cnt == 0)
+                        {
+                                // Wants data, but there is no data to send...
+                                // also include NAK
+                                I2C_DEVICE.SLAVE.DATA = '?';
+                        }
+                        else
+                        {
+                                I2C_DEVICE.SLAVE.DATA = tx_buff0;
+                                tx_char_cnt = 0;
+                        }
+                        I2C_DEVICE.SLAVE.CTRLB = 0b00000110;
+                }
+        }
+}
+#endif // USE_I2C
+#endif // USE_INTERRUPTS
+
+// Main code
 int main(void)
 {
         ADDR_T address = 0;
@@ -52,6 +158,11 @@ int main(void)
         #endif // USE_I2C_ADDRESS_NEGOTIATION
         
         comm_mode = MODE_UNDEF;
+        
+        #ifdef USE_INTERRUPTS
+        rx_char_cnt = 0;
+        tx_char_cnt = 0;
+        #endif // USE_INTERRUPTS
         
         // Initialization section
         // Entry point and communication methods are initialized here
@@ -81,6 +192,16 @@ int main(void)
         #endif // USE_DFLL
         #endif // __AVR_XMEGA__
         #endif
+        
+        #ifdef NEED_INTERRUPTS
+        // remap interrupts to boot section
+        CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
+        #ifdef USE_INTERRUPTS
+        PMIC.CTRL = PMIC_IVSEL_bm | PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm;
+        #else
+        PMIC.CTRL = PMIC_IVSEL_bm;
+        #endif // USE_INTERRUPTS
+        #endif // NEED_INTERRUPTS
         
         #ifdef USE_LED
         // Initialize LED pin
@@ -124,6 +245,9 @@ int main(void)
         #else
         UART_DEVICE.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
         #endif // UART_CLK2X
+        #ifdef USE_INTERRUPTS
+        UART_DEVICE.CTRLA = USART_RXCINTLVL0_bm | USART_TXCINTLVL0_bm;
+        #endif // USE_INTERRUPTS
         #endif // __AVR_XMEGA__
 
         #endif // USE_UART
@@ -133,9 +257,17 @@ int main(void)
         #ifdef __AVR_XMEGA__
         I2C_DEVICE.CTRL = 0;
         #if I2C_MATCH_ANY
+        #ifdef USE_INTERRUPTS
+        I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm | TWI_SLAVE_PMEN_bm | TWI_SLAVE_INTLVL0_bm;
+        #else
         I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm | TWI_SLAVE_PMEN_bm;
+        #endif // USE_INTERRUPTS
+        #else
+        #ifdef USE_INTERRUPTS
+        I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm | TWI_SLAVE_INTLVL0_bm;
         #else
         I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm;
+        #endif // USE_INTERRUPTS
         #endif
         #if I2C_GC_ENABLE
         I2C_DEVICE.SLAVE.ADDR = I2C_ADDRESS | 1;
@@ -227,6 +359,11 @@ int main(void)
         #ifdef USE_ENTER_DELAY
         }
         #endif // USE_ENTER_DELAY
+        
+        #ifdef USE_INTERRUPTS
+        // Enable interrupts
+        sei();
+        #endif // USE_INTERRUPTS
         
         // Main bootloader
         
@@ -603,6 +740,11 @@ autoneg_done:
                 }
         }
         
+        #ifdef NEED_INTERRUPTS
+        // Disable interrupts
+        cli();
+        #endif // NEED_INTERRUPTS
+        
         // Wait for any lingering SPM instructions to finish
         SP_WaitForSPM();
         
@@ -627,6 +769,12 @@ autoneg_done:
         ATTACH_LED_PORT.DIRCLR = (1 << ATTACH_LED_PIN);
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
+        
+        #ifdef NEED_INTERRUPTS
+        // remap interrupts back to application section
+        CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
+        PMIC.CTRL = 0;
+        #endif // NEED_INTERRUPTS
         
         // --------------------------------------------------
         // End bootloader exit section
@@ -677,6 +825,50 @@ void ow_slave_wait_bit(void)
 }
 
 #endif // USE_I2C_ADDRESS_NEGOTIATION
+
+#ifdef USE_INTERRUPTS
+unsigned char __attribute__ ((noinline)) get_char(void)
+{
+        unsigned char ret;
+        
+        while (rx_char_cnt == 0) { };
+        
+        cli();
+        
+        ret = rx_buff0;
+        rx_buff0 = rx_buff1;
+        rx_char_cnt--;
+        
+        sei();
+        
+        return ret;
+}
+
+void __attribute__ ((noinline)) send_char(unsigned char c)
+{
+        while (1)
+        {
+                cli();
+                
+                if (tx_char_cnt == 0)
+                {
+                        tx_buff0 = c;
+                        tx_char_cnt = 1;
+                        #ifdef USE_UART
+                        if (comm_mode == MODE_UART)
+                        {
+                                UART_DEVICE.DATA = c;
+                        }
+                        #endif // USE_UART
+                        sei();
+                        return;
+                }
+                
+                sei();
+        }
+}
+
+#else
 
 unsigned char __attribute__ ((noinline)) get_char(void)
 {
@@ -802,6 +994,8 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         }
         #endif // USE_I2C
 }
+
+#endif // USE_INTERRUPTS
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 {

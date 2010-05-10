@@ -36,8 +36,15 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 #include "sp_driver.h"
 #include "eeprom_driver.h"
+
+// token pasting
+#define token_paste2_int(x, y) x ## y
+#define token_paste2(x, y) token_paste2_int(x, y)
+#define token_paste3_int(x, y, z) x ## y ## z
+#define token_paste3(x, y, z) token_paste3_int(x, y, z)
 
 // Configuration
 
@@ -50,9 +57,13 @@
 #define USE_32MHZ_RC
 #endif
 
+// AVR1008 fixes
+// Really only applicable to 256a3 rev A and B devices
+//#define USE_AVR1008_EEPROM
+
 // bootloader entrace
-#define USE_ENTER_PIN
 #define USE_ENTER_DELAY
+#define USE_ENTER_PIN
 #define USE_ENTER_UART
 #define USE_ENTER_I2C
 
@@ -65,6 +76,8 @@
 #define USE_I2C
 #define USE_I2C_ADDRESS_NEGOTIATION
 #define USE_ATTACH_LED
+
+//#define USE_INTERRUPTS
 
 // communication modes
 // (please leave as-is)
@@ -82,7 +95,7 @@
 // ENTER_PIN
 #define ENTER_PORT              PORTC
 #define ENTER_PIN               0
-#define ENTER_PIN_CTRL          ENTER_PORT.PIN0CTRL
+#define ENTER_PIN_CTRL          token_paste3(ENTER_PORT.PIN, ENTER_PIN, CTRL)
 #define ENTER_PIN_STATE         0
 #define ENTER_PIN_PUEN          1
 
@@ -98,7 +111,11 @@
 // UART
 #define UART_BAUD_RATE                  19200
 #define UART_PORT                       PORTD
-#define UART_DEVICE                     USARTD1
+#define UART_DEVICE_PORT                D1
+#define UART_DEVICE                     token_paste2(USART, UART_DEVICE_PORT)
+#define UART_DEVICE_RXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
+#define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
+#define UART_DEVICE_TXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
 #define UART_TX_PIN                     PIN7_bm
 
 #ifdef __AVR_XMEGA__
@@ -169,12 +186,13 @@
 // I2C
 #ifdef __AVR_XMEGA__
 
+#define I2C_DEVICE_PORT                 E
+#define I2C_DEVICE                      token_paste2(TWI, I2C_DEVICE_PORT)
+#define I2C_DEVICE_ISR                  token_paste3(TWI, I2C_DEVICE_PORT, _TWIS_vect)
+
 #define I2C_MATCH_ANY                   1
 #define I2C_ADDRESS                     0x10
 #define I2C_GC_ENABLE                   1
-
-#define I2C_DEVICE                      TWIE
-
 
 #endif // __AVR_XMEGA__
 
@@ -199,6 +217,18 @@
 #error Unknown EEPROM page size!  Please add new byte address value!
 #endif
 #endif
+
+#ifdef USE_INTERRUPTS
+#ifndef NEED_INTERRUPTS
+#define NEED_INTERRUPTS
+#endif // NEED_INTERRUPTS
+#endif // USE_INTERRUPTS
+
+#ifdef USE_AVR1008_EEPROM
+#ifndef NEED_INTERRUPTS
+#define NEED_INTERRUPTS
+#endif // NEED_INTERRUPTS
+#endif // USE_AVR1008_EEPROM
 
 typedef uint32_t ADDR_T;
 

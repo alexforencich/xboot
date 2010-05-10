@@ -60,8 +60,9 @@
 #define EEPROM_DRIVER_H
 
 #include <avr/io.h>
-
-//#include "avr_compiler.h"
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
+#include "xboot.h"
 
 /* Definitions of macros. */
 
@@ -116,30 +117,6 @@
  *  IO mapped access is now enabled.
  */
 #define EEPROM_DisableMapping() ( NVM.CTRLB &= ~NVM_EEMAPEN_bm )
-
-/*! \brief Non-Volatile Memory Execute Command
- *
- *  This macro set the CCP register before setting the CMDEX bit in the
- *  NVM.CTRLA register.
- *
- *  \note The CMDEX bit must be set within 4 clock cycles after setting the
- *        protection byte in the CCP register.
- */
-#define NVM_EXEC()	asm("push r30"      "\n\t"	\
-			    "push r31"      "\n\t"	\
-			    "push r16"      "\n\t"	\
-			    "push r18"      "\n\t"	\
-			    "ldi r30, 0xCB" "\n\t"	\
-			    "ldi r31, 0x01" "\n\t"	\
-			    "ldi r16, 0xD8" "\n\t"	\
-			    "ldi r18, 0x01" "\n\t"	\
-			    "out 0x34, r16" "\n\t"	\
-			    "st Z, r18"     "\n\t"	\
-			    "pop r18"       "\n\t"	\
-			    "pop r16"       "\n\t"	\
-			    "pop r31"       "\n\t"	\
-			    "pop r30"       "\n\t"	\
-			    )
 
 /* Prototyping of functions. */
 void EEPROM_WriteByte( uint8_t pageAddr, uint8_t byteAddr, uint8_t value );
