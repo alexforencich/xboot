@@ -27,6 +27,19 @@ if you have one connected you can type "make program" and it will take care of
 everything.  If you don't have one of these but still want to use avrdude,
 modify the avrdude parameters in the makefile.  
 
+To write a program to a device with XBoot installed, use a command like this:
+
+avrdude -p atxmega64a3 -P /dev/ttyUSB0 -c avr109 -b 19200 -U flash:w:main.hex
+
+Or for windows:
+
+avrdude -p atxmega64a3 -P com1 -c avr109 -b 19200 -U flash:w:main.hex
+
+Also, feel free to re-use XBoot's makefile for your own code.  Like XBoot, it
+is reconfigurable and can be used to compile most projects.  It also has these
+programming configuration for XBoot built in, all you need to do is switch a
+couple of comments around.  
+
 NOTE: At this time, avrdude (currently 5.10) does NOT support programming the
 XMEGA flash boot section (see https://savannah.nongnu.org/bugs/?28744).  If you
 want to use avrdude, you will need to compile it from source with one of the
