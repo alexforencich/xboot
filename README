@@ -16,6 +16,16 @@ usually be repurposed at boot time.
 
 ---- Using XBoot ----
 
+Before building XBoot, please configure it so it will interface properly with
+your system.  This will involve editing some parameters in the makefile and
+some parameters in xboot.h.  The main parameters that need to be set in the
+makefile are the target chip (MCU) and the frequency (F_CPU).  All you need to
+do is make sure the only line that's not commented out is the one for your chip
+and the proper frequency.  For the simplest bootloader configuration, you may
+only choose 2000000 and 32000000 for the clock speed, corresponding to the two
+internal RC oscillator frequencies.  For the rest of the configuration, see the
+next section.  
+
 To build XBoot, open up the Makefile and make sure the MCU line for the target
 processor is the only one uncommented.  Then type "make".  This will compile
 the whole package and generate xboot.hex, which can be downloaded with any

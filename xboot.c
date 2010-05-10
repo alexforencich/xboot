@@ -57,6 +57,31 @@ int main(void)
         // Entry point and communication methods are initialized here
         // --------------------------------------------------
         
+        #ifdef USE_32MHZ_RC
+        #if (F_CPU != 32000000L)
+        #error F_CPU must match oscillator setting!
+        #endif
+        #ifdef __AVR_XMEGA__
+        OSC.CTRL |= OSC_RC32MEN_bm; // turn on 32 MHz oscillator
+        while (!(OSC.STATUS & OSC_RC32MRDY_bm)) { }; // wait for it to start
+        //CPU.CCP = CCP_IOREG_gc;
+        CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
+        CLK.CTRL = 0x01;
+        #ifdef USE_DFLL
+        DFLLRC32M.CTRL = DFLL_ENABLE_bm;
+        #endif // USE_DFLL
+        #endif // __AVR_XMEGA__
+        #else
+        #if (F_CPU != 2000000L)
+        #error F_CPU must match oscillator setting!
+        #endif
+        #ifdef __AVR_XMEGA__
+        #ifdef USE_DFLL
+        DFLLRC2M.CTRL = DFLL_ENABLE_bm;
+        #endif // USE_DFLL
+        #endif // __AVR_XMEGA__
+        #endif
+        
         #ifdef USE_LED
         // Initialize LED pin
         LED_PORT.DIRSET = (1 << LED_PIN);
@@ -94,7 +119,11 @@ int main(void)
         UART_PORT.DIRSET |= UART_TX_PIN;
         UART_DEVICE.BAUDCTRLA = (UART_BSEL_VALUE & USART_BSEL_gm);
         UART_DEVICE.BAUDCTRLB = ((UART_BSCALE_VALUE << USART_BSCALE_gp) & USART_BSCALE_gm);
+        #if UART_CLK2X
         UART_DEVICE.CTRLB = USART_RXEN_bm | USART_CLK2X_bm | USART_TXEN_bm;
+        #else
+        UART_DEVICE.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+        #endif // UART_CLK2X
         #endif // __AVR_XMEGA__
 
         #endif // USE_UART
@@ -614,10 +643,12 @@ autoneg_done:
 #define ow_deassert()           I2C_AUTONEG_PORT.DIRCLR = (1 << I2C_AUTONEG_PIN)
 #define ow_read()               (I2C_AUTONEG_PORT.IN & (1 << I2C_AUTONEG_PIN))
 #define ow_is_asserted()        (!ow_read())
+#else
+#define ow_assert()             DDRC |= (1 << 0)
+#define ow_deassert()           DDRC &= ~(1 << 0)
+#define ow_read()               (PINC & (1 << 0))
+#define ow_is_asserted()        (!ow_read())
 #endif // __AVR_XMEGA__
-#ifdef __AVR_MEGA__
-
-#endif // __AVR_MEGA__
 
 unsigned char __attribute__ ((noinline)) ow_slave_read_bit(void)
 {

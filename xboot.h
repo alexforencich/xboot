@@ -41,6 +41,15 @@
 
 // Configuration
 
+// clock config
+#define USE_DFLL
+// use 32MHz osc if makefile calls for it
+#if (F_CPU == 32000000L)
+// defaults to 2MHz RC oscillator
+// define USE_32MHZ_RC to override
+#define USE_32MHZ_RC
+#endif
+
 // bootloader entrace
 #define USE_ENTER_PIN
 #define USE_ENTER_DELAY
@@ -58,6 +67,7 @@
 #define USE_ATTACH_LED
 
 // communication modes
+// (please leave as-is)
 #define MODE_UNDEF              0
 #define MODE_UART               1
 #define MODE_I2C                2
@@ -93,21 +103,53 @@
 
 #ifdef __AVR_XMEGA__
 
+// BAUD Rate Values
+// Known good at 2MHz
 #if (F_CPU == 2000000L) && (UART_BAUD_RATE == 19200)
 #define UART_BSEL_VALUE         12
 #define UART_BSCALE_VALUE       0
+#define UART_CLK2X              1
 #elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 38400)
-#warning BAUD rate uses BSCALE != 0
-#define UART_BSEL_VALUE         12
-#define UART_BSCALE_VALUE       -1
-#elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 115200)
-#warning BAUD rate uses BSCALE != 0
-#define UART_BSEL_VALUE         16
+#define UART_BSEL_VALUE         23
+#define UART_BSCALE_VALUE       -2
+#define UART_CLK2X              1
+#elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 57600)
+#define UART_BSEL_VALUE         27
 #define UART_BSCALE_VALUE       -3
+#define UART_CLK2X              1
+#elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 115200)
+#define UART_BSEL_VALUE         19
+#define UART_BSCALE_VALUE       -4
+#define UART_CLK2X              1
+// Known good at 32MHz
+#elif (F_CPU == 32000000L) && (UART_BAUD_RATE == 19200)
+#define UART_BSEL_VALUE         103
+#define UART_BSCALE_VALUE       0
+#define UART_CLK2X              0
+#elif (F_CPU == 32000000L) && (UART_BAUD_RATE == 38400)
+#define UART_BSEL_VALUE         51
+#define UART_BSCALE_VALUE       0
+#define UART_CLK2X              0
+#elif (F_CPU == 32000000L) && (UART_BAUD_RATE == 57600)
+#define UART_BSEL_VALUE         34
+#define UART_BSCALE_VALUE       0
+#define UART_CLK2X              0
+#elif (F_CPU == 32000000L) && (UART_BAUD_RATE == 115200)
+#define UART_BSEL_VALUE         16
+#define UART_BSCALE_VALUE       0
+#define UART_CLK2X              0
+// None of the above, so calculate something
 #else
 #warning Not using predefined BAUD rate, possible BAUD rate error!
-#define UART_BSEL_VALUE         ((F_CPU + UART_BAUD_RATE * 4) / (UART_BAUD_RATE * 8) - 1)
+#if (F_CPU == 2000000L)
+#define UART_BSEL_VALUE         ((F_CPU) / ((uint32_t)UART_BAUD_RATE * 8) - 1)
 #define UART_BSCALE_VALUE       0
+#define UART_CLK2X              1
+#else
+#define UART_BSEL_VALUE         ((F_CPU) / ((uint32_t)UART_BAUD_RATE * 16) - 1)
+#define UART_BSCALE_VALUE       0
+#define UART_CLK2X              0
+#endif
 #endif
 
 #define UART_BAUD_RATE_LOW_REG          UART_DEVICE.BAUDCTRLA

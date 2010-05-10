@@ -69,6 +69,7 @@ PROG_BOOT_ONLY=yes
 
 # CPU Frequency
 F_CPU=2000000
+#F_CPU=32000000
 
 # Preprocessor defines
 DEFINES = -DF_CPU=$(F_CPU)L
