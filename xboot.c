@@ -219,7 +219,7 @@ int main(void)
                 else if (val == 'A')
                 {
                         // Read address high then low
-                        address = (get_char() << 8) | get_char();
+                        address = (((uint32_t)get_char() << 8) | (uint32_t)get_char()) & 0x0000FFFF;
                         // acknowledge
                         send_char('\r');
                 }
@@ -227,7 +227,7 @@ int main(void)
                 else if (val == 'H')
                 {
                         // Read address high then low
-                        address = ((unsigned long)get_char() << 16) | ((unsigned long)get_char() << 8) | get_char();
+                        address = (((uint32_t)get_char() << 16) | ((uint32_t)get_char() << 8) | (uint32_t)get_char()) & 0x00FFFFFF;
                         // acknowledge
                         send_char('\r');
                 }

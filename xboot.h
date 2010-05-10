@@ -158,7 +158,7 @@
 #endif
 #endif
 
-typedef unsigned long ADDR_T;
+typedef uint32_t ADDR_T;
 
 // Functions
 unsigned char __attribute__ ((noinline)) ow_slave_read_bit(void);
