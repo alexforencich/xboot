@@ -148,8 +148,8 @@ ISR(I2C_DEVICE_ISR)
 void WDT_EnableAndSetTimeout( void )
 {
 	uint8_t temp = WDT_ENABLE_bm | WDT_CEN_bm | WATCHDOG_TIMEOUT;
-	//CCP = CCP_IOREG_gc;
-	//WDT.CTRL = temp;
+	CCP = CCP_IOREG_gc;
+	WDT.CTRL = temp;
 
 	/* Wait for WD to synchronize with new settings. */
 	while(WDT_IsSyncBusy());
@@ -428,6 +428,9 @@ int main(void)
                 {
                         for (address = 0; address < APP_SECTION_SIZE; address += APP_SECTION_PAGE_SIZE)
                         {
+				#ifdef USE_WATCHDOG
+				WDT_Reset();
+				#endif // USE_WATCHDOG
                                 // wait for SPM instruction to complete
                                 SP_WaitForSPM();
                                 // erase page
@@ -1032,6 +1035,10 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
         unsigned int data;
         ADDR_T tempaddress;
         
+	#ifdef USE_WATCHDOG
+	WDT_Reset();
+	#endif // USE_WATCHDOG
+
         // EEPROM memory type.
         if(mem == 'E')
         {
