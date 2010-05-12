@@ -62,10 +62,10 @@
 //#define USE_AVR1008_EEPROM
 
 // bootloader entrace
-#define USE_ENTER_DELAY
-#define USE_ENTER_PIN
-#define USE_ENTER_UART
-#define USE_ENTER_I2C
+//#define USE_ENTER_DELAY
+//#define USE_ENTER_PIN
+//#define USE_ENTER_UART
+//#define USE_ENTER_I2C
 
 // bootloader exit
 //#define LOCK_SPM_ON_EXIT
@@ -78,6 +78,7 @@
 #define USE_ATTACH_LED
 
 //#define USE_INTERRUPTS
+//#define USE_WATCHDOG
 
 // communication modes
 // (please leave as-is)
@@ -103,8 +104,11 @@
 #define ENTER_BLINK_COUNT       3
 #define ENTER_BLINK_WAIT        30000
 
+// WATCHDOG
+#define WATCHDOG_TIMEOUT 1024
+
 // LED
-#define LED_PORT                PORTA
+#define LED_PORT                PORTD
 #define LED_PIN                 0
 #define LED_INV                 1
 
@@ -112,11 +116,11 @@
 #define UART_BAUD_RATE                  19200
 #define UART_PORT                       PORTD
 #define UART_DEVICE_PORT                D1
+#define UART_TX_PIN                     PIN7_bm
 #define UART_DEVICE                     token_paste2(USART, UART_DEVICE_PORT)
 #define UART_DEVICE_RXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
 #define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
 #define UART_DEVICE_TXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
-#define UART_TX_PIN                     PIN7_bm
 
 #ifdef __AVR_XMEGA__
 
@@ -229,6 +233,12 @@
 #define NEED_INTERRUPTS
 #endif // NEED_INTERRUPTS
 #endif // USE_AVR1008_EEPROM
+
+#ifdef USE_WATCHDOG
+/*! \brief Check if Synchronization busy flag is set. */
+#define WDT_IsSyncBusy() ( WDT.STATUS & WDT_SYNCBUSY_bm )
+#define WDT_Reset()	asm("wdr")
+#endif // USE_WATCHDOG
 
 typedef uint32_t ADDR_T;
 

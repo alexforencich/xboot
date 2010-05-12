@@ -51,8 +51,8 @@
 ## MCU = atxmega192a1
 ## MCU = atxmega192a3
 ## MCU = atxmega256a1
-## MCU = atxmega256a3
 ## MCU = atxmega256a3b
+#MCU = atxmega256a3
 MCU = atxmega64a3
 #MCU = atxmega128a1
 #MCU = atxmega32a4
@@ -205,6 +205,7 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 #
 AVRDUDE_PROGRAMMER = jtag2pdi
 #AVRDUDE_PROGRAMMER = avr109
+#AVRDUDE_PROGRAMMER = avrispmkII
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = usb

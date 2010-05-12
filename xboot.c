@@ -144,6 +144,25 @@ ISR(I2C_DEVICE_ISR)
 #endif // USE_I2C
 #endif // USE_INTERRUPTS
 
+#ifdef USE_WATCHDOG
+void WDT_EnableAndSetTimeout( void )
+{
+	uint8_t temp = WDT_ENABLE_bm | WDT_CEN_bm | WATCHDOG_TIMEOUT;
+	//CCP = CCP_IOREG_gc;
+	//WDT.CTRL = temp;
+
+	/* Wait for WD to synchronize with new settings. */
+	while(WDT_IsSyncBusy());
+}
+
+void WDT_Disable( void )
+{
+	uint8_t temp = (WDT.CTRL & ~WDT_ENABLE_bm) | WDT_CEN_bm;
+	CCP = CCP_IOREG_gc;
+	WDT.CTRL = temp;
+}
+#endif
+
 // Main code
 int main(void)
 {
@@ -364,16 +383,23 @@ int main(void)
         // Enable interrupts
         sei();
         #endif // USE_INTERRUPTS
-        
-        // Main bootloader
-        
+
+	#ifdef USE_WATCHDOG
+	WDT_EnableAndSetTimeout();
+	#endif // USE_WATCHDOG
+
+        // Main bootloader        
         while (in_bootloader) {
                 #ifdef USE_LED
                 LED_PORT.OUTTGL = (1 << LED_PIN);
                 #endif // USE_LED
                 
                 val = get_char();
-                
+
+		#ifdef USE_WATCHDOG
+                WDT_Reset();
+		#endif // USE_WATCHDOG
+
                 // Main bootloader parser
                 // check autoincrement status
                 if (val == 'a')
@@ -775,6 +801,10 @@ autoneg_done:
         CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
         PMIC.CTRL = 0;
         #endif // NEED_INTERRUPTS
+
+	#ifdef USE_WATCHDOG
+	WDT_Disable();
+	#endif // USE_WATCHDOG
         
         // --------------------------------------------------
         // End bootloader exit section
