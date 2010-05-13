@@ -85,6 +85,9 @@ TARGET = xboot
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c
 SRC += eeprom_driver.c
+SRC += uart.c
+SRC += i2c.c
+SRC += watchdog.c
 # SRC += ...
 
 # List Assembler source files here.

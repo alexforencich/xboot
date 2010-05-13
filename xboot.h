@@ -1,7 +1,7 @@
 /************************************************************************/
 /* XBoot Extensible AVR Bootloader                                      */
 /*                                                                      */
-/* tested with ATXMEGA64A3                                              */
+/* tested with ATXMEGA64A3, ATXMEGA128A1                                */
 /*                                                                      */
 /* xboot.h                                                              */
 /*                                                                      */
@@ -37,8 +37,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "sp_driver.h"
-#include "eeprom_driver.h"
 
 // token pasting
 #define token_paste2_int(x, y) x ## y
@@ -62,9 +60,9 @@
 //#define USE_AVR1008_EEPROM
 
 // bootloader entrace
-//#define USE_ENTER_DELAY
+#define USE_ENTER_DELAY
 //#define USE_ENTER_PIN
-//#define USE_ENTER_UART
+#define USE_ENTER_UART
 //#define USE_ENTER_I2C
 
 // bootloader exit
@@ -73,18 +71,13 @@
 // bootloader communication
 #define USE_LED
 #define USE_UART
-#define USE_I2C
-#define USE_I2C_ADDRESS_NEGOTIATION
-#define USE_ATTACH_LED
+//#define USE_I2C
+//#define USE_I2C_ADDRESS_NEGOTIATION
+//#define USE_ATTACH_LED
 
+// General Options
 //#define USE_INTERRUPTS
 //#define USE_WATCHDOG
-
-// communication modes
-// (please leave as-is)
-#define MODE_UNDEF              0
-#define MODE_UART               1
-#define MODE_I2C                2
 
 // bootloader features
 #define ENABLE_BLOCK_SUPPORT
@@ -105,18 +98,31 @@
 #define ENTER_BLINK_WAIT        30000
 
 // WATCHDOG
-#define WATCHDOG_TIMEOUT 1024
+// Select only one
+//#define WATCHDOG_TIMEOUT        WDT_PER_8CLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_16CLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_32CLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_64CLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_128CLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_256CLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_512CLK_gc
+#define WATCHDOG_TIMEOUT        WDT_PER_1KCLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_2KCLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_4KCLK_gc
+//#define WATCHDOG_TIMEOUT        WDT_PER_8KCLK_gc
 
 // LED
-#define LED_PORT                PORTD
+#define LED_PORT                PORTA
 #define LED_PIN                 0
 #define LED_INV                 1
 
 // UART
 #define UART_BAUD_RATE                  19200
-#define UART_PORT                       PORTD
-#define UART_DEVICE_PORT                D1
+#define UART_PORT_NAME                  D
+#define UART_NUMBER                     1
 #define UART_TX_PIN                     PIN7_bm
+#define UART_PORT                       token_paste2(PORT, UART_PORT_NAME)
+#define UART_DEVICE_PORT                token_paste2(UART_PORT_NAME, UART_NUMBER)
 #define UART_DEVICE                     token_paste2(USART, UART_DEVICE_PORT)
 #define UART_DEVICE_RXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
 #define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
@@ -173,18 +179,6 @@
 #endif
 #endif
 
-#define UART_BAUD_RATE_LOW_REG          UART_DEVICE.BAUDCTRLA
-#define UART_BAUD_RATE_HIGH_REG         UART_DEVICE.BAUDCTRLB
-#define UART_CONTROL_REG                UART_DEVICE.CTRLB
-#define UART_ENABLE_TRANSMITTER_BIT     USART_TXEN_bp
-#define UART_ENABLE_RECEIVER_BIT        USART_RXEN_bp
-#define UART_STATUS_REG                 UART_DEVICE.STATUS
-#define UART_TRANSMIT_COMPLETE_BIT      USART_TXCIF_bp
-#define UART_DATA_REG_EMPTY_BIT         USART_DREIF_bp
-#define UART_RECEIVE_COMPLETE_BIT       USART_RXCIF_bp
-#define UART_CLK2X_BIT                  USART_CLK2X_bp
-#define UART_DATA_REG                   UART_DEVICE.DATA
-
 #endif // __AVR_XMEGA__
 
 // I2C
@@ -234,13 +228,34 @@
 #endif // NEED_INTERRUPTS
 #endif // USE_AVR1008_EEPROM
 
-#ifdef USE_WATCHDOG
-/*! \brief Check if Synchronization busy flag is set. */
-#define WDT_IsSyncBusy() ( WDT.STATUS & WDT_SYNCBUSY_bm )
-#define WDT_Reset()	asm("wdr")
-#endif // USE_WATCHDOG
+// communication modes
+#define MODE_UNDEF              0
+#define MODE_UART               1
+#define MODE_I2C                2
 
+// types
 typedef uint32_t ADDR_T;
+
+// Includes
+#include "sp_driver.h"
+#include "eeprom_driver.h"
+#include "uart.h"
+#include "i2c.h"
+#include "watchdog.h"
+
+// globals
+#ifdef USE_INTERRUPTS
+extern volatile unsigned char comm_mode;
+
+extern volatile unsigned char rx_buff0;
+extern volatile unsigned char rx_buff1;
+extern volatile unsigned char rx_char_cnt;
+
+extern volatile unsigned char tx_buff0;
+extern volatile unsigned char tx_char_cnt;
+#else
+extern unsigned char comm_mode;
+#endif // USE_INTERRUPTS
 
 // Functions
 unsigned char __attribute__ ((noinline)) ow_slave_read_bit(void);

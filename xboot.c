@@ -1,7 +1,7 @@
 /************************************************************************/
 /* XBoot Extensible AVR Bootloader                                      */
 /*                                                                      */
-/* tested with ATXMEGA64A3                                              */
+/* tested with ATXMEGA64A3, ATXMEGA128A1                                */
 /*                                                                      */
 /* xboot.c                                                              */
 /*                                                                      */
@@ -46,123 +46,6 @@ volatile unsigned char tx_char_cnt;
 unsigned char comm_mode;
 #endif // USE_INTERRUPTS
 
-#ifdef USE_I2C
-unsigned char first_byte;
-#endif
-
-// Interrupts
-#ifdef USE_INTERRUPTS
-#ifdef USE_UART
-ISR(UART_DEVICE_RXC_ISR)
-{
-        if (comm_mode == MODE_UNDEF)
-        {
-                comm_mode = MODE_UART;
-                #ifdef USE_I2C
-                #ifdef __AVR_XMEGA__
-                // disable I2C interrupt
-                I2C_DEVICE.SLAVE.CTRLA = 0;
-                #endif // __AVR_XMEGA__
-                #endif // USE_I2C
-        }
-        if (rx_char_cnt == 0)
-        {
-                rx_buff0 = UART_DEVICE.DATA;
-                rx_char_cnt = 1;
-        }
-        else
-        {
-                rx_buff1 = UART_DEVICE.DATA;
-                rx_char_cnt = 2;
-        }
-}
-
-ISR(UART_DEVICE_TXC_ISR)
-{
-        tx_char_cnt = 0;
-}
-#endif // USE_UART
-
-#ifdef USE_I2C
-ISR(I2C_DEVICE_ISR)
-{
-        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_APIF_bm) && 
-                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_AP_bm))
-        {
-                // Address match, send ACK
-                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
-                comm_mode = MODE_I2C;
-                #ifdef USE_UART
-                #ifdef __AVR_XMEGA__
-                // disable I2C interrupt
-                UART_DEVICE.CTRLA = 0;
-                #endif // __AVR_XMEGA__
-                #endif // USE_UART
-                first_byte = 1;
-        }
-        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
-                !(I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
-        {
-                // Data has arrived
-                if (rx_char_cnt == 0)
-                {
-                        rx_buff0 = I2C_DEVICE.SLAVE.DATA;
-                        rx_char_cnt = 1;
-                }
-                else
-                {
-                        rx_buff1 = I2C_DEVICE.SLAVE.DATA;
-                        rx_char_cnt = 2;
-                }
-                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
-        }
-        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
-                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
-        {
-                if (!first_byte && I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_RXACK_bm)
-                {
-                        I2C_DEVICE.SLAVE.CTRLB = 0b00000010; // end transaction
-                }
-                else
-                {
-                        first_byte = 0;
-                        if (tx_char_cnt == 0)
-                        {
-                                // Wants data, but there is no data to send...
-                                // also include NAK
-                                I2C_DEVICE.SLAVE.DATA = '?';
-                        }
-                        else
-                        {
-                                I2C_DEVICE.SLAVE.DATA = tx_buff0;
-                                tx_char_cnt = 0;
-                        }
-                        I2C_DEVICE.SLAVE.CTRLB = 0b00000110;
-                }
-        }
-}
-#endif // USE_I2C
-#endif // USE_INTERRUPTS
-
-#ifdef USE_WATCHDOG
-void WDT_EnableAndSetTimeout( void )
-{
-	uint8_t temp = WDT_ENABLE_bm | WDT_CEN_bm | WATCHDOG_TIMEOUT;
-	CCP = CCP_IOREG_gc;
-	WDT.CTRL = temp;
-
-	/* Wait for WD to synchronize with new settings. */
-	while(WDT_IsSyncBusy());
-}
-
-void WDT_Disable( void )
-{
-	uint8_t temp = (WDT.CTRL & ~WDT_ENABLE_bm) | WDT_CEN_bm;
-	CCP = CCP_IOREG_gc;
-	WDT.CTRL = temp;
-}
-#endif
-
 // Main code
 int main(void)
 {
@@ -194,9 +77,8 @@ int main(void)
         #ifdef __AVR_XMEGA__
         OSC.CTRL |= OSC_RC32MEN_bm; // turn on 32 MHz oscillator
         while (!(OSC.STATUS & OSC_RC32MRDY_bm)) { }; // wait for it to start
-        //CPU.CCP = CCP_IOREG_gc;
-        CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
-        CLK.CTRL = 0x01;
+        CCP = CCP_IOREG_gc;
+        CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
         #ifdef USE_DFLL
         DFLLRC32M.CTRL = DFLL_ENABLE_bm;
         #endif // USE_DFLL
@@ -214,7 +96,7 @@ int main(void)
         
         #ifdef NEED_INTERRUPTS
         // remap interrupts to boot section
-        CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
+        CCP = CCP_IOREG_gc;
         #ifdef USE_INTERRUPTS
         PMIC.CTRL = PMIC_IVSEL_bm | PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm;
         #else
@@ -255,46 +137,12 @@ int main(void)
         
         #ifdef USE_UART
         // Initialize UART
-        #ifdef __AVR_XMEGA__
-        UART_PORT.DIRSET |= UART_TX_PIN;
-        UART_DEVICE.BAUDCTRLA = (UART_BSEL_VALUE & USART_BSEL_gm);
-        UART_DEVICE.BAUDCTRLB = ((UART_BSCALE_VALUE << USART_BSCALE_gp) & USART_BSCALE_gm);
-        #if UART_CLK2X
-        UART_DEVICE.CTRLB = USART_RXEN_bm | USART_CLK2X_bm | USART_TXEN_bm;
-        #else
-        UART_DEVICE.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
-        #endif // UART_CLK2X
-        #ifdef USE_INTERRUPTS
-        UART_DEVICE.CTRLA = USART_RXCINTLVL0_bm | USART_TXCINTLVL0_bm;
-        #endif // USE_INTERRUPTS
-        #endif // __AVR_XMEGA__
-
+        uart_init();
         #endif // USE_UART
         
         #ifdef USE_I2C
         // Initialize I2C interface
-        #ifdef __AVR_XMEGA__
-        I2C_DEVICE.CTRL = 0;
-        #if I2C_MATCH_ANY
-        #ifdef USE_INTERRUPTS
-        I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm | TWI_SLAVE_PMEN_bm | TWI_SLAVE_INTLVL0_bm;
-        #else
-        I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm | TWI_SLAVE_PMEN_bm;
-        #endif // USE_INTERRUPTS
-        #else
-        #ifdef USE_INTERRUPTS
-        I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm | TWI_SLAVE_INTLVL0_bm;
-        #else
-        I2C_DEVICE.SLAVE.CTRLA = TWI_SLAVE_ENABLE_bm;
-        #endif // USE_INTERRUPTS
-        #endif
-        #if I2C_GC_ENABLE
-        I2C_DEVICE.SLAVE.ADDR = I2C_ADDRESS | 1;
-        #else
-        I2C_DEVICE.SLAVE.ADDR = I2C_ADDRESS;
-        #endif
-        I2C_DEVICE.SLAVE.ADDRMASK = 0;
-        #endif // __AVR_XMEGA__
+        i2c_init();
         
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         I2C_AUTONEG_PORT.DIRCLR = (1 << I2C_AUTONEG_PIN);
@@ -353,7 +201,7 @@ int main(void)
                 #ifdef USE_ENTER_UART
                 // Check for received character
                 #ifdef __AVR_XMEGA__
-                if (UART_DEVICE.STATUS & USART_RXCIF_bm)
+                if (uart_char_received())
                 {
                         in_bootloader = 1;
                         comm_mode = MODE_UART;
@@ -364,8 +212,7 @@ int main(void)
                 
                 #ifdef USE_ENTER_I2C
                 // Check for address match condition
-                if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_APIF_bm) && 
-                        (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_AP_bm))
+                if (i2c_address_match())
                 {
                         in_bootloader = 1;
                         comm_mode = MODE_I2C;
@@ -384,9 +231,9 @@ int main(void)
         sei();
         #endif // USE_INTERRUPTS
 
-	#ifdef USE_WATCHDOG
-	WDT_EnableAndSetTimeout();
-	#endif // USE_WATCHDOG
+        #ifdef USE_WATCHDOG
+        WDT_EnableAndSetTimeout();
+        #endif // USE_WATCHDOG
 
         // Main bootloader        
         while (in_bootloader) {
@@ -396,9 +243,9 @@ int main(void)
                 
                 val = get_char();
 
-		#ifdef USE_WATCHDOG
+                #ifdef USE_WATCHDOG
                 WDT_Reset();
-		#endif // USE_WATCHDOG
+                #endif // USE_WATCHDOG
 
                 // Main bootloader parser
                 // check autoincrement status
@@ -411,7 +258,7 @@ int main(void)
                 else if (val == 'A')
                 {
                         // Read address high then low
-                        address = (((uint32_t)get_char() << 8) | (uint32_t)get_char()) & 0x0000FFFF;
+                        address = (((ADDR_T)get_char() << 8) | (ADDR_T)get_char()) & 0x0000FFFF;
                         // acknowledge
                         send_char('\r');
                 }
@@ -419,7 +266,7 @@ int main(void)
                 else if (val == 'H')
                 {
                         // Read address high then low
-                        address = (((uint32_t)get_char() << 16) | ((uint32_t)get_char() << 8) | (uint32_t)get_char()) & 0x00FFFFFF;
+                        address = (((ADDR_T)get_char() << 16) | ((ADDR_T)get_char() << 8) | (ADDR_T)get_char()) & 0x00FFFFFF;
                         // acknowledge
                         send_char('\r');
                 }
@@ -428,9 +275,9 @@ int main(void)
                 {
                         for (address = 0; address < APP_SECTION_SIZE; address += APP_SECTION_PAGE_SIZE)
                         {
-				#ifdef USE_WATCHDOG
-				WDT_Reset();
-				#endif // USE_WATCHDOG
+                                #ifdef USE_WATCHDOG
+                                WDT_Reset();
+                                #endif // USE_WATCHDOG
                                 // wait for SPM instruction to complete
                                 SP_WaitForSPM();
                                 // erase page
@@ -801,13 +648,13 @@ autoneg_done:
         
         #ifdef NEED_INTERRUPTS
         // remap interrupts back to application section
-        CPU_CCP = CCP_IOREG_gc; // missing CPU_t in header file
+        CCP = CCP_IOREG_gc;
         PMIC.CTRL = 0;
         #endif // NEED_INTERRUPTS
 
-	#ifdef USE_WATCHDOG
-	WDT_Disable();
-	#endif // USE_WATCHDOG
+        #ifdef USE_WATCHDOG
+        WDT_Disable();
+        #endif // USE_WATCHDOG
         
         // --------------------------------------------------
         // End bootloader exit section
@@ -890,7 +737,7 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                         #ifdef USE_UART
                         if (comm_mode == MODE_UART)
                         {
-                                UART_DEVICE.DATA = c;
+                                uart_send_char(c);
                         }
                         #endif // USE_UART
                         sei();
@@ -914,10 +761,10 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                 if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
                 {
                         #ifdef __AVR_XMEGA__
-                        if (UART_DEVICE.STATUS & USART_RXCIF_bm)
+                        if (uart_char_received())
                         {
                                 comm_mode = MODE_UART;
-                                return UART_DEVICE.DATA;
+                                return uart_cur_char();
                         }
                         #endif // __AVR_XMEGA__
                 }
@@ -928,36 +775,33 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                 if (comm_mode == MODE_UNDEF || comm_mode == MODE_I2C)
                 {
                         #ifdef __AVR_XMEGA__
-                        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_APIF_bm) && 
-                                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_AP_bm))
+                        if (i2c_address_match())
                         {
                                 // Address match, send ACK
-                                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+                                i2c_send_ack();
                                 comm_mode = MODE_I2C;
                                 first_byte = 1;
                         }
-                        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
-                                !(I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
+                        if (i2c_char_received())
                         {
                                 // Data has arrived
-                                ret = I2C_DEVICE.SLAVE.DATA;
-                                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+                                ret = i2c_cur_char();
+                                i2c_send_ack();
                                 return ret;
                         }
-                        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
-                                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
+                        if (i2c_ready_data())
                         {
-                                if (!first_byte && I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_RXACK_bm)
+                                if (!first_byte && i2c_got_ack())
                                 {
-                                        I2C_DEVICE.SLAVE.CTRLB = 0b00000010; // end transaction
+                                        i2c_end_transmission(); // end transaction
                                 }
                                 else
                                 {
                                         first_byte = 0;
                                         // Wants data, but there is no data to send...
                                         // also include NAK
-                                        I2C_DEVICE.SLAVE.DATA = '?';
-                                        I2C_DEVICE.SLAVE.CTRLB = 0b00000110;
+                                        i2c_send_char('?');
+                                        i2c_send_nak();
                                 }
                         }
                         #endif // __AVR_XMEGA__
@@ -970,16 +814,16 @@ unsigned char __attribute__ ((noinline)) get_char(void)
 
 void __attribute__ ((noinline)) send_char(unsigned char c)
 {
+        #ifdef USE_I2C
         unsigned char tmp;
+        #endif
         
         #ifdef USE_UART
         // Send character
         if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
         {
                 #ifdef __AVR_XMEGA__
-                UART_DEVICE.DATA = c;
-                while (!(UART_DEVICE.STATUS & USART_TXCIF_bm)) { }
-                UART_DEVICE.STATUS |= USART_TXCIF_bm; // clear flag
+                uart_send_char_blocking(c);
                 #endif // __AVR_XMEGA__
                 
         }
@@ -992,33 +836,30 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 while (1)
                 {
                         #ifdef __AVR_XMEGA__
-                        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_APIF_bm) && 
-                                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_AP_bm))
+                        if (i2c_address_match())
                         {
                                 // Address match, send ACK
-                                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+                                i2c_send_ack();
                                 first_byte = 1;
                         }
-                        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
-                                !(I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
+                        if (i2c_char_received())
                         {
                                 // Data has arrived, ignore it
-                                tmp = I2C_DEVICE.SLAVE.DATA;
-                                I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+                                tmp = i2c_cur_char();
+                                i2c_send_ack();
                         }
-                        if ((I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIF_bm) &&
-                                (I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_DIR_bm))
+                        if (i2c_ready_data())
                         {
-                                if (!first_byte && I2C_DEVICE.SLAVE.STATUS & TWI_SLAVE_RXACK_bm)
+                                if (!first_byte && i2c_got_ack())
                                 {
-                                        I2C_DEVICE.SLAVE.CTRLB = 0b00000010; // end transaction
+                                        i2c_end_transmission(); // end transaction
                                 }
                                 else
                                 {
                                         first_byte = 0;
                                         // Send data along
-                                        I2C_DEVICE.SLAVE.DATA = c;
-                                        I2C_DEVICE.SLAVE.CTRLB = 0b00000011;
+                                        i2c_send_char(c);
+                                        i2c_send_ack();
                                 }
                                 return;
                         }
