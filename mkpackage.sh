@@ -14,4 +14,8 @@ xboot/eeprom_driver.h \
 xboot/sp_driver.S \
 xboot/sp_driver.h \
 xboot/uart.c \
-xboot/uart.h
+xboot/uart.h \
+xboot/i2c.c \
+xboot/i2c.h \
+xboot/watchdog.c \
+xboot/watchdog.h
