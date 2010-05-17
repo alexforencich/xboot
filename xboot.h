@@ -120,7 +120,7 @@
 #define UART_BAUD_RATE                  19200
 #define UART_PORT_NAME                  D
 #define UART_NUMBER                     1
-#define UART_TX_PIN                     PIN7_bm
+#define UART_TX_PIN                     7
 #define UART_PORT                       token_paste2(PORT, UART_PORT_NAME)
 #define UART_DEVICE_PORT                token_paste2(UART_PORT_NAME, UART_NUMBER)
 #define UART_DEVICE                     token_paste2(USART, UART_DEVICE_PORT)

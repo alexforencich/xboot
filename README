@@ -190,7 +190,7 @@ Options
 UART_BAUD_RATE defines the baud rate of the UART, e.g. 19200
 UART_PORT_NAME defines the port that the UART is connected to, e.g. D
 UART_NUMBER defines number of the UART device on the port, e.g. 1 for USARTD1
-UART_TX_PIN defines the UART TX bin bit mask, e.g. PIN7_bm
+UART_TX_PIN defines the UART TX pin number, e.g. 7
 
 UART_BSEL_VALUE defines the value of BSEL, e.g. 12
 UART_BSCALE_VALUE defines the value of BSCALE, e.g. 0
