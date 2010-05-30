@@ -57,5 +57,6 @@ extern unsigned char first_byte;
 
 // Prototypes
 extern void __attribute__ ((always_inline)) i2c_init(void);
+extern void __attribute__ ((always_inline)) i2c_deinit(void);
 
 #endif // __I2C_H

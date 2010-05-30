@@ -629,6 +629,16 @@ autoneg_done:
         // but before the application code has started
         // --------------------------------------------------
         
+        #ifdef USE_I2C
+        // Shut down I2C interface
+        i2c_deinit();
+        #endif // USE_I2C
+        
+        #ifdef USE_UART
+        // Shut down UART
+        uart_deinit();
+        #endif // USE_UART
+        
         #ifdef LOCK_SPM_ON_EXIT
         // Lock SPM writes
         SP_LockSPM();

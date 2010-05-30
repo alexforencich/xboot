@@ -127,5 +127,13 @@ void __attribute__ ((always_inline)) i2c_init(void)
         #endif // __AVR_XMEGA__
 }
 
+void __attribute__ ((always_inline)) i2c_deinit(void)
+{
+        // Shut down I2C module and turn off interrupt
+        #ifdef __AVR_XMEGA__
+        I2C_DEVICE.SLAVE.CTRLA = 0;
+        #endif // __AVR_XMEGA__
+}
+
 
 

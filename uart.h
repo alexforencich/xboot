@@ -52,5 +52,6 @@
 
 // Prototypes
 extern void __attribute__ ((always_inline)) uart_init(void);
+extern void __attribute__ ((always_inline)) uart_deinit(void);
 
 #endif // __UART_H

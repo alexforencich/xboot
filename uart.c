@@ -85,3 +85,14 @@ void __attribute__ ((always_inline)) uart_init(void)
         #endif // __AVR_XMEGA__
 }
 
+// Shut down UART
+void __attribute__ ((always_inline)) uart_deinit(void)
+{
+        #ifdef __AVR_XMEGA__
+        UART_DEVICE.CTRLB = 0;
+        #ifdef USE_INTERRUPTS
+        UART_DEVICE.CTRLA = 0;
+        #endif // USE_INTERRUPTS
+        #endif // __AVR_XMEGA__
+}
+
