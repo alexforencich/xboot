@@ -1,7 +1,7 @@
 /************************************************************************/
 /* XBoot Extensible AVR Bootloader                                      */
 /*                                                                      */
-/* tested with ATXMEGA64A3, ATXMEGA128A1                                */
+/* tested with ATXMEGA64A3, ATXMEGA128A1, ATXMEGA256A1, ATXMEGA32A4     */
 /*                                                                      */
 /* xboot.c                                                              */
 /*                                                                      */

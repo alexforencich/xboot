@@ -1,7 +1,7 @@
 /************************************************************************/
 /* XBoot Extensible AVR Bootloader                                      */
 /*                                                                      */
-/* tested with ATXMEGA64A3, ATXMEGA128A1                                */
+/* tested with ATXMEGA64A3, ATXMEGA128A1, ATXMEGA256A1, ATXMEGA32A4     */
 /*                                                                      */
 /* xboot.h                                                              */
 /*                                                                      */
@@ -120,7 +120,11 @@
 #define UART_BAUD_RATE                  19200
 #define UART_PORT_NAME                  D
 #define UART_NUMBER                     1
+#if (UART_NUMBER == 0)
+#define UART_TX_PIN                     3
+#else
 #define UART_TX_PIN                     7
+#endif
 #define UART_PORT                       token_paste2(PORT, UART_PORT_NAME)
 #define UART_DEVICE_PORT                token_paste2(UART_PORT_NAME, UART_NUMBER)
 #define UART_DEVICE                     token_paste2(USART, UART_DEVICE_PORT)
@@ -137,11 +141,11 @@
 #define UART_BSCALE_VALUE       0
 #define UART_CLK2X              1
 #elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 38400)
-#define UART_BSEL_VALUE         23
+#define UART_BSEL_VALUE         22
 #define UART_BSCALE_VALUE       -2
 #define UART_CLK2X              1
 #elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 57600)
-#define UART_BSEL_VALUE         27
+#define UART_BSEL_VALUE         26
 #define UART_BSCALE_VALUE       -3
 #define UART_CLK2X              1
 #elif (F_CPU == 2000000L) && (UART_BAUD_RATE == 115200)
