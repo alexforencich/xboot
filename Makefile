@@ -71,6 +71,9 @@ PROG_BOOT_ONLY=yes
 F_CPU=2000000
 #F_CPU=32000000
 
+# for xboot automated configuration - overrides MCU and F_CPU if present
+-include xboot-config.mk
+
 # Preprocessor defines
 DEFINES = -DF_CPU=$(F_CPU)L
 
