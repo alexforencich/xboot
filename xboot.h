@@ -64,6 +64,7 @@
 //#define USE_ENTER_PIN
 #define USE_ENTER_UART
 //#define USE_ENTER_I2C
+//#define USE_ENTER_FIFO
 
 // bootloader exit
 //#define LOCK_SPM_ON_EXIT
@@ -74,6 +75,7 @@
 //#define USE_I2C
 //#define USE_I2C_ADDRESS_NEGOTIATION
 //#define USE_ATTACH_LED
+//#define USE_FIFO
 
 // General Options
 //#define USE_INTERRUPTS
@@ -131,6 +133,15 @@
 #define UART_DEVICE_RXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
 #define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
 #define UART_DEVICE_TXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
+
+//FIFO
+#define FIFO_DATA_PORT  PORTC
+#define FIFO_CTL_PORT   PORTD
+#define FIFO_RXF_N_bm   1<<3
+#define FIFO_TXE_N_bm   1<<2
+#define FIFO_RD_N_bm    1<<1
+#define FIFO_WR_N_bm    1<<0
+#define FIFO_BIT_REVERSE
 
 #ifdef __AVR_XMEGA__
 
@@ -236,6 +247,7 @@
 #define MODE_UNDEF              0
 #define MODE_UART               1
 #define MODE_I2C                2
+#define MODE_FIFO               3
 
 // types
 typedef uint32_t ADDR_T;
@@ -245,6 +257,7 @@ typedef uint32_t ADDR_T;
 #include "eeprom_driver.h"
 #include "uart.h"
 #include "i2c.h"
+#include "fifo.h"
 #include "watchdog.h"
 
 // globals

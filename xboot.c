@@ -151,6 +151,11 @@ int main(void)
         
         #endif // USE_I2C
         
+        #ifdef USE_FIFO
+        // Initialize FIFO
+        fifo_init();
+        #endif // USE_FIFO
+        
         // --------------------------------------------------
         // End initialization section
         
@@ -219,6 +224,18 @@ int main(void)
                 }
                 #endif // USE_ENTER_I2C
                 
+                #ifdef USE_ENTER_FIFO
+                // Check for received character
+                #ifdef __AVR_XMEGA__
+                if (fifo_char_received() && (fifo_cur_char() == 0x1b))
+                {
+                        in_bootloader = 1;
+                        comm_mode = MODE_FIFO;
+                }
+                #endif // __AVR_XMEGA__
+                
+                #endif // USE_ENTER_FIFO
+                 
                 // --------------------------------------------------
                 // End main trigger section
                 
@@ -629,6 +646,11 @@ autoneg_done:
         // but before the application code has started
         // --------------------------------------------------
         
+        #ifdef USE_FIFO
+        // Shut down FIFO
+        fifo_deinit();
+        #endif // USE_FIFO
+        
         #ifdef USE_I2C
         // Shut down I2C interface
         i2c_deinit();
@@ -750,6 +772,12 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                                 uart_send_char(c);
                         }
                         #endif // USE_UART
+                        #ifdef USE_FIFO
+                        if (comm_mode == MODE_FIFO)
+                        {
+                                fifo_send_char(c);
+                        }
+                        #endif // USE_FIFO
                         sei();
                         return;
                 }
@@ -817,6 +845,21 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                         #endif // __AVR_XMEGA__
                 }
                 #endif // USE_I2C
+
+                #ifdef USE_FIFO
+                // Get next character
+                if (comm_mode == MODE_UNDEF || comm_mode == MODE_FIFO)
+                {
+                        #ifdef __AVR_XMEGA__
+                        if (fifo_char_received())
+                        {
+                                comm_mode = MODE_FIFO;
+                                return fifo_cur_char();
+                        }
+                        #endif // __AVR_XMEGA__
+                }
+                #endif // USE_FIFO
+                
         }
         
         return ret;
@@ -877,6 +920,18 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 }
         }
         #endif // USE_I2C
+
+        #ifdef USE_FIFO
+        // Send character
+        if (comm_mode == MODE_UNDEF || comm_mode == MODE_FIFO)
+        {
+                #ifdef __AVR_XMEGA__
+                fifo_send_char_blocking(c);
+                #endif // __AVR_XMEGA__
+                
+        }
+        #endif // USE_FIFO
+        
 }
 
 #endif // USE_INTERRUPTS

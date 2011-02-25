@@ -90,6 +90,7 @@ SRC = $(TARGET).c
 SRC += eeprom_driver.c
 SRC += uart.c
 SRC += i2c.c
+SRC += fifo.c
 SRC += watchdog.c
 # SRC += ...
 
