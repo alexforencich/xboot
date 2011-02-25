@@ -237,6 +237,14 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 # to submit bug reports.
 #AVRDUDE_VERBOSE = -v -v
 
+# Erase behaviour
+# Normaly with an XMega, the programmer should automatically erase a 
+# page before flashing. 
+# It seems that at least the avrdragon_jtag (and probably other types) 
+# don't do so(Feb 11)
+# In that case, erase the chip before flashing
+AVRDUDE_CHIP_ERASE = -e
+
 # Write fuse and lock bits
 AVRDUDE_FUSES = 
 #AVRDUDE_FUSES += -U fuse0:w:0x00:m # JTAG ID
@@ -260,12 +268,12 @@ endif
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
+AVRDUDE_FLAGS += $(AVRDUDE_CHIP_ERASE)
 
 ifeq ($(MAKE_BOOTLOADER), yes)
 ifeq ($(PROG_BOOT_ONLY), yes)
   BOOT_TARGET=$(TARGET)-boot.hex
   AVRDUDE_WRITE_FLASH = -U boot:w:$(TARGET)-boot.hex
-  AVRDUDE_FLAGS += -e
 endif
 endif
 
