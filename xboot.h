@@ -282,6 +282,7 @@ void ow_slave_wait_bit(void);
 
 unsigned char __attribute__ ((noinline)) get_char(void);
 void __attribute__ ((noinline)) send_char(unsigned char c);
+unsigned int __attribute__ ((noinline)) get_2bytes(void);
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address);
 void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address);

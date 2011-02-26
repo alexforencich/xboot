@@ -275,7 +275,7 @@ int main(void)
                 else if (val == CMD_SET_ADDRESS)
                 {
                         // Read address high then low
-                        address = (((ADDR_T)get_char() << 8) | (ADDR_T)get_char()) & 0x0000FFFF;
+                        address = get_2bytes();
                         // acknowledge
                         send_char(REPLY_ACK);
                 }
@@ -283,7 +283,7 @@ int main(void)
                 else if (val == CMD_SET_EXT_ADDRESS)
                 {
                         // Read address high then low
-                        address = (((ADDR_T)get_char() << 16) | ((ADDR_T)get_char() << 8) | (ADDR_T)get_char()) & 0x00FFFFFF;
+                        address = (get_char() << 16) | get_2bytes();
                         // acknowledge
                         send_char(REPLY_ACK);
                 }
@@ -323,7 +323,7 @@ int main(void)
                 else if (val == CMD_BLOCK_LOAD)
                 {
                         // Block size
-                        i = (get_char() << 8) | get_char();
+                        i = get_2bytes();
                         // Memory type
                         val = get_char();
                         // Load it
@@ -333,7 +333,7 @@ int main(void)
                 else if (val == CMD_BLOCK_READ)
                 {
                         // Block size
-                        i = (get_char() << 8) | get_char();
+                        i = get_2bytes();
                         // Memory type
                         val = get_char();
                         // Read it
@@ -935,6 +935,11 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
 }
 
 #endif // USE_INTERRUPTS
+
+unsigned int __attribute__ ((noinline)) get_2bytes()
+{
+        return (get_char() << 8) | get_char();
+}
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 {
