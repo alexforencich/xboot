@@ -172,7 +172,7 @@ void SP_WriteUserSignatureRow(void);
  *  \note If the lock bits is set to not allow spm in the application or
  *        application table section the erase is not done.
  */
-void SP_EraseApplicationSections(void);
+void SP_EraseApplicationSection(void);
 
 /*! \brief Erase page at byte address in application or application table section.
  *
