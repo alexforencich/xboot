@@ -291,7 +291,16 @@ int main(void)
                 else if (val == CMD_SET_EXT_ADDRESS)
                 {
                         // Read address high then low
-                        address = (get_char() << 16) | get_2bytes();
+                        //address = ((ADDR_T)get_char() << 16) | get_2bytes();
+                        asm volatile (
+                                "call get_char"    "\n\t"
+                                "mov  %C0,r24"     "\n\t"
+                                "call get_2bytes"  "\n\t"
+                                "clr  %D0"         "\n\t"
+                                : "=r" (address)
+                                :
+                        );
+                        
                         // acknowledge
                         send_char(REPLY_ACK);
                 }
@@ -352,7 +361,6 @@ int main(void)
                 // Read program memory byte
                 else if (val == CMD_READ_BYTE)
                 {
-                        SP_WaitForSPM();
                         send_char(SP_ReadByte((address << 1)+1));
                         send_char(SP_ReadByte((address << 1)+0));
                         
@@ -370,7 +378,6 @@ int main(void)
                 {
                         // get high byte; combine
                         i |= (get_char() << 8);
-                        SP_WaitForSPM();
                         SP_LoadFlashWord((address << 1), i);
                         address++;
                         send_char(REPLY_ACK);
@@ -385,7 +392,6 @@ int main(void)
                         }
                         else
                         {
-                                SP_WaitForSPM();
                                 SP_WriteApplicationPage( address << 1);
                                 send_char(REPLY_ACK);
                         }
@@ -409,14 +415,12 @@ int main(void)
                 // Write lockbits
                 else if (val == CMD_WRITE_LOCK_BITS)
                 {
-                        SP_WaitForSPM();
                         SP_WriteLockBits( get_char() );
                         send_char(REPLY_ACK);
                 }
                 // Read lockbits
                 else if (val == CMD_READ_LOCK_BITS)
                 {
-                        SP_WaitForSPM();
                         send_char(SP_ReadLockBits());
                 }
                 #endif // ENABLE_LOCK_BITS
@@ -424,19 +428,16 @@ int main(void)
                 // Read low fuse bits
                 else if (val == CMD_READ_LOW_FUSE_BITS)
                 {
-                        SP_WaitForSPM();
                         send_char(SP_ReadFuseByte(0));
                 }
                 // Read high fuse bits
                 else if (val == CMD_READ_HIGH_FUSE_BITS)
                 {
-                        SP_WaitForSPM();
                         send_char(SP_ReadFuseByte(1));
                 }
                 // Read extended fuse bits
                 else if (val == CMD_READ_EXT_FUSE_BITS)
                 {
-                        SP_WaitForSPM();
                         send_char(SP_ReadFuseByte(2));
                 }
                 #endif // ENABLE_FUSE_BITS
@@ -948,7 +949,17 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
 
 unsigned int __attribute__ ((noinline)) get_2bytes()
 {
-        return (get_char() << 8) | get_char();
+        // return (get_char() << 8) | get_char();
+        unsigned int result;
+        asm volatile (
+                "call get_char"    "\n\t"
+                "mov  %B0,r24"     "\n\t"
+                "call get_char"    "\n\t"
+                "mov  %A0,r24"     "\n\t"
+                : "=r" (result)
+                :
+        );
+        return result;
 }
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
