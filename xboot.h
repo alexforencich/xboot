@@ -99,6 +99,12 @@
 #define ENTER_BLINK_COUNT       3
 #define ENTER_BLINK_WAIT        30000
 
+// ENTER_UART
+//#define ENTER_UART_NEED_SYNC
+
+// ENTER_FIFO
+//#define ENTER_FIFO_NEED_SYNC
+
 // WATCHDOG
 // Select only one
 //#define WATCHDOG_TIMEOUT        WDT_PER_8CLK_gc

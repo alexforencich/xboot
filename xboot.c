@@ -206,7 +206,11 @@ int main(void)
                 #ifdef USE_ENTER_UART
                 // Check for received character
                 #ifdef __AVR_XMEGA__
+                #ifdef ENTER_UART_NEED_SYNC
+                if (uart_char_received() && (uart_cur_char() == CMD_SYNC))
+                #else
                 if (uart_char_received())
+                #endif
                 {
                         in_bootloader = 1;
                         comm_mode = MODE_UART;
@@ -227,7 +231,11 @@ int main(void)
                 #ifdef USE_ENTER_FIFO
                 // Check for received character
                 #ifdef __AVR_XMEGA__
-                if (fifo_char_received() && (fifo_cur_char() == 0x1b))
+                #ifdef ENTER_FIFO_NEED_SYNC
+                if (fifo_char_received() && (fifo_cur_char() == CMD_SYNC))
+                #else
+                if (fifo_char_received())
+                #endif
                 {
                         in_bootloader = 1;
                         comm_mode = MODE_FIFO;
@@ -674,7 +682,7 @@ autoneg_done:
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         #ifdef USE_ATTACH_LED
         // Disable ATTACH_LED
-        ATTACH_LED_PORT.DIRCLR = (1 << ATTACH_LED_PIN);
+        ATTACH_LED_PORT.DIRSET = (1 << ATTACH_LED_PIN);
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
         
