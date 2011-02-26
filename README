@@ -159,6 +159,11 @@ If this is defined, XBoot will poll for received characters over the UART.
 If one is received, it will enter the bootloader code.  USE_UART must be
 defined.
 
+Options
+
+ENTER_UART_NEED_SYNC requires that the first character received be a SYNC,
+otherwise it's ignored
+
 -- 2.3.4 - USE_ENTER_I2C
 
 If this is defined, XBoot will poll for received characters over the I2C
@@ -170,6 +175,11 @@ must be defined.
 If this is defined, XBoot will poll for received characters over the FIFO
 interface.  If one is received, it will enter the bootloader code. USE_FIFO
 must be defined.
+
+Options
+
+ENTER_FIFO_NEED_SYNC requires that the first character received be a SYNC,
+otherwise it's ignored
 
 --- 2.4 - Bootloader exit options
 
@@ -249,8 +259,6 @@ ATTACH_LED_INV inverts the LED state if nonzero
 
 -- 2.5.6 - USE_FIFO
 
---- 2.6 - General Options
-
 If this is defined, XBoot will configure and use a FIFO for communication.
 
 Options
@@ -262,6 +270,8 @@ FIFO_RD_N_bm    defines the bitmask to reach FIFO RD_N on FIFO_CTL_PORT,  e.g. 1
 FIFO_WR_N_bm    defines the bitmask to reach FIFO WR_N on FIFO_CTL_PORT,  e.g. 1<<0 for PORTB0
 FIFO_BIT_REVERSE If define, if for Layour reasons the databus pins are connected inverted, like
                  ADBUS0<->PORTA7, ADBUS1<->PORTA6, etc
+
+--- 2.6 - General Options
 
 -- 2.6.1 - USE_INTERRUPTS
 
