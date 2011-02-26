@@ -314,6 +314,8 @@ SP_WriteUserSignatureRow:
 
 SP_EraseApplicationSection:
 	in	r19, RAMPZ                 ; Save RAMPZ, which is restored in SP_CommonSPM.
+       clr     r24                        ; Prepare a zero.
+       sts     RAMPZ, r24                 ; Point into Application area.
 	ldi	r20, NVM_CMD_ERASE_APP_gc  ; Prepare NVM command in R20.
 	jmp	SP_CommonSPM               ; Jump to common SPM code.
 
