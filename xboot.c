@@ -307,16 +307,18 @@ int main(void)
                 // Chip erase
                 else if (val == CMD_CHIP_ERASE)
                 {
-                        for (address = 0; address < APP_SECTION_SIZE; address += APP_SECTION_PAGE_SIZE)
+                        // Erase the application section
+                        SP_EraseApplicationSection();
+                        // Wait for completion
+                        #ifdef USE_WATCHDOG
+                        while (NVM_STATUS & NVM_NVMBUSY_bp)
                         {
-                                #ifdef USE_WATCHDOG
+                                // reset watchdog while waiting for erase completion
                                 WDT_Reset();
-                                #endif // USE_WATCHDOG
-                                // wait for SPM instruction to complete
-                                SP_WaitForSPM();
-                                // erase page
-                                SP_EraseApplicationPage(address);
                         }
+                        #else // USE_WATCHDOG
+                        SP_WaitForSPM();
+                        #endif // USE_WATCHDOG
                         
                         // Randomize page buffer
                         EEPROM_LoadPage(&val);
