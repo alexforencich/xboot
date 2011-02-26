@@ -266,29 +266,29 @@ int main(void)
 
                 // Main bootloader parser
                 // check autoincrement status
-                if (val == 'a')
+                if (val == CMD_CHECK_AUTOINCREMENT)
                 {
                         // yes, it is supported
-                        send_char('Y');
+                        send_char(REPLY_YES);
                 }
                 // Set address
-                else if (val == 'A')
+                else if (val == CMD_SET_ADDRESS)
                 {
                         // Read address high then low
                         address = (((ADDR_T)get_char() << 8) | (ADDR_T)get_char()) & 0x0000FFFF;
                         // acknowledge
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Extended address
-                else if (val == 'H')
+                else if (val == CMD_SET_EXT_ADDRESS)
                 {
                         // Read address high then low
                         address = (((ADDR_T)get_char() << 16) | ((ADDR_T)get_char() << 8) | (ADDR_T)get_char()) & 0x00FFFFFF;
                         // acknowledge
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Chip erase
-                else if (val == 'e')
+                else if (val == CMD_CHIP_ERASE)
                 {
                         for (address = 0; address < APP_SECTION_SIZE; address += APP_SECTION_PAGE_SIZE)
                         {
@@ -307,20 +307,20 @@ int main(void)
                         EEPROM_EraseAll();
                         
                         // acknowledge
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 #ifdef ENABLE_BLOCK_SUPPORT
                 // Check block load support
-                else if (val == 'b')
+                else if (val == CMD_CHECK_BLOCK_SUPPORT )
                 {
                         // yes, it is supported
-                        send_char('Y');
+                        send_char(REPLY_YES);
                         // Send block size (page size)
                         send_char((APP_SECTION_PAGE_SIZE >> 8) & 0xFF);
                         send_char(APP_SECTION_PAGE_SIZE & 0xFF);
                 }
                 // Block load
-                else if (val == 'B')
+                else if (val == CMD_BLOCK_LOAD)
                 {
                         // Block size
                         i = (get_char() << 8) | get_char();
@@ -330,7 +330,7 @@ int main(void)
                         send_char(BlockLoad(i, val, &address));
                 }
                 // Block read
-                else if (val == 'g')
+                else if (val == CMD_BLOCK_READ)
                 {
                         // Block size
                         i = (get_char() << 8) | get_char();
@@ -342,7 +342,7 @@ int main(void)
                 #endif // ENABLE_BLOCK_SUPPORT
                 #ifdef ENABLE_FLASH_BYTE_SUPPORT
                 // Read program memory byte
-                else if (val == 'R')
+                else if (val == CMD_READ_BYTE)
                 {
                         SP_WaitForSPM();
                         send_char(SP_ReadByte((address << 1)+1));
@@ -351,47 +351,47 @@ int main(void)
                         address++;
                 }
                 // Write program memory low byte
-                else if (val == 'c')
+                else if (val == CMD_WRITE_LOW_BYTE)
                 {
                         // get low byte
                         i = get_char();
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Write program memory high byte
-                else if (val == 'C')
+                else if (val == CMD_WRITE_HIGH_BYTE)
                 {
                         // get high byte; combine
                         i |= (get_char() << 8);
                         SP_WaitForSPM();
                         SP_LoadFlashWord((address << 1), i);
                         address++;
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Write page
-                else if (val == 'm')
+                else if (val == CMD_WRITE_PAGE)
                 {
                         if (address >= (APP_SECTION_SIZE>>1))
                         {
                                 // don't allow bootloader overwrite
-                                send_char('?');
+                                send_char(REPLY_ERROR);
                         }
                         else
                         {
                                 SP_WaitForSPM();
                                 SP_WriteApplicationPage( address << 1);
-                                send_char('\r');
+                                send_char(REPLY_ACK);
                         }
                 }
                 #endif // ENABLE_FLASH_BYTE_SUPPORT
                 #ifdef ENABLE_EEPROM_BYTE_SUPPORT
                 // Write EEPROM memory
-                else if (val == 'D')
+                else if (val == CMD_WRITE_EEPROM_BYTE)
                 {
                         EEPROM_WriteByte( (unsigned char)(address / EEPROM_PAGE_SIZE), (unsigned char) (address & EEPROM_BYTE_ADDRESS_MASK), get_char() );
                         address++;
                 }
                 // Read EEPROM memory
-                else if (val == 'd')
+                else if (val == CMD_READ_EEPROM_BYTE)
                 {
                         send_char( EEPROM_ReadByte( (unsigned char)(address / EEPROM_PAGE_SIZE), (unsigned char) (address & EEPROM_BYTE_ADDRESS_MASK) ) );
                         address++;
@@ -399,14 +399,14 @@ int main(void)
                 #endif // ENABLE_EEPROM_BYTE_SUPPORT
                 #ifdef ENABLE_LOCK_BITS
                 // Write lockbits
-                else if (val == 'l')
+                else if (val == CMD_WRITE_LOCK_BITS)
                 {
                         SP_WaitForSPM();
                         SP_WriteLockBits( get_char() );
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Read lockbits
-                else if (val == 'r')
+                else if (val == CMD_READ_LOCK_BITS)
                 {
                         SP_WaitForSPM();
                         send_char(SP_ReadLockBits());
@@ -414,44 +414,44 @@ int main(void)
                 #endif // ENABLE_LOCK_BITS
                 #ifdef ENABLE_FUSE_BITS
                 // Read low fuse bits
-                else if (val == 'F')
+                else if (val == CMD_READ_LOW_FUSE_BITS)
                 {
                         SP_WaitForSPM();
                         send_char(SP_ReadFuseByte(0));
                 }
                 // Read high fuse bits
-                else if (val == 'N')
+                else if (val == CMD_READ_HIGH_FUSE_BITS)
                 {
                         SP_WaitForSPM();
                         send_char(SP_ReadFuseByte(1));
                 }
                 // Read extended fuse bits
-                else if (val == 'Q')
+                else if (val == CMD_READ_EXT_FUSE_BITS)
                 {
                         SP_WaitForSPM();
                         send_char(SP_ReadFuseByte(2));
                 }
                 #endif // ENABLE_FUSE_BITS
                 // Enter and leave programming mode
-                else if ((val == 'P') || (val == 'L'))
+                else if ((val == CMD_ENTER_PROG_MODE) || (val == CMD_LEAVE_PROG_MODE))
                 {
                         // just acknowledge
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Exit bootloader
-                else if (val == 'E')
+                else if (val == CMD_EXIT_BOOTLOADER)
                 {
                         in_bootloader = 0;
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Get programmer type
-                else if (val == 'p')
+                else if (val == CMD_PROGRAMMER_TYPE)
                 {
                         // serial
                         send_char('S');
                 }
                 // Return supported device codes
-                else if (val == 't')
+                else if (val == CMD_DEVICE_CODE)
                 {
                         // send only this device
                         send_char(123); // TODO
@@ -459,14 +459,14 @@ int main(void)
                         send_char(0);
                 }
                 // Set LED, clear LED, and set device type
-                else if ((val == 'x') || (val == 'y') || (val == 'T'))
+                else if ((val == CMD_SET_LED) || (val == CMD_CLEAR_LED) || (val == CMD_SET_TYPE))
                 {
                         // discard parameter
                         get_char();
-                        send_char('\r');
+                        send_char(REPLY_ACK);
                 }
                 // Return program identifier
-                else if (val == 'S')
+                else if (val == CMD_PROGRAM_ID)
                 {
                         send_char('X');
                         send_char('B');
@@ -477,13 +477,13 @@ int main(void)
                         send_char('+');
                 }
                 // Read software version
-                else if (val == 'V')
+                else if (val == CMD_VERSION)
                 {
                         send_char('1');
                         send_char('6');
                 }
                 // Read signature bytes
-                else if (val == 's')
+                else if (val == CMD_READ_SIGNATURE)
                 {
                         send_char(SIGNATURE_2);
                         send_char(SIGNATURE_1);
@@ -492,7 +492,7 @@ int main(void)
                 #ifdef USE_I2C
                 #ifdef USE_I2C_ADDRESS_NEGOTIATION
                 // Enter autonegotiate mode
-                else if (val == '@')
+                else if (val == CMD_AUTONEG_START)
                 {
                         // The address autonegotiation protocol is borrowed from the
                         // OneWire address detection method.  The algorthim Utilizes
@@ -532,7 +532,7 @@ int main(void)
                                                 // so it's OK to block)
                                                 val = get_char();
                                                 // Is this an address byte for me?
-                                                if (val == '#')
+                                                if (val == CMD_AUTONEG_DONE)
                                                 {
                                                         // If so, we're now attached, so light
                                                         // the LED and update the I2C bus
@@ -563,7 +563,7 @@ int main(void)
                                                         goto autoneg_done;
                                                 }
                                                 // Check for sync command
-                                                else if (val == 0x1b)
+                                                else if (val == CMD_SYNC)
                                                 {
                                                         // break out to main bootloader on sync
                                                         goto autoneg_done;
@@ -618,7 +618,7 @@ autoneg_done:
                         #endif
                 }
                 // out-of-order autonegotiate address message
-                else if (val == '#')
+                else if (val == CMD_AUTONEG_DONE)
                 {
                         // ignore it
                         // (blocking to send a ? will cause trouble)
@@ -627,9 +627,9 @@ autoneg_done:
                 #endif // USE_I2C
                 // ESC (0x1b) to sync
                 // otherwise, error
-                else if (val != 0x1b)
+                else if (val != CMD_SYNC)
                 {
-                        send_char('?');
+                        send_char(REPLY_ERROR);
                 }
         }
         
@@ -838,7 +838,7 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                                         first_byte = 0;
                                         // Wants data, but there is no data to send...
                                         // also include NAK
-                                        i2c_send_char('?');
+                                        i2c_send_char(REPLY_ERROR);
                                         i2c_send_nak();
                                 }
                         }
@@ -946,7 +946,7 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 	#endif // USE_WATCHDOG
 
         // EEPROM memory type.
-        if(mem == 'E')
+        if(mem == MEM_EEPROM)
         {
                 unsigned char pageAddr, byteAddr, value;
                 unsigned char buffer[APP_SECTION_PAGE_SIZE];
@@ -973,11 +973,11 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                         (*address)++; // Select next EEPROM byte
                 }
                 
-                return '\r'; // Report programming OK
+                return REPLY_ACK; // Report programming OK
         } 
         
         // Flash memory type
-        else if (mem == 'F' || mem == 'U')
+        else if (mem == MEM_FLASH || mem == MEM_USERSIG)
         {
                 // NOTE: For flash programming, 'address' is given in words.
                 (*address) <<= 1; // Convert address to bytes temporarily.
@@ -992,11 +992,11 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                         size -= 2; // Reduce number of bytes to write by two.
                 } while(size); // Loop until all bytes written.
                 
-                if (mem == 'F')
+                if (mem == MEM_FLASH)
                 {
                         SP_WriteApplicationPage(tempaddress);
                 }
-                else if (mem == 'U')
+                else if (mem == MEM_USERSIG)
                 {
                         SP_EraseUserSignatureRow();
                         SP_WaitForSPM();
@@ -1006,13 +1006,13 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                 SP_WaitForSPM();
                 
                 (*address) >>= 1; // Convert address back to Flash words again.
-                return '\r'; // Report programming OK
+                return REPLY_ACK; // Report programming OK
         }
 
         // Invalid memory type?
         else
         {
-                return '?';
+                return REPLY_ERROR;
         }
 }
 
@@ -1022,7 +1022,7 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
 {
         // EEPROM memory type.
         
-        if (mem == 'E') // Read EEPROM
+        if (mem == MEM_EEPROM) // Read EEPROM
         {
                 unsigned char byteAddr, pageAddr;
                 
@@ -1042,23 +1042,23 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
         }
         
         // Flash memory type.
-        else if (mem == 'F' || mem == 'U' || mem == 'P')
+        else if (mem == MEM_FLASH || mem == MEM_USERSIG || mem == MEM_PRODSIG)
         {
                 (*address) <<= 1; // Convert address to bytes temporarily.
                 
                 do
                 {
-                        if (mem == 'F')
+                        if (mem == MEM_FLASH)
                         {
                                 send_char( SP_ReadByte( *address) );
                                 send_char( SP_ReadByte( (*address)+1) );
                         }
-                        else if (mem == 'U')
+                        else if (mem == MEM_USERSIG)
                         {
                                 send_char( SP_ReadUserSignatureByte( *address) );
                                 send_char( SP_ReadUserSignatureByte( (*address)+1) );
                         }
-                        else if (mem == 'P')
+                        else if (mem == MEM_PRODSIG)
                         {
                                 send_char( SP_ReadCalibrationByte( *address) );
                                 send_char( SP_ReadCalibrationByte( (*address)+1) );

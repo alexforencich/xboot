@@ -2,6 +2,7 @@
 *.hex
 *.lst
 *.o
+*.swp
 .dep
 xboot.eep
 xboot.elf
