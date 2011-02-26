@@ -132,8 +132,8 @@ int main(void)
         #if ENTER_PIN_PUEN
         // Enable bootloader entry pin pullup
         ENTER_PIN_CTRL = 0x18;
-        #endif
-        #endif
+        #endif // ENTER_PIN_PUEN
+        #endif // USE_ENTER_PIN
         
         #ifdef USE_UART
         // Initialize UART
@@ -208,9 +208,9 @@ int main(void)
                 #ifdef __AVR_XMEGA__
                 #ifdef ENTER_UART_NEED_SYNC
                 if (uart_char_received() && (uart_cur_char() == CMD_SYNC))
-                #else
+                #else // ENTER_UART_NEED_SYNC
                 if (uart_char_received())
-                #endif
+                #endif // ENTER_UART_NEED_SYNC
                 {
                         in_bootloader = 1;
                         comm_mode = MODE_UART;
@@ -233,9 +233,9 @@ int main(void)
                 #ifdef __AVR_XMEGA__
                 #ifdef ENTER_FIFO_NEED_SYNC
                 if (fifo_char_received() && (fifo_cur_char() == CMD_SYNC))
-                #else
+                #else // ENTER_FIFO_NEED_SYNC
                 if (fifo_char_received())
-                #endif
+                #endif // ENTER_FIFO_NEED_SYNC
                 {
                         in_bootloader = 1;
                         comm_mode = MODE_FIFO;
@@ -247,9 +247,9 @@ int main(void)
                 // --------------------------------------------------
                 // End main trigger section
                 
-        #ifdef USE_ENTER_DELAY
+#ifdef USE_ENTER_DELAY
         }
-        #endif // USE_ENTER_DELAY
+#endif // USE_ENTER_DELAY
         
         #ifdef USE_INTERRUPTS
         // Enable interrupts
@@ -623,7 +623,7 @@ autoneg_done:
                         // an asm nop, a continue, or a bare semicolon
                         i = 0;
                         
-                        #endif
+                        #endif // __AVR_XMEGA__
                 }
                 // out-of-order autonegotiate address message
                 else if (val == CMD_AUTONEG_DONE)
@@ -639,15 +639,17 @@ autoneg_done:
                 {
                         send_char(REPLY_ERROR);
                 }
+                
+                // Wait for any lingering SPM instructions to finish
+                SP_WaitForSPM();
+                
+                // End of bootloader main loop
         }
         
         #ifdef NEED_INTERRUPTS
         // Disable interrupts
         cli();
         #endif // NEED_INTERRUPTS
-        
-        // Wait for any lingering SPM instructions to finish
-        SP_WaitForSPM();
         
         // Bootloader exit section
         // Code here runs after the bootloader has exited,
