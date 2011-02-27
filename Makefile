@@ -53,17 +53,19 @@
 ## MCU = atxmega256a1
 ## MCU = atxmega256a3
 ## MCU = atxmega256a3b
-#MCU = atxmega64a3
-#MCU = atxmega128a1
-MCU = atxmega32a4
+MCU = atxmega64a3
 
 # Is this a bootloader?
 #MAKE_BOOTLOADER=no
 MAKE_BOOTLOADER=yes
 
 # Only program boot section
-# This will relocate the program to address 0
-# and program it to the boot section directly
+# (XMega only)
+# This will create a target-boot.hex file with the program relocated to
+# address 0 and then program the file directly to the boot section.  It
+# is faster than programming the entire application section with
+# nothing and has the added advantage of leaving the application
+# section in tact
 # Note: ignored if MAKE_BOOTLOADER is not set
 PROG_BOOT_ONLY=yes
 
@@ -102,6 +104,7 @@ SRC += watchdog.c
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
 ASRC = sp_driver.S
+# ASRC += ...
 
 # Optimization level, can be [0, 1, 2, 3, s].
 # 0 = turn off optimization. s = optimize for size.
@@ -213,13 +216,17 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 AVRDUDE_PROGRAMMER = jtag2pdi
 #AVRDUDE_PROGRAMMER = avr109
 
+# Port
 # com1 = serial port. Use lpt1 to connect to parallel port.
+# Use usb for usb devices
+# For *nix, need device path (/dev/ttyUSBn, /dev/ttySn)
 AVRDUDE_PORT = usb
 #AVRDUDE_PORT = /dev/ttyUSB0
 
-# baud rate
+# BAUD Rate
 #AVRDUDE_BAUD = 19200
 
+# Sections to write
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
@@ -243,23 +250,72 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 # It seems that at least the avrdragon_jtag (and probably other types) 
 # don't do so(Feb 11)
 # In that case, erase the chip before flashing
-AVRDUDE_CHIP_ERASE = -e
+# Force chip erase
+#AVRDUDE_CHIP_ERASE = -e
+# Disable automatic chip erase
+#AVRDUDE_CHIP_ERASE = -D
 
-# Write fuse and lock bits
-AVRDUDE_FUSES = 
-#AVRDUDE_FUSES += -U fuse0:w:0x00:m # JTAG ID
-#AVRDUDE_FUSES += -U fuse1:w:0x00:m # Watchdog
-#AVRDUDE_FUSES += -U fuse2:w:0xFF:m # Reset
-AVRDUDE_FUSES += -U fuse2:w:0xBF:m # Reset (Bootloader)
-#AVRDUDE_FUSES += -U fuse4:w:0xFE:m # Start-up config
+# Fuses and Lock Bits
+# See XMega A series datasheet (Atmel doc8077) section 4.16
+AVRDUDE_FUSES =
+
+# Resest Configuration (for fuse byte 2)
+# If a custom configuration is needed, please
+# override farther down in the fuse byte 2 section
+ifeq ($(MAKE_BOOTLOADER), yes)
+# Reset (Bootloader)
+AVRDUDE_FUSES_RESET_CONFIG = -U fuse2:w:0xBF:m
+else
+# Reset (Regular)
+AVRDUDE_FUSES_RESET_CONFIG = -U fuse2:w:0xFF:m
+endif
+
+# Fuse byte 0: JTAG User ID
+# If a custom JTAG User ID is required, uncomment
+# and set it here
+#AVRDUDE_FUSES += -U fuse0:w:0x00:m
+
+# Fuse byte 1: Watchdog
+# Set WDPER and WDWPER
+# See datasheet sections 4.16.2, 11.7.1, and 11.7.2
+# for more information
+#AVRDUDE_FUSES += -U fuse1:w:0x00:m
+
+# Fuse byte 2: Reset configuration
+# Spike detector, reset vector location, and BOD
+# in power down configuration
+# See datasheet section 4.16.3 for more information
+# If a custom configuration is needed, please
+# override it here
+AVRDUDE_FUSES += $(AVRDUDE_FUSES_RESET_CONFIG)
+
+# There is no fuse byte 3.....
+
+# Fuse byte 4: Start-up configuration
+# See datasheet section 4.16.4
+# Configures external reset disable, start-up time,
+# watchdog timer lock, and jtag enable
+#AVRDUDE_FUSES += -U fuse4:w:0xFE:m
+
+# Fuse byte 5
+# See datasheet section 4.16.5
+# Configures BOD operation in active mode,
+# EEPROM preserved through chip erase, and
+# BOD detection leven
 #AVRDUDE_FUSES += -U fuse5:w:0xFF:m # Fuse byte 5
+
+# Lock byte
+# See datasheet section 4.16.6
+# Lock bits for boot loader, application,
+# and application table sections via internal
+# SPM commands and external programming interface
 #AVRDUDE_FUSES += -U lock:w:0xFF:m # Lock byte
 
-
 # Write user sig row (256 bytes max)
+# Uncomment to initialize user sig row with custom data
 ##AVRDUDE_USERSIG = -U usersig:w:0x01,0x02,0x03:m
 ##AVRDUDE_USERSIG = -U usersig:w:filename
-# AVRDUDE_USERSIG = -U usersig:w:...:m
+#AVRDUDE_USERSIG = -U usersig:w:...:m
 
 AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 ifdef AVRDUDE_BAUD
@@ -408,7 +464,7 @@ all: begin gccversion sizebefore build sizeafter finished end
 build: elf hex eep lss sym
 
 elf: $(TARGET).elf
-hex: $(TARGET).hex
+hex: $(TARGET).hex $(BOOT_TARGET)
 eep: $(TARGET).eep
 lss: $(TARGET).lss
 sym: $(TARGET).sym
