@@ -302,14 +302,14 @@ AVRDUDE_FUSES += $(AVRDUDE_FUSES_RESET_CONFIG)
 # Configures BOD operation in active mode,
 # EEPROM preserved through chip erase, and
 # BOD detection leven
-#AVRDUDE_FUSES += -U fuse5:w:0xFF:m # Fuse byte 5
+#AVRDUDE_FUSES += -U fuse5:w:0xFF:m
 
 # Lock byte
 # See datasheet section 4.16.6
 # Lock bits for boot loader, application,
 # and application table sections via internal
 # SPM commands and external programming interface
-#AVRDUDE_FUSES += -U lock:w:0xFF:m # Lock byte
+#AVRDUDE_FUSES += -U lock:w:0xFF:m
 
 # Write user sig row (256 bytes max)
 # Uncomment to initialize user sig row with custom data
