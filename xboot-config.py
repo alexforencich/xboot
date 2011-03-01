@@ -447,6 +447,15 @@ f.write('\r\n\r\n#endif // __XBOOT_H\r\n\r\n')
 
 f.close()
 
+# Check to see if xboot.h exists.  If it does, move it and timestamp it so we don't overwrite it.
+if os.path.isfile("xboot-config.mk"):
+	shutil.move("xboot-config.mk", "xboot-config_" + string.replace(string.replace(str(datetime.datetime.now())[:19], ":", "_"), " ", "_") + ".mk")
+
+f = open("xboot-config.mk", 'w')
+f.write('MCU = ' + mcu + '\r\n\r\n')
+f.write('F_CPU = ' + f_cpu.replace('L','') + '\r\n')
+f.close()
+
 print "A new xboot.h file has been generated for you.  The next steps are:"
 print ">: make clean"
 print ">: make"
