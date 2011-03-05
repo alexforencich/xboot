@@ -140,7 +140,7 @@
 #define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
 #define UART_DEVICE_TXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
 
-//FIFO
+// FIFO
 #define FIFO_DATA_PORT  PORTC
 #define FIFO_CTL_PORT   PORTD
 #define FIFO_RXF_N_bm   1<<3
