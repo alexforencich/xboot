@@ -1022,7 +1022,11 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                 
                 if (mem == MEM_FLASH)
                 {
+                        #ifdef ENABLE_FLASH_ERASE_WRITE
+                        SP_EraseWriteApplicationPage(tempaddress);
+                        #else
                         SP_WriteApplicationPage(tempaddress);
+                        #endif
                 }
                 else if (mem == MEM_USERSIG)
                 {
