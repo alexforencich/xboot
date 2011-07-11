@@ -143,14 +143,19 @@ CINCS =
 #  -Wall...:     warning level
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
-CFLAGS = -g$(DEBUG)
-CFLAGS += $(CDEFS) $(CINCS)
-CFLAGS += -O$(OPT)
-CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
-CFLAGS += -Wall -Wstrict-prototypes
-CFLAGS += -Wa,-adhlns=$(basename $<).lst
-CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
+COMMON_FLAGS = -g$(DEBUG)
+COMMON_FLAGS += $(CDEFS) $(CINCS)
+COMMON_FLAGS += -O$(OPT)
+COMMON_FLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+COMMON_FLAGS += -Wall
+COMMON_FLAGS += -Wa,-adhlns=$(basename $<).lst
+COMMON_FLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
+
+CFLAGS = $(COMMON_FLAGS)
+CFLAGS += -Wstrict-prototypes
 CFLAGS += $(CSTANDARD)
+
+CPPFLAGS = $(COMMON_FLAGS)
 
 
 
@@ -396,6 +401,7 @@ endif
 #SHELL = $(DIRAVRUTILS)/sh
 #NM = $(DIRAVRBIN)/avr-nm
 #CC = $(DIRAVRBIN)/avr-gcc
+#CPP = $(DIRAVRBIN)/avr-g++
 #OBJCOPY = $(DIRAVRBIN)/avr-objcopy
 #OBJDUMP= $(DIRAVRBIN)/avr-objdump
 #SIZE = $(DIRAVRBIN)/avr-size
@@ -406,6 +412,7 @@ endif
 # Define programs and commands.
 SHELL = sh
 CC = avr-gcc
+CPP = avr-g++
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
 SIZE = avr-size
@@ -452,6 +459,7 @@ GENDEPFLAGS = -MD -MP -MF .dep/$(@F).d
 # Combine all necessary flags and optional flags.
 # Add target processor to flags.
 ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS) $(GENDEPFLAGS) $(DEFINES)
+ALL_CPPFLAGS = -mmcu=$(MCU) -I. $(CPPFLAGS) $(GENDEPFLAGS) $(DEFINES)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS) $(DEFINES)
 
 
@@ -578,9 +586,21 @@ extcoff: $(TARGET).elf
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 
+# Compile: create object files from C++ source files.
+%.o : %.cpp
+	@echo
+	@echo $(MSG_COMPILING) $<
+	$(CPP) -c $(ALL_CPPFLAGS) $< -o $@
+
+
 # Compile: create assembler files from C source files.
 %.s : %.c
 	$(CC) -S $(ALL_CFLAGS) $< -o $@
+
+
+# Compile: create assembler files from C++ source files.
+%.s : %.cpp
+	$(CPP) -S $(ALL_CPPFLAGS) $< -o $@
 
 
 # Assemble: create object files from assembler source files.
