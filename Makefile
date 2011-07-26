@@ -155,7 +155,7 @@ CFLAGS = $(COMMON_FLAGS)
 CFLAGS += -Wstrict-prototypes
 CFLAGS += $(CSTANDARD)
 
-CPPFLAGS = $(COMMON_FLAGS)
+CXXFLAGS = $(COMMON_FLAGS)
 
 
 
@@ -401,7 +401,7 @@ endif
 #SHELL = $(DIRAVRUTILS)/sh
 #NM = $(DIRAVRBIN)/avr-nm
 #CC = $(DIRAVRBIN)/avr-gcc
-#CPP = $(DIRAVRBIN)/avr-g++
+#CXX = $(DIRAVRBIN)/avr-g++
 #OBJCOPY = $(DIRAVRBIN)/avr-objcopy
 #OBJDUMP= $(DIRAVRBIN)/avr-objdump
 #SIZE = $(DIRAVRBIN)/avr-size
@@ -412,7 +412,7 @@ endif
 # Define programs and commands.
 SHELL = sh
 CC = avr-gcc
-CPP = avr-g++
+CXX = avr-g++
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
 SIZE = avr-size
@@ -459,7 +459,7 @@ GENDEPFLAGS = -MD -MP -MF .dep/$(@F).d
 # Combine all necessary flags and optional flags.
 # Add target processor to flags.
 ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS) $(GENDEPFLAGS) $(DEFINES)
-ALL_CPPFLAGS = -mmcu=$(MCU) -I. $(CPPFLAGS) $(GENDEPFLAGS) $(DEFINES)
+ALL_CXXFLAGS = -mmcu=$(MCU) -I. $(CXXFLAGS) $(GENDEPFLAGS) $(DEFINES)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS) $(DEFINES)
 
 
@@ -590,7 +590,7 @@ extcoff: $(TARGET).elf
 %.o : %.cpp
 	@echo
 	@echo $(MSG_COMPILING) $<
-	$(CPP) -c $(ALL_CPPFLAGS) $< -o $@
+	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
 
 
 # Compile: create assembler files from C source files.
@@ -600,7 +600,7 @@ extcoff: $(TARGET).elf
 
 # Compile: create assembler files from C++ source files.
 %.s : %.cpp
-	$(CPP) -S $(ALL_CPPFLAGS) $< -o $@
+	$(CXX) -S $(ALL_CXXFLAGS) $< -o $@
 
 
 # Assemble: create object files from assembler source files.
