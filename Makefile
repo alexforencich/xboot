@@ -53,6 +53,7 @@
 ## MCU = atxmega256a1
 ## MCU = atxmega256a3
 ## MCU = atxmega256a3b
+## MCU = atxmega16d4
 MCU = atxmega64a3
 
 # Is this a bootloader?
@@ -341,7 +342,7 @@ endif
 # ---------------------------------------------------------------------------
 
 # Processor definitions
-ifeq ($(MCU), atxmega16a4)
+ifeq ($(MCU), $(filter $(MCU), atxmega16a4 atxmega16d4))
   BOOT_SECTION_START		=0x004000
 endif
 ifeq ($(MCU), atxmega32a4)
