@@ -53,7 +53,15 @@
 ## MCU = atxmega256a1
 ## MCU = atxmega256a3
 ## MCU = atxmega256a3b
-MCU = atxmega64a3
+## MCU = atxmega16d4
+## MCU = atxmega32d4
+## MCU = atxmega64d3
+## MCU = atxmega64d4
+## MCU = atxmega128d3
+## MCU = atxmega128d4
+## MCU = atxmega192d3
+## MCU = atxmega256d3
+MCU = atxmega32a4
 
 # Is this a bootloader?
 #MAKE_BOOTLOADER=no
@@ -341,43 +349,22 @@ endif
 # ---------------------------------------------------------------------------
 
 # Processor definitions
-ifeq ($(MCU), atxmega16a4)
+ifneq ($(filter $(MCU), atxmega16a4 atxmega16d4),)
   BOOT_SECTION_START		=0x004000
 endif
-ifeq ($(MCU), atxmega32a4)
+ifneq ($(filter $(MCU), atxmega32a4 atxmega32d4),)
   BOOT_SECTION_START		=0x008000
 endif
-ifeq ($(MCU), atxmega64a1)
+ifneq ($(filter $(MCU), atxmega64a1 atxmega64a3 atxmega64a4 atxmega64d3 atxmega64d4),)
   BOOT_SECTION_START		=0x010000
 endif
-ifeq ($(MCU), atxmega64a3)
-  BOOT_SECTION_START		=0x010000
-endif
-ifeq ($(MCU), atxmega64a4)
-  BOOT_SECTION_START		=0x010000
-endif
-ifeq ($(MCU), atxmega128a1)
+ifneq ($(filter $(MCU), atxmega128a1 atxmega128a3 atxmega128a4 atxmega128d3 atxmega128d4),)
   BOOT_SECTION_START		=0x020000
 endif
-ifeq ($(MCU), atxmega128a3)
-  BOOT_SECTION_START		=0x020000
-endif
-ifeq ($(MCU), atxmega128a4)
-  BOOT_SECTION_START		=0x020000
-endif
-ifeq ($(MCU), atxmega192a1)
+ifneq ($(filter $(MCU), atxmega192a1 atxmega192a3 atxmega192d3),)
   BOOT_SECTION_START		=0x030000
 endif
-ifeq ($(MCU), atxmega192a3)
-  BOOT_SECTION_START		=0x030000
-endif
-ifeq ($(MCU), atxmega256a1)
-  BOOT_SECTION_START		=0x040000
-endif
-ifeq ($(MCU), atxmega256a3)
-  BOOT_SECTION_START		=0x040000
-endif
-ifeq ($(MCU), atxmega256a3b)
+ifneq ($(filter $(MCU), atxmega256a1 atxmega256a3 atxmega256a3b atxmega256d3),)
   BOOT_SECTION_START		=0x040000
 endif
 

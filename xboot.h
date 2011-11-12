@@ -126,9 +126,9 @@
 #define LED_INV                 1
 
 // UART
-#define UART_BAUD_RATE                  19200
-#define UART_PORT_NAME                  D
-#define UART_NUMBER                     1
+#define UART_BAUD_RATE                  115200
+#define UART_PORT_NAME                  C
+#define UART_NUMBER                     0
 #if (UART_NUMBER == 0)
 #define UART_TX_PIN                     3
 #else
@@ -206,7 +206,7 @@
 // I2C
 #ifdef __AVR_XMEGA__
 
-#define I2C_DEVICE_PORT                 E
+#define I2C_DEVICE_PORT                 C
 #define I2C_DEVICE                      token_paste2(TWI, I2C_DEVICE_PORT)
 #define I2C_DEVICE_ISR                  token_paste3(TWI, I2C_DEVICE_PORT, _TWIS_vect)
 
