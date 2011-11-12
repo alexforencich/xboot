@@ -1,7 +1,10 @@
 XBoot Readme
 
-See the Google Code wiki for the latest version of this document:
-http://code.google.com/p/avr-xboot/wiki/Documentation
+See the XBoot wiki for the latest version of this information:
+http://alexforencich.com/wiki/en/xboot/
+
+Also, please check the git repository on github:
+https://github.com/alexforencich/xboot
 
 Table of Contents
 
@@ -217,6 +220,17 @@ UART_BSCALE_VALUE defines the value of BSCALE, e.g. 0
 There is a calculation included in the header file for automatically generating
 BAUD rates, but it is preferred to use a predefined set of parameters that is
 known good at the specified frequency.]
+
+-- 2.5.2 - USE_UART_EN_PIN
+
+If this is defined along with USE_UART, XBoot will configure and use a transmit
+enable pin.  This allows configuration over a half-duplex RS485 connection.
+
+Options
+
+UART_EN_PORT defines the port, e.g. PORTC
+UART_EN_PIN defines the pin, e.g. 4
+UART_EN_INV inverts the EN pin output state if nonzero
 
 -- 2.5.3 - USE_I2C
 

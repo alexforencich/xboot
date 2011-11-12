@@ -138,6 +138,16 @@ int main(void)
         #ifdef USE_UART
         // Initialize UART
         uart_init();
+        
+        // Initialize UART EN pin
+        #ifdef USE_UART_EN_PIN
+        UART_EN_PORT.DIRSET = (1 << UART_EN_PIN);
+        #if UART_EN_INV
+        UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
+        #else // UART_PIN_INV
+        UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
+        #endif // UART_PIN_INV
+        #endif // USE_UART_EN_PIN
         #endif // USE_UART
         
         #ifdef USE_I2C
@@ -672,6 +682,11 @@ autoneg_done:
         #ifdef USE_UART
         // Shut down UART
         uart_deinit();
+        
+        // Shut down UART EN pin
+        #ifdef USE_UART_EN_PIN
+        UART_EN_PORT.DIRCLR = (1 << UART_EN_PIN);
+        #endif // USE_UART_EN_PIN
         #endif // USE_UART
         
         #ifdef LOCK_SPM_ON_EXIT
@@ -782,7 +797,21 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                         #ifdef USE_UART
                         if (comm_mode == MODE_UART)
                         {
+                                #ifdef USE_UART_EN_PIN
+                                #if UART_EN_INV
+                                UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
+                                #else // UART_PIN_INV
+                                UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
+                                #endif // UART_PIN_INV
+                                #endif // USE_UART_EN_PIN
                                 uart_send_char(c);
+                                #ifdef USE_UART_EN_PIN
+                                #if UART_EN_INV
+                                UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
+                                #else // UART_PIN_INV
+                                UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
+                                #endif // UART_PIN_INV
+                                #endif // USE_UART_EN_PIN
                         }
                         #endif // USE_UART
                         #ifdef USE_FIFO

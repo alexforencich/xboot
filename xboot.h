@@ -72,6 +72,7 @@
 // bootloader communication
 #define USE_LED
 #define USE_UART
+//#define USE_UART_EN_PIN
 //#define USE_I2C
 //#define USE_I2C_ADDRESS_NEGOTIATION
 //#define USE_ATTACH_LED
@@ -140,6 +141,11 @@
 #define UART_DEVICE_RXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
 #define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
 #define UART_DEVICE_TXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
+
+// UART RS485 Enable Output
+#define UART_EN_PORT            PORTC
+#define UART_EN_PIN             4
+#define UART_EN_PIN_INV         0
 
 // FIFO
 #define FIFO_DATA_PORT  PORTC
