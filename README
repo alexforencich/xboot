@@ -221,7 +221,7 @@ There is a calculation included in the header file for automatically generating
 BAUD rates, but it is preferred to use a predefined set of parameters that is
 known good at the specified frequency.]
 
--- 2.5.2 - USE_UART_EN_PIN
+-- 2.5.3 - USE_UART_EN_PIN
 
 If this is defined along with USE_UART, XBoot will configure and use a transmit
 enable pin.  This allows configuration over a half-duplex RS485 connection.
@@ -232,7 +232,7 @@ UART_EN_PORT defines the port, e.g. PORTC
 UART_EN_PIN defines the pin, e.g. 4
 UART_EN_INV inverts the EN pin output state if nonzero
 
--- 2.5.3 - USE_I2C
+-- 2.5.4 - USE_I2C
 
 If this is defined, XBoot will configure and use an I2C/TWI controller in
 slave mode for communication.
@@ -246,7 +246,7 @@ I2C_MATCH_ANY will enable the I2C controller promiscuous mode (match any
 I2C_ADDRESS defines the default I2C address 0x10
 I2C_GC_ENABLE enables the I2C bus general call capability (address 0) if nonzero
 
--- 2.5.4 - USE_I2C_ADDRESS_NEGOTIATION
+-- 2.5.5 - USE_I2C_ADDRESS_NEGOTIATION
 
 Enables I2C address autonegotiation if defined.  Requires USE_I2C.  
 
@@ -260,7 +260,7 @@ I2C_AUTONEG_PORT defines the port in which the autonegotiation pin is located,
   e.g. PORTA
 I2C_AUTONEG_PIN defines the pin, e.g. 2
 
--- 2.5.5 - USE_ATTACH_LED
+-- 2.5.6 - USE_ATTACH_LED
 
 Enables the autonegotiation code to turn on a light when a new I2C address is
 received.
@@ -271,7 +271,7 @@ ATTACH_LED_PORT defines the port, e.g. PORTA
 ATTACH_LED_PIN defines the pin, e.g. 1
 ATTACH_LED_INV inverts the LED state if nonzero
 
--- 2.5.6 - USE_FIFO
+-- 2.5.7 - USE_FIFO
 
 If this is defined, XBoot will configure and use a FIFO for communication.
 
