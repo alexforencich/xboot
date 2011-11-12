@@ -61,6 +61,19 @@
 ## MCU = atxmega128d4
 ## MCU = atxmega192d3
 ## MCU = atxmega256d3
+## MCU = atxmega16a4u
+## MCU = atxmega32a4u
+## MCU = atxmega64a3u
+## MCU = atxmega64a4u
+## MCU = atxmega128a3u
+## MCU = atxmega128a4u
+## MCU = atxmega192a3u
+## MCU = atxmega256a3u
+## MCU = atxmega256a3bu
+## MCU = atxmega64b1
+## MCU = atxmega64b3
+## MCU = atxmega128b1
+## MCU = atxmega128b3
 MCU = atxmega32a4
 
 # Is this a bootloader?
@@ -351,22 +364,23 @@ endif
 # ---------------------------------------------------------------------------
 
 # Processor definitions
-ifneq ($(filter $(MCU), atxmega16a4 atxmega16d4),)
+MCU_S = $(subst atxmega,x,$(MCU))
+ifneq ($(filter $(MCU_S), x16a4 x16d4 x16a4u),)
   BOOT_SECTION_START		=0x004000
 endif
-ifneq ($(filter $(MCU), atxmega32a4 atxmega32d4),)
+ifneq ($(filter $(MCU_S), x32a4 x32d4 x32a4u),)
   BOOT_SECTION_START		=0x008000
 endif
-ifneq ($(filter $(MCU), atxmega64a1 atxmega64a3 atxmega64a4 atxmega64d3 atxmega64d4),)
+ifneq ($(filter $(MCU_S), x64a1 x64a3 x64a4 x64d3 x64d4 x64a3u x64a4u x64b1 x64b3),)
   BOOT_SECTION_START		=0x010000
 endif
-ifneq ($(filter $(MCU), atxmega128a1 atxmega128a3 atxmega128a4 atxmega128d3 atxmega128d4),)
+ifneq ($(filter $(MCU_S), x128a1 x128a3 x128a4 x128d3 x128d4 x128a3u x128a4u x128b1 x128b3),)
   BOOT_SECTION_START		=0x020000
 endif
-ifneq ($(filter $(MCU), atxmega192a1 atxmega192a3 atxmega192d3),)
+ifneq ($(filter $(MCU_S), x192a1 x192a3 x192d3 x192a3u),)
   BOOT_SECTION_START		=0x030000
 endif
-ifneq ($(filter $(MCU), atxmega256a1 atxmega256a3 atxmega256a3b atxmega256d3),)
+ifneq ($(filter $(MCU_S), x256a1 x256a3 x256a3b x256d3 x256a3u x256a3bu),)
   BOOT_SECTION_START		=0x040000
 endif
 
