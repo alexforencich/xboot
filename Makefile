@@ -155,6 +155,7 @@ COMMON_FLAGS = -g$(DEBUG)
 COMMON_FLAGS += $(CDEFS) $(CINCS)
 COMMON_FLAGS += -O$(OPT)
 COMMON_FLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+COMMON_FLAGS += -ffunction-sections -fdata-sections
 COMMON_FLAGS += -Wall
 COMMON_FLAGS += -Wa,-adhlns=$(basename $<).lst
 COMMON_FLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
@@ -215,6 +216,7 @@ EXTMEMOPTS =
 #    -Map:      create map file
 #    --cref:    add cross reference to  map file
 LDFLAGS = -Wl,-Map=$(TARGET).map,--cref
+LDFLAGS += -Wl,--gc-sections
 LDFLAGS += $(EXTMEMOPTS)
 LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 
@@ -237,7 +239,7 @@ AVRDUDE_PORT = usb
 #AVRDUDE_PORT = /dev/ttyUSB0
 
 # BAUD Rate
-#AVRDUDE_BAUD = 19200
+#AVRDUDE_BAUD = 115200
 
 # Sections to write
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
