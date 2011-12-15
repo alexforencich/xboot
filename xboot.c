@@ -48,6 +48,10 @@ unsigned char comm_mode;
 
 unsigned char buffer[APP_SECTION_PAGE_SIZE];
 
+typedef void (*AppPtr_t)(void) __attribute__ ((noreturn));
+
+AppPtr_t AppStartPtr = (AppPtr_t)0x000000;
+
 // Main code
 int main(void)
 {
@@ -55,7 +59,6 @@ int main(void)
         unsigned char in_bootloader = 0;
         unsigned char val = 0;
         int i, j, k;
-        void (*reset_vect)( void ) = 0x000000;
         
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         unsigned short devid_bit;
@@ -721,7 +724,7 @@ autoneg_done:
         
         // Jump into main code
         EIND = 0x00;
-        reset_vect();
+        AppStartPtr();
 }
 
 #ifdef USE_I2C_ADDRESS_NEGOTIATION
