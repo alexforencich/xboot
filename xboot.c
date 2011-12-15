@@ -796,6 +796,7 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 {
                         tx_buff0 = c;
                         tx_char_cnt = 1;
+                        
                         #ifdef USE_UART
                         if (comm_mode == MODE_UART)
                         {
@@ -816,12 +817,18 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                                 #endif // USE_UART_EN_PIN
                         }
                         #endif // USE_UART
+                        
+                        #ifdef USE_I2C
+                        #error I2C interrupts are not yet implemented
+                        #endif
+                        
                         #ifdef USE_FIFO
                         if (comm_mode == MODE_FIFO)
                         {
                                 fifo_send_char(c);
                         }
                         #endif // USE_FIFO
+                        
                         sei();
                         return;
                 }
