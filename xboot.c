@@ -46,6 +46,8 @@ volatile unsigned char tx_char_cnt;
 unsigned char comm_mode;
 #endif // USE_INTERRUPTS
 
+unsigned char buffer[APP_SECTION_PAGE_SIZE];
+
 // Main code
 int main(void)
 {
@@ -1001,21 +1003,21 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 	#ifdef USE_WATCHDOG
 	WDT_Reset();
 	#endif // USE_WATCHDOG
+        
+        // fill up buffer
+        for (int i = 0; i < size; i++)
+        {
+                buffer[i] = get_char();
+        }
 
         // EEPROM memory type.
         if(mem == MEM_EEPROM)
         {
                 unsigned char pageAddr, byteAddr, value;
-                unsigned char buffer[APP_SECTION_PAGE_SIZE];
                 
                 EEPROM_FlushBuffer();
                 // disable mapping of EEPROM into data space (enable IO mapped access)
                 EEPROM_DisableMapping();
-                
-                // Fill buffer first, as EEPROM is too slow to copy with UART speed 
-                for(tempaddress=0;tempaddress<size;tempaddress++){
-                        buffer[tempaddress] = get_char();
-                }
                 
                 // Then program the EEPROM
                 for( tempaddress=0; tempaddress < size; tempaddress++)
@@ -1037,17 +1039,10 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
         else if (mem == MEM_FLASH || mem == MEM_USERSIG)
         {
                 // NOTE: For flash programming, 'address' is given in words.
-                (*address) <<= 1; // Convert address to bytes temporarily.
-                tempaddress = (*address);  // Store address in page.
+                tempaddress = (*address) << 1;  // Store address in page.
                 
-                do
-                {
-                        data = get_char();
-                        data |= (get_char() << 8);
-                        SP_LoadFlashWord(*address, data);
-                        (*address)+=2; // Select next word in memory.
-                        size -= 2; // Reduce number of bytes to write by two.
-                } while(size); // Loop until all bytes written.
+                SP_LoadFlashPage(buffer);
+                (*address) += size >> 1;
                 
                 if (mem == MEM_FLASH)
                 {
@@ -1066,7 +1061,6 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                 
                 SP_WaitForSPM();
                 
-                (*address) >>= 1; // Convert address back to Flash words again.
                 return REPLY_ACK; // Report programming OK
         }
 
@@ -1081,6 +1075,9 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 
 void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
 {
+        int offset = 0;
+        int size2 = size;
+        
         // EEPROM memory type.
         
         if (mem == MEM_EEPROM) // Read EEPROM
@@ -1095,7 +1092,8 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
                         pageAddr = (unsigned char)(*address / EEPROM_PAGE_SIZE);
                         byteAddr = (unsigned char)(*address & EEPROM_BYTE_ADDRESS_MASK);
                         
-                        send_char( EEPROM_ReadByte( pageAddr, byteAddr ) );
+                        //send_char( EEPROM_ReadByte( pageAddr, byteAddr ) );
+                        buffer[offset++] = EEPROM_ReadByte( pageAddr, byteAddr );
                         // Select next EEPROM byte
                         (*address)++;
                         size--; // Decrease number of bytes to read
@@ -1111,28 +1109,37 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
                 {
                         if (mem == MEM_FLASH)
                         {
-                                send_char( SP_ReadByte( *address) );
-                                send_char( SP_ReadByte( (*address)+1) );
+                                buffer[offset++] = SP_ReadByte( *address);
                         }
                         else if (mem == MEM_USERSIG)
                         {
-                                send_char( SP_ReadUserSignatureByte( *address) );
-                                send_char( SP_ReadUserSignatureByte( (*address)+1) );
+                                buffer[offset++] = SP_ReadUserSignatureByte( *address);
                         }
                         else if (mem == MEM_PRODSIG)
                         {
-                                send_char( SP_ReadCalibrationByte( *address) );
-                                send_char( SP_ReadCalibrationByte( (*address)+1) );
+                                buffer[offset++] = SP_ReadCalibrationByte( *address);
                         }
                         
                         SP_WaitForSPM();
                         
-                        (*address) += 2;    // Select next word in memory.
-                        size -= 2;          // Subtract two bytes from number of bytes to read
+                        (*address)++;    // Select next word in memory.
+                        size--;          // Subtract two bytes from number of bytes to read
                 } while (size);         // Repeat until all block has been read
                 
                 (*address) >>= 1;       // Convert address back to Flash words again.
         }
+        else
+        {
+                // bad memory type
+                return;
+        }
+        
+        // send bytes
+        for (int i = 0; i < size2; i++)
+        {
+                send_char(buffer[i]);
+        }
+        
 }
 
 
