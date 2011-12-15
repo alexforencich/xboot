@@ -258,7 +258,7 @@ int main(void)
                 #endif // __AVR_XMEGA__
                 
                 #endif // USE_ENTER_FIFO
-                 
+                
                 // --------------------------------------------------
                 // End main trigger section
                 
@@ -270,11 +270,11 @@ int main(void)
         // Enable interrupts
         sei();
         #endif // USE_INTERRUPTS
-
+        
         #ifdef USE_WATCHDOG
         WDT_EnableAndSetTimeout();
         #endif // USE_WATCHDOG
-
+        
         // Main bootloader        
         while (in_bootloader) {
                 #ifdef USE_LED
@@ -282,11 +282,11 @@ int main(void)
                 #endif // USE_LED
                 
                 val = get_char();
-
+                
                 #ifdef USE_WATCHDOG
                 WDT_Reset();
                 #endif // USE_WATCHDOG
-
+                
                 // Main bootloader parser
                 // check autoincrement status
                 if (val == CMD_CHECK_AUTOINCREMENT)
@@ -714,7 +714,7 @@ autoneg_done:
         CCP = CCP_IOREG_gc;
         PMIC.CTRL = 0;
         #endif // NEED_INTERRUPTS
-
+        
         #ifdef USE_WATCHDOG
         WDT_Disable();
         #endif // USE_WATCHDOG
@@ -1007,16 +1007,16 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 {
         ADDR_T tempaddress;
         
-	#ifdef USE_WATCHDOG
-	WDT_Reset();
-	#endif // USE_WATCHDOG
+        #ifdef USE_WATCHDOG
+        WDT_Reset();
+        #endif // USE_WATCHDOG
         
         // fill up buffer
         for (int i = 0; i < size; i++)
         {
                 buffer[i] = get_char();
         }
-
+        
         // EEPROM memory type.
         if(mem == MEM_EEPROM)
         {
@@ -1054,7 +1054,7 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                 
                 return REPLY_ACK; // Report programming OK
         }
-
+        
         // Invalid memory type?
         else
         {
