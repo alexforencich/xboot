@@ -74,7 +74,9 @@
 ## MCU = atxmega64b3
 ## MCU = atxmega128b1
 ## MCU = atxmega128b3
-MCU = atxmega32a4
+MCU = atxmega64a3
+#MCU = atxmega32a4
+#MCU = atxmega16a4
 
 # Is this a bootloader?
 #MAKE_BOOTLOADER=no
@@ -110,7 +112,7 @@ TARGET = xboot
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c
-SRC += eeprom_driver.c
+SRC += eeprom.c
 SRC += uart.c
 SRC += i2c.c
 SRC += fifo.c
@@ -169,6 +171,12 @@ COMMON_FLAGS += $(CDEFS) $(CINCS)
 COMMON_FLAGS += -O$(OPT)
 COMMON_FLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 COMMON_FLAGS += -ffunction-sections -fdata-sections
+
+ifeq ($(MAKE_BOOTLOADER), yes)
+# Good idea for devices with large flash memory
+COMMON_FLAGS += -fno-jump-tables
+endif
+
 COMMON_FLAGS += -Wall
 COMMON_FLAGS += -Wa,-adhlns=$(basename $<).lst
 COMMON_FLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
@@ -242,6 +250,7 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # to get a full listing.
 #
 AVRDUDE_PROGRAMMER = jtag2pdi
+#AVRDUDE_PROGRAMMER = avrispmkii
 #AVRDUDE_PROGRAMMER = avr109
 
 # Port
