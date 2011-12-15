@@ -268,7 +268,7 @@ typedef uint32_t ADDR_T;
 // Includes
 #include "protocol.h"
 #include "sp_driver.h"
-#include "eeprom_driver.h"
+#include "eeprom.h"
 #include "uart.h"
 #include "i2c.h"
 #include "fifo.h"

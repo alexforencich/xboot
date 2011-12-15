@@ -332,10 +332,8 @@ int main(void)
                         SP_WaitForSPM();
                         #endif // USE_WATCHDOG
                         
-                        // Randomize page buffer
-                        EEPROM_LoadPage(&val);
                         // Erase EEPROM
-                        EEPROM_EraseAll();
+                        eeprom_erase_all();
                         
                         // acknowledge
                         send_char(REPLY_ACK);
@@ -415,13 +413,13 @@ int main(void)
                 // Write EEPROM memory
                 else if (val == CMD_WRITE_EEPROM_BYTE)
                 {
-                        EEPROM_WriteByte( (unsigned char)(address / EEPROM_PAGE_SIZE), (unsigned char) (address & EEPROM_BYTE_ADDRESS_MASK), get_char() );
+                        eeprom_write_byte(address, get_char());
                         address++;
                 }
                 // Read EEPROM memory
                 else if (val == CMD_READ_EEPROM_BYTE)
                 {
-                        send_char( EEPROM_ReadByte( (unsigned char)(address / EEPROM_PAGE_SIZE), (unsigned char) (address & EEPROM_BYTE_ADDRESS_MASK) ) );
+                        send_char(eeprom_read_byte(address));
                         address++;
                 }
                 #endif // ENABLE_EEPROM_BYTE_SUPPORT
@@ -1004,7 +1002,6 @@ unsigned int __attribute__ ((noinline)) get_2bytes()
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 {
-        unsigned int data;
         ADDR_T tempaddress;
         
 	#ifdef USE_WATCHDOG
@@ -1020,24 +1017,8 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
         // EEPROM memory type.
         if(mem == MEM_EEPROM)
         {
-                unsigned char pageAddr, byteAddr, value;
-                
-                EEPROM_FlushBuffer();
-                // disable mapping of EEPROM into data space (enable IO mapped access)
-                EEPROM_DisableMapping();
-                
-                // Then program the EEPROM
-                for( tempaddress=0; tempaddress < size; tempaddress++)
-                {
-                        // void EEPROM_WriteByte( uint8_t pageAddr, uint8_t byteAddr, uint8_t value )
-                        pageAddr = (unsigned char)( (*address) / EEPROM_PAGE_SIZE);
-                        byteAddr = (unsigned char)( (*address) & EEPROM_BYTE_ADDRESS_MASK);
-                        value = buffer[tempaddress];
-                        
-                        EEPROM_WriteByte(pageAddr, byteAddr, value);
-                        
-                        (*address)++; // Select next EEPROM byte
-                }
+                eeprom_write_block(*address, buffer, size);
+                (*address) += size;
                 
                 return REPLY_ACK; // Report programming OK
         } 
@@ -1089,22 +1070,8 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
         
         if (mem == MEM_EEPROM) // Read EEPROM
         {
-                unsigned char byteAddr, pageAddr;
-                
-                EEPROM_DisableMapping();
-                EEPROM_FlushBuffer();
-                
-                do
-                {
-                        pageAddr = (unsigned char)(*address / EEPROM_PAGE_SIZE);
-                        byteAddr = (unsigned char)(*address & EEPROM_BYTE_ADDRESS_MASK);
-                        
-                        //send_char( EEPROM_ReadByte( pageAddr, byteAddr ) );
-                        buffer[offset++] = EEPROM_ReadByte( pageAddr, byteAddr );
-                        // Select next EEPROM byte
-                        (*address)++;
-                        size--; // Decrease number of bytes to read
-                } while (size); // Repeat until all block has been read
+                eeprom_read_block(*address, buffer, size);
+                (*address) += size;
         }
         
         // Flash memory type.
@@ -1116,15 +1083,15 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
                 {
                         if (mem == MEM_FLASH)
                         {
-                                buffer[offset++] = SP_ReadByte( *address);
+                                buffer[offset++] = SP_ReadByte(*address);
                         }
                         else if (mem == MEM_USERSIG)
                         {
-                                buffer[offset++] = SP_ReadUserSignatureByte( *address);
+                                buffer[offset++] = SP_ReadUserSignatureByte(*address);
                         }
                         else if (mem == MEM_PRODSIG)
                         {
-                                buffer[offset++] = SP_ReadCalibrationByte( *address);
+                                buffer[offset++] = SP_ReadCalibrationByte(*address);
                         }
                         
                         SP_WaitForSPM();
