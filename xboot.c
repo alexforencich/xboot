@@ -798,21 +798,7 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                         #ifdef USE_UART
                         if (comm_mode == MODE_UART)
                         {
-                                #ifdef USE_UART_EN_PIN
-                                #if UART_EN_INV
-                                UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
-                                #else // UART_PIN_INV
-                                UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
-                                #endif // UART_PIN_INV
-                                #endif // USE_UART_EN_PIN
                                 uart_send_char(c);
-                                #ifdef USE_UART_EN_PIN
-                                #if UART_EN_INV
-                                UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
-                                #else // UART_PIN_INV
-                                UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
-                                #endif // UART_PIN_INV
-                                #endif // USE_UART_EN_PIN
                         }
                         #endif // USE_UART
                         
@@ -925,7 +911,21 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
         {
                 #ifdef __AVR_XMEGA__
+                #ifdef USE_UART_EN_PIN
+                #if UART_EN_INV
+                UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
+                #else // UART_PIN_INV
+                UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
+                #endif // UART_PIN_INV
+                #endif // USE_UART_EN_PIN
                 uart_send_char_blocking(c);
+                #ifdef USE_UART_EN_PIN
+                #if UART_EN_INV
+                UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
+                #else // UART_PIN_INV
+                UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
+                #endif // UART_PIN_INV
+                #endif // USE_UART_EN_PIN
                 #endif // __AVR_XMEGA__
                 
         }
