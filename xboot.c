@@ -48,12 +48,8 @@ unsigned char comm_mode;
 
 unsigned char buffer[APP_SECTION_PAGE_SIZE];
 
-typedef void (*AppPtr_t)(void) __attribute__ ((noreturn));
-
-AppPtr_t AppStartPtr = (AppPtr_t)0x000000;
-
 // Main code
-int main(void)
+int __attribute__ ((noreturn)) main(void)
 {
         ADDR_T address = 0;
         unsigned char in_bootloader = 0;
@@ -723,8 +719,7 @@ autoneg_done:
         // End bootloader exit section
         
         // Jump into main code
-        EIND = 0x00;
-        AppStartPtr();
+        asm("jmp 0");
 }
 
 #ifdef USE_I2C_ADDRESS_NEGOTIATION
