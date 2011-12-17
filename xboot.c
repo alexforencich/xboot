@@ -46,7 +46,7 @@ volatile unsigned char tx_char_cnt;
 unsigned char comm_mode;
 #endif // USE_INTERRUPTS
 
-unsigned char buffer[APP_SECTION_PAGE_SIZE];
+unsigned char buffer[SPM_PAGESIZE];
 
 // Main code
 int __attribute__ ((noreturn)) main(void)
@@ -344,8 +344,8 @@ int __attribute__ ((noreturn)) main(void)
                         // yes, it is supported
                         send_char(REPLY_YES);
                         // Send block size (page size)
-                        send_char((APP_SECTION_PAGE_SIZE >> 8) & 0xFF);
-                        send_char(APP_SECTION_PAGE_SIZE & 0xFF);
+                        send_char((SPM_PAGESIZE >> 8) & 0xFF);
+                        send_char(SPM_PAGESIZE & 0xFF);
                 }
                 // Block load
                 else if (val == CMD_BLOCK_LOAD)
