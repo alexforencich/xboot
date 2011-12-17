@@ -117,6 +117,7 @@ SRC += uart.c
 SRC += i2c.c
 SRC += fifo.c
 SRC += watchdog.c
+SRC += api.c
 # SRC += ...
 
 # List Assembler source files here.

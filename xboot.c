@@ -668,6 +668,13 @@ autoneg_done:
         // but before the application code has started
         // --------------------------------------------------
         
+        #ifdef ENABLE_API
+        #ifdef ENABLE_API_FIRMWARE_UPDATE
+        // Update firmware if needed
+        install_firmware();
+        #endif // ENABLE_API_FIRMWARE_UPDATE
+        #endif // ENABLE_API
+        
         #ifdef USE_FIFO
         // Shut down FIFO
         fifo_deinit();
@@ -1113,5 +1120,81 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
         }
         
 }
+
+uint16_t crc16_block(uint32_t start, uint32_t length)
+{
+        uint16_t crc = 0;
+        
+        int bc = SPM_PAGESIZE;
+        
+        for ( ; length > 0; length--)
+        {
+                if (bc == SPM_PAGESIZE)
+                {
+                        SP_ReadFlashPage(buffer, start);
+                        start += SPM_PAGESIZE;
+                        bc = 0;
+                }
+                
+                crc = _crc16_update(crc, buffer[bc]);
+                
+                bc++;
+        }
+        
+        return crc;
+}
+
+void install_firmware()
+{
+        uint16_t crc;
+        uint16_t crc2;
+        
+        // read last block
+        SP_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
+        
+        if (buffer[SPM_PAGESIZE-6] == 'X' && buffer[SPM_PAGESIZE-5] == 'B' &&
+                buffer[SPM_PAGESIZE-4] == 'I' && buffer[SPM_PAGESIZE-3] == 'F')
+        {
+                crc = (buffer[SPM_PAGESIZE-2] << 8) | buffer[SPM_PAGESIZE-1];
+                
+                crc2 = crc16_block(XB_APP_TEMP_START, XB_APP_TEMP_SIZE - 6);
+                
+                // crc last bytes as empty
+                for (int i = 0; i < 6; i++)
+                        crc2 = _crc16_update(crc2, 0xff);
+                
+                SP_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
+                buffer[SPM_PAGESIZE-4] = (crc2 >> 8);
+                buffer[SPM_PAGESIZE-3] = crc2;
+                
+                if (crc == crc2)
+                {
+                        for (uint32_t ptr = 0; ptr < XB_APP_SIZE; ptr += SPM_PAGESIZE)
+                        {
+                                #ifdef USE_LED
+                                LED_PORT.OUTTGL = (1 << LED_PIN);
+                                #endif // USE_LED
+                                
+                                SP_ReadFlashPage(buffer, ptr + XB_APP_TEMP_START);
+                                if (ptr >= XB_APP_SIZE - SPM_PAGESIZE)
+                                {
+                                        for (int i = SPM_PAGESIZE-6; i < SPM_PAGESIZE; i++)
+                                        buffer[i] = 0xff;
+                                }
+                                SP_LoadFlashPage(buffer);
+                                SP_WaitForSPM();
+                                SP_EraseWriteApplicationPage(ptr);
+                                SP_WaitForSPM();
+                        }
+                }
+                
+                for (uint32_t ptr = XB_APP_TEMP_START; ptr < XB_APP_TEMP_END; ptr += SPM_PAGESIZE)
+                {
+                        SP_EraseApplicationPage(ptr);
+                        SP_WaitForSPM();
+                }
+        }
+}
+
 
 

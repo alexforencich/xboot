@@ -37,6 +37,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <util/crc16.h>
 
 // token pasting
 #define token_paste2_int(x, y) x ## y
@@ -93,6 +94,13 @@
 #define ENABLE_LOCK_BITS
 #define ENABLE_FUSE_BITS
 #define ENABLE_FLASH_ERASE_WRITE
+
+// API
+#define ENABLE_API
+#define USE_API_VERSION 1
+#define ENABLE_API_LOW_LEVEL_FLASH
+#define ENABLE_API_SPM_WRAPPER
+#define ENABLE_API_FIRMWARE_UPDATE
 
 // ENTER_PIN
 #define ENTER_PORT              PORTC
@@ -240,6 +248,8 @@
 #define ATTACH_LED_PIN                  1
 #define ATTACH_LED_INV                  1
 
+
+
 #ifndef EEPROM_BYTE_ADDRESS_MASK
 #if EEPROM_PAGE_SIZE == 32
 #define EEPROM_BYTE_ADDRESS_MASK 0x1f
@@ -277,6 +287,7 @@ typedef uint32_t ADDR_T;
 #include "i2c.h"
 #include "fifo.h"
 #include "watchdog.h"
+#include "api.h"
 
 // globals
 #ifdef USE_INTERRUPTS
@@ -303,6 +314,8 @@ unsigned int __attribute__ ((noinline)) get_2bytes(void);
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address);
 void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address);
+
+void install_firmware(void);
 
 
 #endif // __XBOOT_H
