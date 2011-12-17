@@ -29,8 +29,8 @@
 /*                                                                      */
 /************************************************************************/
 
-#ifndef __EEPROM_H
-#define __EEPROM_H
+#ifndef __EEPROM_DRIVER_H
+#define __EEPROM_DRIVER_H
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -57,7 +57,7 @@ void eeprom_erase_all(void);
 
 
 
-#endif // __EEPROM_H
+#endif // __EEPROM_DRIVER_H
 
 
 

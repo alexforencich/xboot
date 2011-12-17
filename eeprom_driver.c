@@ -29,7 +29,7 @@
 /*                                                                      */
 /************************************************************************/
 
-#include "eeprom.h"
+#include "eeprom_driver.h"
 #include "string.h"
 
 
