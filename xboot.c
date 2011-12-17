@@ -499,8 +499,8 @@ int __attribute__ ((noreturn)) main(void)
                 // Read software version
                 else if (val == CMD_VERSION)
                 {
-                        send_char('1');
-                        send_char('6');
+                        send_char('0' + XBOOT_VERSION_MAJOR);
+                        send_char('0' + XBOOT_VERSION_MINOR);
                 }
                 // Read signature bytes
                 else if (val == CMD_READ_SIGNATURE)

@@ -44,6 +44,10 @@
 #define token_paste3_int(x, y, z) x ## y ## z
 #define token_paste3(x, y, z) token_paste3_int(x, y, z)
 
+// Version
+#define XBOOT_VERSION_MAJOR 1
+#define XBOOT_VERSION_MINOR 7
+
 // Configuration
 
 // clock config
