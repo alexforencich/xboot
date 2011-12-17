@@ -55,7 +55,11 @@ struct xboot_jump_table_s api_jump_table __attribute((section(".vectors"))) = {
                 (uint16_t)(xboot_load_flash_page),
                 (uint16_t)(xboot_erase_application_page),
                 (uint16_t)(xboot_write_application_page),
+#ifdef __AVR_XMEGA__
                 (uint16_t)(xboot_write_user_signature_row),
+#else // __AVR_XMEGA__
+                0,
+#endif // __AVR_XMEGA__
                 #else // ENABLE_API_LOW_LEVEL_FLASH
                 0,
                 0,
@@ -97,10 +101,12 @@ uint8_t xboot_load_flash_page(uint8_t *data)
         uint8_t saved_status = SREG;
         cli();
         
-        SP_LoadFlashPage(data);
-        SP_WaitForSPM();
+        Flash_LoadFlashPage(data);
+        Flash_WaitForSPM();
         
+#ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+#endif // __AVR_XMEGA__
         
         SREG = saved_status;
         return XB_SUCCESS;
@@ -115,10 +121,12 @@ uint8_t xboot_erase_application_page(uint32_t address)
         
         cli();
         
-        SP_EraseApplicationPage(address);
-        SP_WaitForSPM();
+        Flash_EraseApplicationPage(address);
+        Flash_WaitForSPM();
         
+#ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+#endif // __AVR_XMEGA__
         
         SREG = saved_status;
         return XB_SUCCESS;
@@ -135,36 +143,40 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
         
         if (erase)
         {
-                SP_EraseWriteApplicationPage(address);
+                Flash_EraseWriteApplicationPage(address);
         }
         else
         {
-                SP_WriteApplicationPage(address);
+                Flash_WriteApplicationPage(address);
         }
         
-        SP_WaitForSPM();
+        Flash_WaitForSPM();
         
+#ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+#endif // __AVR_XMEGA__
         
         SREG = saved_status;
         return XB_SUCCESS;
 }
 
+#ifdef __AVR_XMEGA__
 uint8_t xboot_write_user_signature_row(void)
 {
         uint8_t saved_status = SREG;
         cli();
         
-        SP_EraseUserSignatureRow();
-        SP_WaitForSPM();
-        SP_WriteUserSignatureRow();
-        SP_WaitForSPM();
+        Flash_EraseUserSignatureRow();
+        Flash_WaitForSPM();
+        Flash_WriteUserSignatureRow();
+        Flash_WaitForSPM();
         
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
         
         SREG = saved_status;
         return XB_SUCCESS;
 }
+#endif // __AVR_XMEGA__
 
 // Higher level firmware update functions
 uint8_t xboot_app_temp_erase(void)
@@ -174,11 +186,13 @@ uint8_t xboot_app_temp_erase(void)
         
         for (uint32_t addr = XB_APP_TEMP_START; addr < XB_APP_TEMP_END; addr += SPM_PAGESIZE)
         {
-                SP_EraseApplicationPage(addr);
-                SP_WaitForSPM();
+                Flash_EraseApplicationPage(addr);
+                Flash_WaitForSPM();
         }
         
+#ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+#endif // __AVR_XMEGA__
         
         SREG = saved_status;
         return XB_SUCCESS;

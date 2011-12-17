@@ -55,7 +55,8 @@ int main(void)
         unsigned char in_bootloader = 0;
         unsigned char val = 0;
         int i = 0;
-        int j, k;
+        uint32_t j;
+        uint8_t k;
         
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         unsigned short devid_bit;
@@ -72,11 +73,13 @@ int main(void)
         // Entry point and communication methods are initialized here
         // --------------------------------------------------
         
+        
+#ifdef __AVR_XMEGA__
+        
         #ifdef USE_32MHZ_RC
         #if (F_CPU != 32000000L)
         #error F_CPU must match oscillator setting!
-        #endif
-        #ifdef __AVR_XMEGA__
+        #endif // F_CPU
         OSC.CTRL |= OSC_RC32MEN_bm; // turn on 32 MHz oscillator
         while (!(OSC.STATUS & OSC_RC32MRDY_bm)) { }; // wait for it to start
         CCP = CCP_IOREG_gc;
@@ -84,17 +87,24 @@ int main(void)
         #ifdef USE_DFLL
         DFLLRC32M.CTRL = DFLL_ENABLE_bm;
         #endif // USE_DFLL
-        #endif // __AVR_XMEGA__
-        #else
+        #else // USE_32MHZ_RC
         #if (F_CPU != 2000000L)
         #error F_CPU must match oscillator setting!
-        #endif
-        #ifdef __AVR_XMEGA__
+        #endif // F_CPU
         #ifdef USE_DFLL
         DFLLRC2M.CTRL = DFLL_ENABLE_bm;
         #endif // USE_DFLL
-        #endif // __AVR_XMEGA__
-        #endif
+        #endif // USE_32MHZ_RC
+        
+#else // __AVR_XMEGA__
+        
+        // nothing special for ATmega
+        
+#endif // __AVR_XMEGA__
+        
+        // interrupts
+        
+#ifdef __AVR_XMEGA__
         
         #ifdef NEED_INTERRUPTS
         // remap interrupts to boot section
@@ -106,6 +116,16 @@ int main(void)
         #endif // USE_INTERRUPTS
         #endif // NEED_INTERRUPTS
         
+#else // __AVR_XMEGA__
+        
+        // nothing special for ATmega
+        
+#endif // __AVR_XMEGA__
+        
+        // LED
+        
+#ifdef __AVR_XMEGA__
+        
         #ifdef USE_LED
         // Initialize LED pin
         LED_PORT.DIRSET = (1 << LED_PIN);
@@ -115,6 +135,24 @@ int main(void)
         LED_PORT.OUTSET = (1 << LED_PIN);
         #endif // LED_PIN_INV
         #endif // USE_LED
+        
+#else // __AVR_XMEGA__
+        
+        #ifdef USE_LED
+        // Initialize LED pin
+        LED_PORT_DDR |= (1 << LED_PIN);
+        #if LED_PIN_INV
+        LED_PORT &= ~(1 << LED_PIN);
+        #else
+        LED_PORT |= (1 << LED_PIN);
+        #endif // LED_PIN_INV
+        #endif // USE_LED
+        
+#endif // __AVR_XMEGA__
+        
+        // I2C Attach LED_PIN
+        
+#ifdef __AVR_XMEGA__
         
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         #ifdef USE_ATTACH_LED
@@ -128,6 +166,26 @@ int main(void)
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
         
+#else // __AVR_XMEGA__
+        
+        #ifdef USE_I2C_ADDRESS_NEGOTIATION
+        #ifdef USE_ATTACH_LED
+        // Initialize ATTACH_LED
+        ATTACH_LED_PORT_DDR |= (1 << ATTACH_LED_PIN);
+        #if ATTACH_LED_INV
+        ATTACH_LED_PORT &= ~(1 << ATTACH_LED_PIN);
+        #else
+        ATTACH_LED_PORT |= (1 << ATTACH_LED_PIN);
+        #endif // ATTACH_LED_INV
+        #endif // USE_ATTACH_LED
+        #endif // USE_I2C_ADDRESS_NEGOTIATION
+        
+#endif // __AVR_XMEGA__
+        
+        // Enter pin
+        
+#ifdef __AVR_XMEGA__
+        
         #ifdef USE_ENTER_PIN
         // Make sure it's an input
         ENTER_PORT.DIRCLR = (1 << ENTER_PIN);
@@ -137,11 +195,23 @@ int main(void)
         #endif // ENTER_PIN_PUEN
         #endif // USE_ENTER_PIN
         
+#else // __AVR_XMEGA__
+        
+        #ifdef USE_ENTER_PIN
+        // Make sure it's an input
+        ENTER_PORT_DDR &= ~(1 << ENTER_PIN);
+        #endif // USE_ENTER_PIN
+        
+#endif // __AVR_XMEGA__
+        
         #ifdef USE_UART
         // Initialize UART
         uart_init();
         
         // Initialize UART EN pin
+        
+#ifdef __AVR_XMEGA__
+        
         #ifdef USE_UART_EN_PIN
         UART_EN_PORT.DIRSET = (1 << UART_EN_PIN);
         #if UART_EN_INV
@@ -150,16 +220,41 @@ int main(void)
         UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
         #endif // UART_PIN_INV
         #endif // USE_UART_EN_PIN
+        
+#else // __AVR_XMEGA__
+        
+        #ifdef USE_UART_EN_PIN
+        UART_EN_PORT_DDR |= (1 << UART_EN_PIN);
+        #if UART_EN_INV
+        UART_EN_PORT |= (1 << UART_EN_PIN);
+        #else // UART_PIN_INV
+        UART_EN_PORT &= ~(1 << UART_EN_PIN);
+        #endif // UART_PIN_INV
+        #endif // USE_UART_EN_PIN
+        
+#endif // __AVR_XMEGA__
+        
         #endif // USE_UART
         
         #ifdef USE_I2C
         // Initialize I2C interface
         i2c_init();
         
+#ifdef __AVR_XMEGA__
+        
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         I2C_AUTONEG_PORT.DIRCLR = (1 << I2C_AUTONEG_PIN);
         I2C_AUTONEG_PORT.OUTCLR = (1 << I2C_AUTONEG_PIN);
         #endif // USE_I2C_ADDRESS_NEGOTIATION
+        
+#else // __AVR_XMEGA__
+        
+        #ifdef USE_I2C_ADDRESS_NEGOTIATION
+        I2C_AUTONEG_PORT_DDR &= ~(1 << I2C_AUTONEG_PIN);
+        I2C_AUTONEG_PORT &= ~(1 << I2C_AUTONEG_PIN);
+        #endif // USE_I2C_ADDRESS_NEGOTIATION
+        
+#endif // __AVR_XMEGA__
         
         #endif // USE_I2C
         
@@ -189,7 +284,11 @@ int main(void)
                 if (j-- <= 0)
                 {
                         #ifdef USE_LED
+#ifdef __AVR_XMEGA__
                         LED_PORT.OUTTGL = (1 << LED_PIN);
+#else // __AVR_XMEGA__
+                        LED_PORT ^= (1 << LED_PIN);
+#endif // __AVR_XMEGA__
                         #endif // USE_LED
                         j = ENTER_BLINK_WAIT;
                         k--;
@@ -211,13 +310,17 @@ int main(void)
                 
                 #ifdef USE_ENTER_PIN
                 // Check entry pin state
+#ifdef __AVR_XMEGA__
                 if ((ENTER_PORT.IN & (1 << ENTER_PIN)) == (ENTER_PIN_STATE ? (1 << ENTER_PIN) : 0))
                         in_bootloader = 1;
+#else // __AVR_XMEGA__
+                if ((ENTER_PORT_PIN & (1 << ENTER_PIN)) == (ENTER_PIN_STATE ? (1 << ENTER_PIN) : 0))
+                        in_bootloader = 1;
+#endif // __AVR_XMEGA__
                 #endif // USE_ENTER_PIN
                 
                 #ifdef USE_ENTER_UART
                 // Check for received character
-                #ifdef __AVR_XMEGA__
                 #ifdef ENTER_UART_NEED_SYNC
                 if (uart_char_received() && (uart_cur_char() == CMD_SYNC))
                 #else // ENTER_UART_NEED_SYNC
@@ -227,7 +330,6 @@ int main(void)
                         in_bootloader = 1;
                         comm_mode = MODE_UART;
                 }
-                #endif // __AVR_XMEGA__
                 
                 #endif // USE_ENTER_UART
                 
@@ -242,7 +344,6 @@ int main(void)
                 
                 #ifdef USE_ENTER_FIFO
                 // Check for received character
-                #ifdef __AVR_XMEGA__
                 #ifdef ENTER_FIFO_NEED_SYNC
                 if (fifo_char_received() && (fifo_cur_char() == CMD_SYNC))
                 #else // ENTER_FIFO_NEED_SYNC
@@ -252,7 +353,6 @@ int main(void)
                         in_bootloader = 1;
                         comm_mode = MODE_FIFO;
                 }
-                #endif // __AVR_XMEGA__
                 
                 #endif // USE_ENTER_FIFO
                 
@@ -275,7 +375,11 @@ int main(void)
         // Main bootloader        
         while (in_bootloader) {
                 #ifdef USE_LED
+#ifdef __AVR_XMEGA__
                 LED_PORT.OUTTGL = (1 << LED_PIN);
+#else // __AVR_XMEGA__
+                LED_PORT ^= (1 << LED_PIN);
+#endif // __AVR_XMEGA__
                 #endif // USE_LED
                 
                 val = get_char();
@@ -320,8 +424,9 @@ int main(void)
                 else if (val == CMD_CHIP_ERASE)
                 {
                         // Erase the application section
-                        SP_EraseApplicationSection();
+                        Flash_EraseApplicationSection();
                         // Wait for completion
+#ifdef __AVR_XMEGA__
                         #ifdef USE_WATCHDOG
                         while (NVM_STATUS & NVM_NVMBUSY_bp)
                         {
@@ -331,6 +436,7 @@ int main(void)
                         #else // USE_WATCHDOG
                         SP_WaitForSPM();
                         #endif // USE_WATCHDOG
+#endif // __AVR_XMEGA__
                         
                         // Erase EEPROM
                         EEPROM_erase_all();
@@ -373,8 +479,8 @@ int main(void)
                 // Read program memory byte
                 else if (val == CMD_READ_BYTE)
                 {
-                        send_char(SP_ReadByte((address << 1)+1));
-                        send_char(SP_ReadByte((address << 1)+0));
+                        send_char(Flash_ReadByte((address << 1)+1));
+                        send_char(Flash_ReadByte((address << 1)+0));
                         
                         address++;
                 }
@@ -390,7 +496,7 @@ int main(void)
                 {
                         // get high byte; combine
                         i |= (get_char() << 8);
-                        SP_LoadFlashWord((address << 1), i);
+                        Flash_LoadFlashWord((address << 1), i);
                         address++;
                         send_char(REPLY_ACK);
                 }
@@ -404,7 +510,7 @@ int main(void)
                         }
                         else
                         {
-                                SP_WriteApplicationPage( address << 1);
+                                Flash_WriteApplicationPage( address << 1);
                                 send_char(REPLY_ACK);
                         }
                 }
@@ -424,6 +530,7 @@ int main(void)
                 }
                 #endif // ENABLE_EEPROM_BYTE_SUPPORT
                 #ifdef ENABLE_LOCK_BITS
+#ifdef __AVR_XMEGA__
                 // Write lockbits
                 else if (val == CMD_WRITE_LOCK_BITS)
                 {
@@ -435,8 +542,10 @@ int main(void)
                 {
                         send_char(SP_ReadLockBits());
                 }
+#endif // __AVR_XMEGA__
                 #endif // ENABLE_LOCK_BITS
                 #ifdef ENABLE_FUSE_BITS
+#ifdef __AVR_XMEGA__
                 // Read low fuse bits
                 else if (val == CMD_READ_LOW_FUSE_BITS)
                 {
@@ -452,6 +561,7 @@ int main(void)
                 {
                         send_char(SP_ReadFuseByte(2));
                 }
+#endif // __AVR_XMEGA__
                 #endif // ENABLE_FUSE_BITS
                 // Enter and leave programming mode
                 else if ((val == CMD_ENTER_PROG_MODE) || (val == CMD_LEAVE_PROG_MODE))
@@ -620,7 +730,7 @@ int main(void)
                                                 if (devid_bit == (0x11 << 3))
                                                         devid_bit += 0x01 << 3;
                                                 // Read next byte
-                                                k = SP_ReadCalibrationByte(k >> 3);
+                                                k = SP_ReadCalibrationByte(devid_bit >> 3);
                                         }
                                 }
                                 else
@@ -654,7 +764,7 @@ autoneg_done:
                 }
                 
                 // Wait for any lingering SPM instructions to finish
-                SP_WaitForSPM();
+                Flash_WaitForSPM();
                 
                 // End of bootloader main loop
         }
@@ -701,17 +811,35 @@ autoneg_done:
         SP_LockSPM();
         #endif // LOCK_SPM_ON_EXIT
         
+        // LED
+#ifdef __AVR_XMEGA__
         #ifdef USE_LED
         // Turn off LED on exit
         LED_PORT.DIRCLR = (1 << LED_PIN);
         #endif // USE_LED
+#else // __AVR_XMEGA__
+        #ifdef USE_LED
+        // Turn off LED on exit
+        LED_PORT_DDR &= ~(1 << LED_PIN);
+        #endif // USE_LED
+#endif //__AVR_XMEGA__
         
+        // Attach LED
+#ifdef __AVR_XMEGA__
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         #ifdef USE_ATTACH_LED
         // Disable ATTACH_LED
-        ATTACH_LED_PORT.DIRSET = (1 << ATTACH_LED_PIN);
+        ATTACH_LED_PORT.DIRCLR = (1 << ATTACH_LED_PIN);
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
+#else // __AVR_XMEGA__
+        #ifdef USE_I2C_ADDRESS_NEGOTIATION
+        #ifdef USE_ATTACH_LED
+        // Disable ATTACH_LED
+        ATTACH_LED_PORT_DDR &= ~(1 << ATTACH_LED_PIN);
+        #endif // USE_ATTACH_LED
+        #endif // USE_I2C_ADDRESS_NEGOTIATION
+#endif // __AVR_XMEGA__
         
         #ifdef NEED_INTERRUPTS
         // remap interrupts back to application section
@@ -739,9 +867,9 @@ autoneg_done:
 #define ow_read()               (I2C_AUTONEG_PORT.IN & (1 << I2C_AUTONEG_PIN))
 #define ow_is_asserted()        (!ow_read())
 #else
-#define ow_assert()             DDRC |= (1 << 0)
-#define ow_deassert()           DDRC &= ~(1 << 0)
-#define ow_read()               (PINC & (1 << 0))
+#define ow_assert()             I2C_AUTONEG_PORT_DDR |= (1 << 0)
+#define ow_deassert()           I2C_AUTONEG_PORT_DDR &= ~(1 << 0)
+#define ow_read()               (I2C_AUTONEG_PORT_PIN & (1 << 0))
 #define ow_is_asserted()        (!ow_read())
 #endif // __AVR_XMEGA__
 
@@ -840,13 +968,11 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                 // Get next character
                 if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
                 {
-                        #ifdef __AVR_XMEGA__
                         if (uart_char_received())
                         {
                                 comm_mode = MODE_UART;
                                 return uart_cur_char();
                         }
-                        #endif // __AVR_XMEGA__
                 }
                 #endif // USE_UART
                 
@@ -854,7 +980,7 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                 // Get next character
                 if (comm_mode == MODE_UNDEF || comm_mode == MODE_I2C)
                 {
-                        #ifdef __AVR_XMEGA__
+#ifdef __AVR_XMEGA__
                         if (i2c_address_match())
                         {
                                 // Address match, send ACK
@@ -884,7 +1010,9 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                                         i2c_send_nak();
                                 }
                         }
-                        #endif // __AVR_XMEGA__
+#else // __AVR_XMEGA__
+                        #error Not implemented!
+#endif // __AVR_XMEGA__
                 }
                 #endif // USE_I2C
 
@@ -892,13 +1020,11 @@ unsigned char __attribute__ ((noinline)) get_char(void)
                 // Get next character
                 if (comm_mode == MODE_UNDEF || comm_mode == MODE_FIFO)
                 {
-                        #ifdef __AVR_XMEGA__
                         if (fifo_char_received())
                         {
                                 comm_mode = MODE_FIFO;
                                 return fifo_cur_char();
                         }
-                        #endif // __AVR_XMEGA__
                 }
                 #endif // USE_FIFO
                 
@@ -917,7 +1043,7 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         // Send character
         if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
         {
-                #ifdef __AVR_XMEGA__
+#ifdef __AVR_XMEGA__
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
@@ -925,7 +1051,17 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
                 #endif // UART_PIN_INV
                 #endif // USE_UART_EN_PIN
+#else // __AVR_XMEGA__
+                #ifdef USE_UART_EN_PIN
+                #if UART_EN_INV
+                UART_EN_PORT &= ~(1 << UART_EN_PIN);
+                #else // UART_PIN_INV
+                UART_EN_PORT |= (1 << UART_EN_PIN);
+                #endif // UART_PIN_INV
+                #endif // USE_UART_EN_PIN
+#endif // __AVR_XMEGA__
                 uart_send_char_blocking(c);
+#ifdef __AVR_XMEGA__
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
@@ -933,7 +1069,15 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
                 #endif // UART_PIN_INV
                 #endif // USE_UART_EN_PIN
-                #endif // __AVR_XMEGA__
+#else // __AVR_XMEGA__
+                #ifdef USE_UART_EN_PIN
+                #if UART_EN_INV
+                UART_EN_PORT |= (1 << UART_EN_PIN);
+                #else // UART_PIN_INV
+                UART_EN_PORT &= ~(1 << UART_EN_PIN);
+                #endif // UART_PIN_INV
+                #endif // USE_UART_EN_PIN
+#endif // __AVR_XMEGA__
                 
         }
         #endif // USE_UART
@@ -944,7 +1088,7 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         {
                 while (1)
                 {
-                        #ifdef __AVR_XMEGA__
+#ifdef __AVR_XMEGA__
                         if (i2c_address_match())
                         {
                                 // Address match, send ACK
@@ -972,7 +1116,9 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                                 }
                                 return;
                         }
-                        #endif // __AVR_XMEGA__
+#else // __AVR_XMEGA__
+                        #error Not implemented!
+#endif // __AVR_XMEGA__
                 }
         }
         #endif // USE_I2C
@@ -981,9 +1127,7 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         // Send character
         if (comm_mode == MODE_UNDEF || comm_mode == MODE_FIFO)
         {
-                #ifdef __AVR_XMEGA__
                 fifo_send_char_blocking(c);
-                #endif // __AVR_XMEGA__
                 
         }
         #endif // USE_FIFO
@@ -1031,30 +1175,43 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
         } 
         
         // Flash memory type
+#ifdef __AVR_XMEGA__
         else if (mem == MEM_FLASH || mem == MEM_USERSIG)
+#else // __AVR_XMEGA__
+        else if (mem == MEM_FLASH)
+#endif // __AVR_XMEGA__
         {
                 // NOTE: For flash programming, 'address' is given in words.
                 tempaddress = (*address) << 1;  // Store address in page.
                 
-                SP_LoadFlashPage(buffer);
                 (*address) += size >> 1;
+                
+#ifdef __AVR_XMEGA__
+                Flash_LoadFlashPage(buffer);
                 
                 if (mem == MEM_FLASH)
                 {
                         #ifdef ENABLE_FLASH_ERASE_WRITE
-                        SP_EraseWriteApplicationPage(tempaddress);
+                        Flash_EraseWriteApplicationPage(tempaddress);
                         #else
-                        SP_WriteApplicationPage(tempaddress);
+                        Flash_WriteApplicationPage(tempaddress);
                         #endif
                 }
                 else if (mem == MEM_USERSIG)
                 {
-                        SP_EraseUserSignatureRow();
-                        SP_WaitForSPM();
-                        SP_WriteUserSignatureRow();
+                        Flash_EraseUserSignatureRow();
+                        Flash_WaitForSPM();
+                        Flash_WriteUserSignatureRow();
                 }
                 
-                SP_WaitForSPM();
+                Flash_WaitForSPM();
+#else // __AVR_XMEGA__
+                #ifdef ENABLE_FLASH_ERASE_WRITE
+                Flash_ProgramPage(tempaddress, buffer, 1);
+                #else
+                Flash_ProgramPage(tempaddress, buffer, 0);
+                #endif
+#endif // __AVR_XMEGA__
                 
                 return REPLY_ACK; // Report programming OK
         }
@@ -1082,15 +1239,20 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
         }
         
         // Flash memory type.
+#ifdef __AVR_XMEGA__
         else if (mem == MEM_FLASH || mem == MEM_USERSIG || mem == MEM_PRODSIG)
+#else // __AVR_XMEGA__
+        else if (mem == MEM_FLASH)
+#endif // __AVR_XMEGA__
         {
                 (*address) <<= 1; // Convert address to bytes temporarily.
                 
                 do
                 {
+#ifdef __AVR_XMEGA__
                         if (mem == MEM_FLASH)
                         {
-                                buffer[offset++] = SP_ReadByte(*address);
+                                buffer[offset++] = Flash_ReadByte(*address);
                         }
                         else if (mem == MEM_USERSIG)
                         {
@@ -1100,8 +1262,11 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
                         {
                                 buffer[offset++] = SP_ReadCalibrationByte(*address);
                         }
+#else // __AVR_XMEGA__
+                        buffer[offset++] = Flash_ReadByte(*address);
+#endif // __AVR_XMEGA__
                         
-                        SP_WaitForSPM();
+                        Flash_WaitForSPM();
                         
                         (*address)++;    // Select next word in memory.
                         size--;          // Subtract two bytes from number of bytes to read
@@ -1133,7 +1298,7 @@ uint16_t crc16_block(uint32_t start, uint32_t length)
         {
                 if (bc == SPM_PAGESIZE)
                 {
-                        SP_ReadFlashPage(buffer, start);
+                        Flash_ReadFlashPage(buffer, start);
                         start += SPM_PAGESIZE;
                         bc = 0;
                 }
@@ -1152,7 +1317,7 @@ void install_firmware()
         uint16_t crc2;
         
         // read last block
-        SP_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
+        Flash_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
         
         if (buffer[SPM_PAGESIZE-6] == 'X' && buffer[SPM_PAGESIZE-5] == 'B' &&
                 buffer[SPM_PAGESIZE-4] == 'I' && buffer[SPM_PAGESIZE-3] == 'F')
@@ -1165,7 +1330,7 @@ void install_firmware()
                 for (int i = 0; i < 6; i++)
                         crc2 = _crc16_update(crc2, 0xff);
                 
-                SP_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
+                Flash_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
                 buffer[SPM_PAGESIZE-4] = (crc2 >> 8);
                 buffer[SPM_PAGESIZE-3] = crc2;
                 
@@ -1174,26 +1339,33 @@ void install_firmware()
                         for (uint32_t ptr = 0; ptr < XB_APP_SIZE; ptr += SPM_PAGESIZE)
                         {
                                 #ifdef USE_LED
+#ifdef __AVR_XMEGA__
                                 LED_PORT.OUTTGL = (1 << LED_PIN);
+#else // __AVR_XMEGA__
+                                LED_PORT ^= (1 << LED_PIN);
+#endif // __AVR_XMEGA__
                                 #endif // USE_LED
                                 
-                                SP_ReadFlashPage(buffer, ptr + XB_APP_TEMP_START);
+                                Flash_ReadFlashPage(buffer, ptr + XB_APP_TEMP_START);
                                 if (ptr >= XB_APP_SIZE - SPM_PAGESIZE)
                                 {
                                         for (int i = SPM_PAGESIZE-6; i < SPM_PAGESIZE; i++)
                                         buffer[i] = 0xff;
                                 }
-                                SP_LoadFlashPage(buffer);
-                                SP_WaitForSPM();
-                                SP_EraseWriteApplicationPage(ptr);
-                                SP_WaitForSPM();
+#ifdef __AVR_XMEGA__
+                                Flash_LoadFlashPage(buffer);
+                                Flash_EraseWriteApplicationPage(ptr);
+                                Flash_WaitForSPM();
+#else // __AVR_XMEGA__
+                                Flash_ProgramPage(ptr, buffer, 1);
+#endif // __AVR_XMEGA__
                         }
                 }
                 
                 for (uint32_t ptr = XB_APP_TEMP_START; ptr < XB_APP_TEMP_END; ptr += SPM_PAGESIZE)
                 {
-                        SP_EraseApplicationPage(ptr);
-                        SP_WaitForSPM();
+                        Flash_EraseApplicationPage(ptr);
+                        Flash_WaitForSPM();
                 }
         }
 }

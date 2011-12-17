@@ -1,11 +1,11 @@
 /************************************************************************/
-/* XBoot Extensible AVR Bootloader API                                  */
+/* Generic ATMEL Flash Driver                                           */
 /*                                                                      */
-/* api.h                                                                */
+/* flash.h                                                              */
 /*                                                                      */
 /* Alex Forencich <alex@alexforencich.com>                              */
 /*                                                                      */
-/* Copyright (c) 2010 Alex Forencich                                    */
+/* Copyright (c) 2011 Alex Forencich                                    */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -29,13 +29,20 @@
 /*                                                                      */
 /************************************************************************/
 
-#ifndef __API_H
-#define __API_H
+#ifndef __FLASH_H
+#define __FLASH_H
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+#ifdef __AVR_XMEGA__
+#include "sp_driver.h"
+#else // __AVR_XMEGA__
+#include <avr/boot.h>
+#endif // __AVR_XMEGA__
 
 #include "xboot.h"
-#include <avr/pgmspace.h>
 
-// defines
 // offsets and addresses
 #ifndef PROGMEM_SIZE
 #define PROGMEM_SIZE (FLASHEND + 1UL)
@@ -61,46 +68,52 @@
 #define APP_SECTION_END (APP_SECTION_START + APP_SECTION_SIZE - 1UL)
 #endif
 
-#define JUMP_TABLE_LOCATION (BOOT_SECTION_START + _VECTORS_SIZE)
-#define JUMP_TABLE_INDEX(k) (JUMP_TABLE_LOCATION + 4 + 2 * (k))
+#if PROGMEM_SIZE > 0xFFFF
+#define PGM_READ_BYTE pgm_read_byte_far
+#define PGM_READ_WORD pgm_read_word_far
+#define PGM_READ_DWORD pgm_read_dword_far
+#else
+#define PGM_READ_BYTE pgm_read_byte_near
+#define PGM_READ_WORD pgm_read_word_near
+#define PGM_READ_DWORD pgm_read_dword_near
+#endif
 
-#define XB_APP_START APP_SECTION_START
-#define XB_APP_SIZE (APP_SECTION_SIZE / 2)
-#define XB_APP_END (XB_APP_START + XB_APP_SIZE - 1UL)
-#define XB_APP_TEMP_START (XB_APP_END + 1UL)
-#define XB_APP_TEMP_SIZE XB_APP_SIZE
-#define XB_APP_TEMP_END (XB_APP_TEMP_START + XB_APP_TEMP_SIZE - 1UL)
 
-// status codes
-#define XB_SUCCESS 0
-#define XB_ERR_NO_API 1
-#define XB_ERR_NOT_FOUND 2
-#define XB_INVALID_ADDRESS 3
 
-// jump table struct
-struct xboot_jump_table_s {
-        uint8_t id[3];
-        uint8_t ver;
-        uint16_t ptr[];
-};
-
-// Functions
-
-// General Functions
-uint8_t xboot_get_version(uint16_t *ver);
-
-// Low level flash access
-uint8_t xboot_spm_wrapper(void);
-uint8_t xboot_load_flash_page(uint8_t *data);
-uint8_t xboot_erase_application_page(uint32_t address);
-uint8_t xboot_write_application_page(uint32_t address, uint8_t erase);
 #ifdef __AVR_XMEGA__
-uint8_t xboot_write_user_signature_row(void);
+
+// XMega functions
+// (sp_driver wrapper)
+
+#define Flash_ReadByte SP_ReadByte
+#define Flash_LoadFlashWord SP_LoadFlashWord
+#define Flash_EraseApplicationSection SP_EraseApplicationSection
+#define Flash_EraseApplicationPage SP_EraseApplicationPage
+#define Flash_EraseWriteApplicationPage SP_EraseWriteApplicationPage
+#define Flash_WriteApplicationPage SP_WriteApplicationPage
+#define Flash_EraseUserSignatureRow SP_EraseUserSignatureRow
+#define Flash_WriteUserSignatureRow SP_WriteUserSignatureRow
+#define Flash_LoadFlashPage SP_LoadFlashPage
+#define Flash_ReadFlashPage SP_ReadFlashPage
+#define Flash_WaitForSPM SP_WaitForSPM
+
+#else
+
+// ATMega Functions
+
+#define Flash_ReadByte PGM_READ_BYTE
+#define Flash_LoadFlashWord boot_page_fill
+void Flash_EraseApplicationSection(void);
+#define Flash_EraseApplicationPage boot_page_erase
+void Flash_EraseWriteApplicationPage(uint32_t addr);
+#define Flash_WriteApplicationPage boot_page_write
+void Flash_LoadFlashPage(uint8_t *data);
+void Flash_ReadFlashPage(uint8_t *data, uint32_t addr);
+#define Flash_WaitForSPM boot_spm_busy_wait
+
 #endif // __AVR_XMEGA__
 
-// Higher level firmware update functions
-uint8_t xboot_app_temp_erase(void);
-uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase);
+void Flash_ProgramPage(uint32_t page, uint8_t *buf, uint8_t erase);
 
-#endif // __API_H
 
+#endif // __FLASH_H

@@ -96,7 +96,9 @@ uint8_t xboot_spm_wrapper(void);
 uint8_t xboot_load_flash_page(uint8_t *data);
 uint8_t xboot_erase_application_page(uint32_t address);
 uint8_t xboot_write_application_page(uint32_t address, uint8_t erase);
+#ifdef __AVR_XMEGA__
 uint8_t xboot_write_user_signature_row(void);
+#endif // __AVR_XMEGA__
 
 // Higher level firmware update functions
 uint8_t xboot_app_temp_erase(void);

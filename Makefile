@@ -77,10 +77,32 @@
 MCU = atxmega64a3
 #MCU = atxmega32a4
 #MCU = atxmega16a4
+#MCU = atmega1284p
+#MCU = atmega328p
+
+# Is this an xmega?
+ifneq ($(findstring atxmega,$(MCU)),)
+  XMEGA=yes
+endif
 
 # Is this a bootloader?
 #MAKE_BOOTLOADER=no
 MAKE_BOOTLOADER=yes
+
+ifneq ($(XMEGA), yes)
+# Select boot size (ATmega only)
+# Note: if boot size is too small, xboot may not fit.
+# Generally, it should be left on largest
+# See part datasheet for specific values
+# Largest
+BOOTSZ=0
+# Large
+#BOOTSZ=1
+# Medium
+#BOOTSZ=2
+# Small
+#BOOTSZ=3
+endif
 
 # Only program boot section
 # (XMega only)
@@ -95,6 +117,7 @@ PROG_BOOT_ONLY=yes
 # CPU Frequency
 F_CPU=2000000
 #F_CPU=32000000
+#F_CPU=16000000
 
 # for xboot automated configuration - overrides MCU and F_CPU if present
 -include xboot-config.mk
@@ -112,6 +135,7 @@ TARGET = xboot
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c
+SRC += flash.c
 SRC += eeprom_driver.c
 SRC += uart.c
 SRC += i2c.c
@@ -127,7 +151,11 @@ SRC += api.c
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = sp_driver.S
+ASRC =
+ifeq ($(XMEGA), yes)
+# Xmega specific SP driver
+ASRC += sp_driver.S
+endif
 # ASRC += ...
 
 # Optimization level, can be [0, 1, 2, 3, s].
@@ -181,12 +209,17 @@ endif
 COMMON_FLAGS += -Wall
 COMMON_FLAGS += -Wa,-adhlns=$(basename $<).lst
 COMMON_FLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
+#COMMON_FLAGS += ...
 
+# C Specific flags
 CFLAGS = $(COMMON_FLAGS)
 CFLAGS += -Wstrict-prototypes
 CFLAGS += $(CSTANDARD)
+#CFLAGS += ...
 
+# C++ Specific flags
 CXXFLAGS = $(COMMON_FLAGS)
+#CXXFLAGS += ...
 
 
 
@@ -251,6 +284,7 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # to get a full listing.
 #
 AVRDUDE_PROGRAMMER = jtag2pdi
+#AVRDUDE_PROGRAMMER = jtag2isp
 #AVRDUDE_PROGRAMMER = avrispmkii
 #AVRDUDE_PROGRAMMER = avr109
 
@@ -294,6 +328,10 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_CHIP_ERASE = -D
 
 # Fuses and Lock Bits
+
+ifeq ($(XMEGA), yes)
+# XMEGA
+
 # See XMega A series datasheet (Atmel doc8077) section 4.16
 AVRDUDE_FUSES =
 
@@ -355,6 +393,92 @@ AVRDUDE_FUSES += $(AVRDUDE_FUSES_RESET_CONFIG)
 ##AVRDUDE_USERSIG = -U usersig:w:filename
 #AVRDUDE_USERSIG = -U usersig:w:...:m
 
+else
+# ATMEGA
+
+# Fuses for ATmega devices
+MCU_S = $(subst atmega,m,$(MCU))
+ifneq ($(filter $(MCU_S), m88 m88p m88pa m168 m168p),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_FUSE_NOBL	= -U efuse:w:0x01:m
+    BOOT_FUSE_BL	= -U efuse:w:0x00:m
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_FUSE_NOBL	= -U efuse:w:0x03:m
+    BOOT_FUSE_BL	= -U efuse:w:0x02:m
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_FUSE_NOBL	= -U efuse:w:0x05:m
+    BOOT_FUSE_BL	= -U efuse:w:0x04:m
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_FUSE_NOBL	= -U efuse:w:0x07:m
+    BOOT_FUSE_BL	= -U efuse:w:0x06:m
+  endif
+endif
+ifneq ($(filter $(MCU_S), m328p),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0xD9:m
+    BOOT_FUSE_BL	= -U hfuse:w:0xD8:m
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0xDB:m
+    BOOT_FUSE_BL	= -U hfuse:w:0xDA:m
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0xDD:m
+    BOOT_FUSE_BL	= -U hfuse:w:0xDC:m
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0xDF:m
+    BOOT_FUSE_BL	= -U hfuse:w:0xDE:m
+  endif
+endif
+ifneq ($(filter $(MCU_S), m164 m324 m324pa m644 m644p m644pa m1284p),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0x99:m
+    BOOT_FUSE_BL	= -U hfuse:w:0x98:m
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0x9B:m
+    BOOT_FUSE_BL	= -U hfuse:w:0x9A:m
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0x9D:m
+    BOOT_FUSE_BL	= -U hfuse:w:0x9C:m
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_FUSE_NOBL	= -U hfuse:w:0x9F:m
+    BOOT_FUSE_BL	= -U hfuse:w:0x9E:m
+  endif
+endif
+
+ifeq ($(MAKE_BOOTLOADER), yes)
+# Boot config (Bootloader)
+AVRDUDE_FUSES_BOOT_CONFIG = $(BOOT_FUSE_BL)
+else
+# Boot config (Regular)
+AVRDUDE_FUSES_BOOT_CONFIG = $(BOOT_FUSE_NOBL)
+endif
+
+#AVRDUDE_FUSES += -U lfuse:w:0xFF:m
+#AVRDUDE_FUSES += -U hfuse:w:0xFF:m
+#AVRDUDE_FUSES += -U efuse:w:0xFF:m
+
+#AVRDUDE_FUSES += -U lfuse:w:0xe2:m
+#AVRDUDE_FUSES += -U hfuse:w:0x99:m
+#AVRDUDE_FUSES += -U efuse:w:0xff:m
+
+#AVRDUDE_FUSES += -U lfuse:w:0xe2:m
+#AVRDUDE_FUSES += -U hfuse:w:0x98:m
+#AVRDUDE_FUSES += -U efuse:w:0xff:m
+
+#AVRDUDE_FUSES += -U hfuse:w:0xD8:m
+
+AVRDUDE_FUSES += $(AVRDUDE_FUSES_BOOT_CONFIG)
+
+endif
+
 AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 ifdef AVRDUDE_BAUD
   AVRDUDE_FLAGS += -b $(AVRDUDE_BAUD)
@@ -365,15 +489,19 @@ AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
 AVRDUDE_FLAGS += $(AVRDUDE_CHIP_ERASE)
 
 ifeq ($(MAKE_BOOTLOADER), yes)
+ifeq ($(XMEGA), yes)
 ifeq ($(PROG_BOOT_ONLY), yes)
   BOOT_TARGET=$(TARGET)-boot.hex
   AVRDUDE_WRITE_FLASH = -U boot:w:$(TARGET)-boot.hex
+endif
 endif
 endif
 
 # ---------------------------------------------------------------------------
 
 # Processor definitions
+# Sizes in bytes, not works (datasheet generally in words)
+# xmega
 MCU_S = $(subst atxmega,x,$(MCU))
 ifneq ($(filter $(MCU_S), x16a4 x16d4 x16a4u),)
   BOOT_SECTION_START		=0x004000
@@ -393,11 +521,107 @@ endif
 ifneq ($(filter $(MCU_S), x256a1 x256a3 x256a3b x256d3 x256a3u x256a3bu),)
   BOOT_SECTION_START		=0x040000
 endif
+# atmega
+MCU_S = $(subst atmega,m,$(MCU))
+ifneq ($(filter $(MCU_S), m88 m88p m88pa),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_SECTION_START		=0x001800
+    BOOT_SECTION_SIZE		=0x000800
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_SECTION_START		=0x001C00
+    BOOT_SECTION_SIZE		=0x000400
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_SECTION_START		=0x001E00
+    BOOT_SECTION_SIZE		=0x000200
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_SECTION_START		=0x001F00
+    BOOT_SECTION_SIZE		=0x000100
+  endif
+endif
+ifneq ($(filter $(MCU_S), m164 m168 m168p),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_SECTION_START		=0x003800
+    BOOT_SECTION_SIZE		=0x000800
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_SECTION_START		=0x003C00
+    BOOT_SECTION_SIZE		=0x000400
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_SECTION_START		=0x003E00
+    BOOT_SECTION_SIZE		=0x000200
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_SECTION_START		=0x003F00
+    BOOT_SECTION_SIZE		=0x000100
+  endif
+endif
+ifneq ($(filter $(MCU_S), m324 m324pa m328p),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_SECTION_START		=0x007000
+    BOOT_SECTION_SIZE		=0x001000
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_SECTION_START		=0x007800
+    BOOT_SECTION_SIZE		=0x000800
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_SECTION_START		=0x007C00
+    BOOT_SECTION_SIZE		=0x000400
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_SECTION_START		=0x007E00
+    BOOT_SECTION_SIZE		=0x000200
+  endif
+endif
+ifneq ($(filter $(MCU_S), m644 m644p m644pa),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_SECTION_START		=0x00E000
+    BOOT_SECTION_SIZE		=0x002000
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_SECTION_START		=0x00F000
+    BOOT_SECTION_SIZE		=0x001000
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_SECTION_START		=0x00F800
+    BOOT_SECTION_SIZE		=0x000800
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_SECTION_START		=0x00FC00
+    BOOT_SECTION_SIZE		=0x000400
+  endif
+endif
+ifneq ($(filter $(MCU_S), m1284p),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_SECTION_START		=0x01E000
+    BOOT_SECTION_SIZE		=0x002000
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_SECTION_START		=0x01F000
+    BOOT_SECTION_SIZE		=0x001000
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_SECTION_START		=0x01F800
+    BOOT_SECTION_SIZE		=0x000800
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_SECTION_START		=0x01FC00
+    BOOT_SECTION_SIZE		=0x000400
+  endif
+endif
 
 ifeq ($(MAKE_BOOTLOADER), yes)
 # BOOT_SECTION_START (=Start of Boot Loader section
 # in bytes - not words) as defined above.
 LDFLAGS += -Wl,--section-start=.text=$(BOOT_SECTION_START)
+endif
+
+ifneq ($(XMEGA), yes)
+DEFINES += -DBOOT_SECTION_SIZE=$(BOOT_SECTION_SIZE)
 endif
 
 # ---------------------------------------------------------------------------

@@ -52,17 +52,23 @@
 // Configuration
 
 // clock config
+#ifdef __AVR_XMEGA__
+// DFLL for better stability
 #define USE_DFLL
 // use 32MHz osc if makefile calls for it
 #if (F_CPU == 32000000L)
 // defaults to 2MHz RC oscillator
 // define USE_32MHZ_RC to override
 #define USE_32MHZ_RC
-#endif
+#endif // F_CPU
 
+#endif // __AVR_XMEGA__
+
+#ifdef __AVR_XMEGA__
 // AVR1008 fixes
-// Really only applicable to 256a3 rev A and B devices
+// Really only applicable to XMEGA 256a3 rev A and B devices
 //#define USE_AVR1008_EEPROM
+#endif // __AVR_XMEGA__
 
 // bootloader entrace
 #define USE_ENTER_DELAY
@@ -103,11 +109,18 @@
 #define ENABLE_API_FIRMWARE_UPDATE
 
 // ENTER_PIN
-#define ENTER_PORT              PORTC
+#define ENTER_PORT_NAME         C
 #define ENTER_PIN               0
-#define ENTER_PIN_CTRL          token_paste3(ENTER_PORT.PIN, ENTER_PIN, CTRL)
+#define ENTER_PORT              token_paste2(PORT, ENTER_PORT_NAME)
 #define ENTER_PIN_STATE         0
 #define ENTER_PIN_PUEN          1
+
+#ifdef __AVR_XMEGA__
+#define ENTER_PIN_CTRL          token_paste3(ENTER_PORT.PIN, ENTER_PIN, CTRL)
+#else // __AVR_XMEGA__
+#define ENTER_PORT_DDR          token_paste2(DDR, ENTER_PORT_NAME)
+#define ENTER_PORT_PIN          token_paste2(PIN, ENTER_PORT_NAME)
+#endif // __AVR_XMEGA__
 
 // ENTER_DELAY
 #define ENTER_BLINK_COUNT       3
@@ -134,41 +147,51 @@
 //#define WATCHDOG_TIMEOUT        WDT_PER_8KCLK_gc
 
 // LED
-#define LED_PORT                PORTA
+#define LED_PORT_NAME           A
 #define LED_PIN                 0
+#define LED_PORT                token_paste2(PORT, LED_PORT_NAME)
 #define LED_INV                 1
 
+#ifndef __AVR_XMEGA__
+#define LED_PORT_DDR            token_paste2(DDR, LED_PORT_NAME)
+#define LED_PORT_PIN            token_paste2(PIN, LED_PORT_NAME)
+#endif // __AVR_XMEGA__
+
 // UART
-#define UART_BAUD_RATE                  115200
-#define UART_PORT_NAME                  C
-#define UART_NUMBER                     0
-#if (UART_NUMBER == 0)
-#define UART_TX_PIN                     3
-#else
-#define UART_TX_PIN                     7
-#endif
-#define UART_PORT                       token_paste2(PORT, UART_PORT_NAME)
-#define UART_DEVICE_PORT                token_paste2(UART_PORT_NAME, UART_NUMBER)
-#define UART_DEVICE                     token_paste2(USART, UART_DEVICE_PORT)
-#define UART_DEVICE_RXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
-#define UART_DEVICE_DRE_ISR             token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
-#define UART_DEVICE_TXC_ISR             token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
+// Select BAUD rate, port name, and UART number
+// Port name is only for XMEGA
+// For ATMEGA, uart number is usually 0
+// UART_U2X will double clock rate for ATMEGA
+// Needed for high baud rates
+#define UART_BAUD_RATE          115200
+#define UART_PORT_NAME          C
+#define UART_NUMBER             0
+#define UART_U2X
 
 // UART RS485 Enable Output
-#define UART_EN_PORT            PORTC
+#define UART_EN_PORT_NAME       C
 #define UART_EN_PIN             4
+#define UART_EN_PORT            token_paste2(PORT, UART_EN_PORT_NAME)
 #define UART_EN_PIN_INV         0
 
-// FIFO
-#define FIFO_DATA_PORT  PORTC
-#define FIFO_CTL_PORT   PORTD
-#define FIFO_RXF_N_bm   1<<3
-#define FIFO_TXE_N_bm   1<<2
-#define FIFO_RD_N_bm    1<<1
-#define FIFO_WR_N_bm    1<<0
-#define FIFO_BIT_REVERSE
+#ifndef __AVR_XMEGA__
+#define UART_EN_PORT_DDR        token_paste2(DDR, UART_EN_PORT_NAME)
+#define UART_EN_PORT_PIN        token_paste2(PIN, UART_EN_PORT_NAME)
+#endif // __AVR_XMEGA__
 
 #ifdef __AVR_XMEGA__
+
+#if (UART_NUMBER == 0)
+#define UART_TX_PIN             3
+#else
+#define UART_TX_PIN             7
+#endif
+#define UART_PORT               token_paste2(PORT, UART_PORT_NAME)
+#define UART_DEVICE_PORT        token_paste2(UART_PORT_NAME, UART_NUMBER)
+#define UART_DEVICE             token_paste2(USART, UART_DEVICE_PORT)
+#define UART_DEVICE_RXC_ISR     token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
+#define UART_DEVICE_DRE_ISR     token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
+#define UART_DEVICE_TXC_ISR     token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
 
 // BAUD Rate Values
 // Known good at 2MHz
@@ -219,18 +242,51 @@
 #endif
 #endif
 
+#else // __AVR_XMEGA__
+
+#define UART_UDR                token_paste2(UDR, UART_NUMBER)
+#define UART_UCSRA              token_paste3(UCSR, UART_NUMBER, A)
+#define UART_UCSRB              token_paste3(UCSR, UART_NUMBER, B)
+#define UART_UCSRC              token_paste3(UCSR, UART_NUMBER, C)
+#define UART_UBRRL              token_paste3(UBRR, UART_NUMBER, L)
+#define UART_UBRRH              token_paste3(UBRR, UART_NUMBER, H)
+
+#ifdef UART_U2X
+#define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)UART_BAUD_RATE * 4UL)) / ((uint32_t)(UART_BAUD_RATE) * 8UL) - 1)
+#else
+#define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)UART_BAUD_RATE * 8UL)) / ((uint32_t)(UART_BAUD_RATE) * 16UL) - 1)
+#endif
+
+#endif // __AVR_XMEGA__
+
+// FIFO
+#define FIFO_DATA_PORT_NAME     C
+#define FIFO_CTL_PORT_NAME      D
+#define FIFO_RXF_N_bm           (1<<3)
+#define FIFO_TXE_N_bm           (1<<2)
+#define FIFO_RD_N_bm            (1<<1)
+#define FIFO_WR_N_bm            (1<<0)
+#define FIFO_BIT_REVERSE
+#define FIFO_DATA_PORT          token_paste2(PORT, FIFO_DATA_PORT_NAME)
+#define FIFO_CTL_PORT           token_paste2(PORT, FIFO_CTL_PORT_NAME)
+
+#ifndef __AVR_XMEGA__
+#define FIFO_DATA_PORT_DDR      token_paste2(DDR, FIFO_DATA_PORT_NAME)
+#define FIFO_DATA_PORT_PIN      token_paste2(PIN, FIFO_DATA_PORT_NAME)
+#define FIFO_CTL_PORT_DDR       token_paste2(DDR, FIFO_CTL_PORT_NAME)
+#define FIFO_CTL_PORT_PIN       token_paste2(PIN, FIFO_CTL_PORT_NAME)
 #endif // __AVR_XMEGA__
 
 // I2C
 #ifdef __AVR_XMEGA__
 
-#define I2C_DEVICE_PORT                 C
-#define I2C_DEVICE                      token_paste2(TWI, I2C_DEVICE_PORT)
-#define I2C_DEVICE_ISR                  token_paste3(TWI, I2C_DEVICE_PORT, _TWIS_vect)
+#define I2C_DEVICE_PORT         C
+#define I2C_DEVICE              token_paste2(TWI, I2C_DEVICE_PORT)
+#define I2C_DEVICE_ISR          token_paste3(TWI, I2C_DEVICE_PORT, _TWIS_vect)
 
-#define I2C_MATCH_ANY                   1
-#define I2C_ADDRESS                     0x10
-#define I2C_GC_ENABLE                   1
+#define I2C_MATCH_ANY           1
+#define I2C_ADDRESS             0x10
+#define I2C_GC_ENABLE           1
 
 #endif // __AVR_XMEGA__
 
@@ -250,9 +306,19 @@
 
 
 
+#ifndef EEPROM_PAGE_SIZE
+#define EEPROM_PAGE_SIZE E2PAGESIZE
+#endif
+
 #ifndef EEPROM_BYTE_ADDRESS_MASK
 #if EEPROM_PAGE_SIZE == 32
 #define EEPROM_BYTE_ADDRESS_MASK 0x1f
+#elif EEPROM_PAGE_SIZE == 16
+#define EEPROM_BYTE_ADDRESS_MASK = 0x0f
+#elif EEPROM_PAGE_SIZE == 8
+#define EEPROM_BYTE_ADDRESS_MASK = 0x07
+#elif EEPROM_PAGE_SIZE == 4
+#define EEPROM_BYTE_ADDRESS_MASK = 0x03
 #else
 #error Unknown EEPROM page size!  Please add new byte address value!
 #endif
@@ -281,7 +347,7 @@ typedef uint32_t ADDR_T;
 
 // Includes
 #include "protocol.h"
-#include "sp_driver.h"
+#include "flash.h"
 #include "eeprom_driver.h"
 #include "uart.h"
 #include "i2c.h"

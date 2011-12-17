@@ -32,6 +32,7 @@
 #include "eeprom_driver.h"
 #include "string.h"
 
+#ifdef __AVR_XMEGA__
 
 // NVM call
 static inline void NVM_EXEC(void)
@@ -238,6 +239,17 @@ void EEPROM_erase_all(void)
         NVM_EXEC_WRAPPER();
 }
 
+#else // __AVR_XMEGA__
+
+void EEPROM_erase_all(void)
+{
+        for (uint16_t i = 0; i < E2END; i++)
+        {
+                EEPROM_update_byte(i, 0xff);
+        }
+}
+
+#endif // __AVR_XMEGA__
 
 
 

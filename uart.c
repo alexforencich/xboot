@@ -70,7 +70,7 @@ ISR(UART_DEVICE_TXC_ISR)
 // Initialize UART
 void __attribute__ ((always_inline)) uart_init(void)
 {
-        #ifdef __AVR_XMEGA__
+#ifdef __AVR_XMEGA__
         UART_PORT.DIRSET |= (1 << UART_TX_PIN);
         UART_DEVICE.BAUDCTRLA = (UART_BSEL_VALUE & USART_BSEL_gm);
         UART_DEVICE.BAUDCTRLB = ((UART_BSCALE_VALUE << USART_BSCALE_gp) & USART_BSCALE_gm) | ((UART_BSEL_VALUE >> 8) & ~USART_BSCALE_gm);
@@ -82,17 +82,29 @@ void __attribute__ ((always_inline)) uart_init(void)
         #ifdef USE_INTERRUPTS
         UART_DEVICE.CTRLA = USART_RXCINTLVL0_bm | USART_TXCINTLVL0_bm;
         #endif // USE_INTERRUPTS
-        #endif // __AVR_XMEGA__
+#else // __AVR_XMEGA__
+        UART_UBRRH = (UART_BRV >> 8) & 0xff;
+        UART_UBRRL = (UART_BRV) & 0xff;
+        #ifdef UART_U2X
+        UART_UCSRA = _BV(U2X0);
+        #else
+        UART_UCSRA = 0;
+        #endif
+        UART_UCSRB = _BV(RXEN0) | _BV(TXEN0);
+        UART_UCSRC = _BV(UCSZ01) | _BV(UCSZ00);
+#endif // __AVR_XMEGA__
 }
 
 // Shut down UART
 void __attribute__ ((always_inline)) uart_deinit(void)
 {
-        #ifdef __AVR_XMEGA__
+#ifdef __AVR_XMEGA__
         UART_DEVICE.CTRLB = 0;
         #ifdef USE_INTERRUPTS
         UART_DEVICE.CTRLA = 0;
         #endif // USE_INTERRUPTS
-        #endif // __AVR_XMEGA__
+#else // __AVR_XMEGA__
+        UART_UCSRB = 0;
+#endif // __AVR_XMEGA__
 }
 

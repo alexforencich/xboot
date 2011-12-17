@@ -225,6 +225,7 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
         return XB_ERR_NOT_FOUND;
 }
 
+#ifdef __AVR_XMEGA__
 uint8_t xboot_write_user_signature_row(void)
 {
         uint8_t ret = init_api();
@@ -259,6 +260,7 @@ uint8_t xboot_write_user_signature_row(void)
         
         return XB_ERR_NOT_FOUND;
 }
+#endif // __AVR_XMEGA__
 
 
 // Higher level firmware update functions

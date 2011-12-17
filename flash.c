@@ -1,13 +1,11 @@
 /************************************************************************/
-/* XBoot Extensible AVR Bootloader                                      */
+/* Generic ATMEL Flash Driver                                           */
 /*                                                                      */
-/* UART Module                                                          */
-/*                                                                      */
-/* uart.h                                                               */
+/* flash.c                                                              */
 /*                                                                      */
 /* Alex Forencich <alex@alexforencich.com>                              */
 /*                                                                      */
-/* Copyright (c) 2010 Alex Forencich                                    */
+/* Copyright (c) 2011 Alex Forencich                                    */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -31,45 +29,95 @@
 /*                                                                      */
 /************************************************************************/
 
-#ifndef __UART_H
-#define __UART_H
+#include "flash.h"
 
-#include "xboot.h"
-
-// Globals
-
-// Defines
 #ifdef __AVR_XMEGA__
 
-// nonzero if character has been received
-#define uart_char_received() (UART_DEVICE.STATUS & USART_RXCIF_bm)
-// current character in UART receive buffer
-#define uart_cur_char() UART_DEVICE.DATA
-// send character
-#define uart_send_char(c) UART_DEVICE.DATA = (c)
-// send character, block until it is completely sent
-#define uart_send_char_blocking(c) do {uart_send_char(c); \
-    while (!(UART_DEVICE.STATUS & USART_TXCIF_bm)) { } \
-    UART_DEVICE.STATUS |= USART_TXCIF_bm; } while (0)
+// XMega functions
+// (sp_driver wrapper)
 
-#else // __AVR_XMEGA__
+void Flash_ProgramPage(uint32_t page, uint8_t *buf, uint8_t erase)
+{
+        Flash_LoadFlashPage(buf);
+        
+        if (erase)
+        {
+                Flash_EraseWriteApplicationPage(page);
+        }
+        else
+        {
+                Flash_WriteApplicationPage(page);
+        }
+        
+        Flash_WaitForSPM();
+}
 
-// nonzero if character has been received
-#define uart_char_received() (UART_UCSRA & _BV(RXC0))
-// current character in UART receive buffer
-#define uart_cur_char() UART_UDR
-// send character
-#define uart_send_char(c) UART_UDR = (c)
-// send character, block until it is completely sent
-#define uart_send_char_blocking(c) do {uart_send_char(c); \
-    while (!(UART_UCSRA & _BV(TXC0))) { } \
-    UART_UCSRA |= _BV(TXC0); } while (0)
+#else
+
+// ATMega Functions
+
+void Flash_EraseApplicationSection(void)
+{
+        for (uint32_t addr = 0; addr < APP_SECTION_END; addr += SPM_PAGESIZE) 
+        {
+                boot_page_erase(addr);
+                boot_spm_busy_wait();
+        }
+        boot_rww_enable();
+}
+
+void Flash_EraseWriteApplicationPage(uint32_t addr)
+{
+        boot_page_erase(addr);
+        boot_spm_busy_wait();
+        boot_page_write(addr);
+        boot_spm_busy_wait();
+}
+
+void Flash_LoadFlashPage(uint8_t *data)
+{
+        uint16_t w;
+        
+        for (uint16_t i = 0; i < SPM_PAGESIZE; i += 2)
+        {
+                w = *(data++);
+                w |= *(data++) << 8;
+                boot_page_fill(i, w);
+        }
+}
+
+void Flash_ReadFlashPage(uint8_t *data, uint32_t addr)
+{
+        for (uint16_t i = 0; i < SPM_PAGESIZE; i++)
+        {
+                data[i] = PGM_READ_BYTE(addr++);
+        }
+}
+
+void Flash_ProgramPage(uint32_t page, uint8_t *buf, uint8_t erase)
+{
+        uint16_t i;
+        
+        eeprom_busy_wait ();
+        
+        if (erase)
+        {
+                boot_page_erase (page);
+                boot_spm_busy_wait ();
+        }
+        
+        for (i=0; i<SPM_PAGESIZE; i+=2)
+        {
+                uint16_t w = *buf++;
+                w += (*buf++) << 8;
+                boot_page_fill (page + i, w);
+        }
+        
+        boot_page_write(page);
+        boot_spm_busy_wait();
+        boot_rww_enable();
+}
 
 #endif // __AVR_XMEGA__
 
-// Prototypes
-extern void __attribute__ ((always_inline)) uart_init(void);
-extern void __attribute__ ((always_inline)) uart_deinit(void);
-
-#endif // __UART_H
 

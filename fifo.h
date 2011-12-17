@@ -39,8 +39,15 @@
 // Globals
 
 // Defines
+
+#ifdef __AVR_XMEGA__
 // nonzero if character has been received
 #define fifo_char_received() ((FIFO_CTL_PORT.IN & FIFO_RXF_N_bm) != FIFO_RXF_N_bm)
+#else // __AVR_XMEGA__
+// nonzero if character has been received
+#define fifo_char_received() ((FIFO_CTL_PORT_PIN & FIFO_RXF_N_bm) != FIFO_RXF_N_bm)
+#endif // __AVR_XMEGA__
+
 // current character in UART receive buffer
 extern uint8_t __attribute__ ((always_inline)) fifo_cur_char(void);
 // send character
