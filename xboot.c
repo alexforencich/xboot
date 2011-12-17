@@ -49,12 +49,13 @@ unsigned char comm_mode;
 unsigned char buffer[SPM_PAGESIZE];
 
 // Main code
-int __attribute__ ((noreturn)) main(void)
+int main(void)
 {
         ADDR_T address = 0;
         unsigned char in_bootloader = 0;
         unsigned char val = 0;
-        int i, j, k;
+        int i = 0;
+        int j, k;
         
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         unsigned short devid_bit;
@@ -727,6 +728,7 @@ autoneg_done:
         
         // Jump into main code
         asm("jmp 0");
+        __builtin_unreachable();
 }
 
 #ifdef USE_I2C_ADDRESS_NEGOTIATION
