@@ -117,7 +117,7 @@ void flush_buffer(void)
 }
 
 
-uint8_t eeprom_read_byte(uint16_t addr)
+uint8_t EEPROM_read_byte(uint16_t addr)
 {
         wait_for_nvm();
         
@@ -132,7 +132,7 @@ uint8_t eeprom_read_byte(uint16_t addr)
 }
 
 
-void eeprom_write_byte(uint16_t addr, uint8_t byte)
+void EEPROM_write_byte(uint16_t addr, uint8_t byte)
 {
         flush_buffer();
         NVM.CMD = NVM_CMD_LOAD_EEPROM_BUFFER_gc;
@@ -148,7 +148,7 @@ void eeprom_write_byte(uint16_t addr, uint8_t byte)
 }
 
 
-uint16_t eeprom_read_block(uint16_t addr, uint8_t *dest, uint16_t len)
+uint16_t EEPROM_read_block(uint16_t addr, uint8_t *dest, uint16_t len)
 {
         uint16_t cnt = 0;
         
@@ -172,7 +172,7 @@ uint16_t eeprom_read_block(uint16_t addr, uint8_t *dest, uint16_t len)
 }
 
 
-uint16_t eeprom_write_block(uint16_t addr, const uint8_t *src, uint16_t len)
+uint16_t EEPROM_write_block(uint16_t addr, const uint8_t *src, uint16_t len)
 {
         uint8_t byte_addr = addr % EEPROM_PAGE_SIZE;
         uint16_t page_addr = addr - byte_addr;
@@ -217,7 +217,7 @@ uint16_t eeprom_write_block(uint16_t addr, const uint8_t *src, uint16_t len)
 }
 
 
-void eeprom_erase_page(uint16_t addr)
+void EEPROM_erase_page(uint16_t addr)
 {
         NVM.ADDR0 = addr & 0xFF;
         NVM.ADDR1 = (addr >> 8) & 0x1F;
@@ -230,7 +230,7 @@ void eeprom_erase_page(uint16_t addr)
 }
 
 
-void eeprom_erase_all(void)
+void EEPROM_erase_all(void)
 {
         wait_for_nvm();
         

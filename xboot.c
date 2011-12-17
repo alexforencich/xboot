@@ -333,7 +333,7 @@ int main(void)
                         #endif // USE_WATCHDOG
                         
                         // Erase EEPROM
-                        eeprom_erase_all();
+                        EEPROM_erase_all();
                         
                         // acknowledge
                         send_char(REPLY_ACK);
@@ -413,13 +413,13 @@ int main(void)
                 // Write EEPROM memory
                 else if (val == CMD_WRITE_EEPROM_BYTE)
                 {
-                        eeprom_write_byte(address, get_char());
+                        EEPROM_write_byte(address, get_char());
                         address++;
                 }
                 // Read EEPROM memory
                 else if (val == CMD_READ_EEPROM_BYTE)
                 {
-                        send_char(eeprom_read_byte(address));
+                        send_char(EEPROM_read_byte(address));
                         address++;
                 }
                 #endif // ENABLE_EEPROM_BYTE_SUPPORT
@@ -1024,7 +1024,7 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
         // EEPROM memory type.
         if(mem == MEM_EEPROM)
         {
-                eeprom_write_block(*address, buffer, size);
+                EEPROM_write_block(*address, buffer, size);
                 (*address) += size;
                 
                 return REPLY_ACK; // Report programming OK
@@ -1077,7 +1077,7 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
         
         if (mem == MEM_EEPROM) // Read EEPROM
         {
-                eeprom_read_block(*address, buffer, size);
+                EEPROM_read_block(*address, buffer, size);
                 (*address) += size;
         }
         

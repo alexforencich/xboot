@@ -47,14 +47,15 @@
 //#define USE_AVR1008_EEPROM
 
 // Prototypes
-uint8_t eeprom_read_byte(uint16_t addr);
-void eeprom_write_byte(uint16_t addr, uint8_t byte);
-uint16_t eeprom_read_block(uint16_t addr, uint8_t *dest, uint16_t len);
-uint16_t eeprom_write_block(uint16_t addr, const uint8_t *src, uint16_t len);
 
-void eeprom_erase_page(uint16_t addr);
-void eeprom_erase_all(void);
+uint8_t EEPROM_read_byte(uint16_t addr);
+void EEPROM_write_byte(uint16_t addr, uint8_t byte);
+uint16_t EEPROM_read_block(uint16_t addr, uint8_t *dest, uint16_t len);
+uint16_t EEPROM_write_block(uint16_t addr, const uint8_t *src, uint16_t len);
 
+void EEPROM_erase_page(uint16_t addr);
+
+void EEPROM_erase_all(void);
 
 
 #endif // __EEPROM_DRIVER_H
