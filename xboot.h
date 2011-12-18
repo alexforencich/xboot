@@ -248,13 +248,14 @@
 #define UART_UCSRA              token_paste3(UCSR, UART_NUMBER, A)
 #define UART_UCSRB              token_paste3(UCSR, UART_NUMBER, B)
 #define UART_UCSRC              token_paste3(UCSR, UART_NUMBER, C)
+#define UART_UBRR               token_paste2(UBRR, UART_NUMBER)
 #define UART_UBRRL              token_paste3(UBRR, UART_NUMBER, L)
 #define UART_UBRRH              token_paste3(UBRR, UART_NUMBER, H)
 
 #ifdef UART_U2X
-#define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)UART_BAUD_RATE * 4UL)) / ((uint32_t)(UART_BAUD_RATE) * 8UL) - 1)
+#define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)(UART_BAUD_RATE) * 4UL)) / ((uint32_t)(UART_BAUD_RATE) * 8UL) - 1)
 #else
-#define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)UART_BAUD_RATE * 8UL)) / ((uint32_t)(UART_BAUD_RATE) * 16UL) - 1)
+#define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)(UART_BAUD_RATE) * 8UL)) / ((uint32_t)(UART_BAUD_RATE) * 16UL) - 1)
 #endif
 
 #endif // __AVR_XMEGA__

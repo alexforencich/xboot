@@ -83,8 +83,7 @@ void __attribute__ ((always_inline)) uart_init(void)
         UART_DEVICE.CTRLA = USART_RXCINTLVL0_bm | USART_TXCINTLVL0_bm;
         #endif // USE_INTERRUPTS
 #else // __AVR_XMEGA__
-        UART_UBRRH = (UART_BRV >> 8) & 0xff;
-        UART_UBRRL = (UART_BRV) & 0xff;
+        UART_UBRR = UART_BRV;
         #ifdef UART_U2X
         UART_UCSRA = _BV(U2X0);
         #else
