@@ -245,7 +245,7 @@ void EEPROM_erase_all(void)
 {
         for (uint16_t i = 0; i < E2END; i++)
         {
-                EEPROM_update_byte(i, 0xff);
+                eeprom_update_byte((uint8_t *)i, 0xff);
         }
 }
 
