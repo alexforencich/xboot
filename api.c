@@ -52,7 +52,6 @@ struct xboot_jump_table_s api_jump_table __attribute((section(".vectors"))) = {
                 #else // ENABLE_API_SPM_WRAPPER
                 0,
                 #endif // ENABLE_API_SPM_WRAPPER
-                (uint16_t)(xboot_load_flash_page),
                 (uint16_t)(xboot_erase_application_page),
                 (uint16_t)(xboot_write_application_page),
 #ifdef __AVR_XMEGA__
@@ -61,7 +60,6 @@ struct xboot_jump_table_s api_jump_table __attribute((section(".vectors"))) = {
                 0,
 #endif // __AVR_XMEGA__
                 #else // ENABLE_API_LOW_LEVEL_FLASH
-                0,
                 0,
                 0,
                 0,
@@ -96,22 +94,6 @@ uint8_t xboot_spm_wrapper(void)
         return XB_ERR_NOT_FOUND;
 }
 
-uint8_t xboot_load_flash_page(uint8_t *data)
-{
-        uint8_t saved_status = SREG;
-        cli();
-        
-        Flash_LoadFlashPage(data);
-        Flash_WaitForSPM();
-        
-#ifdef __AVR_XMEGA__
-        NVM_CMD = NVM_CMD_NO_OPERATION_gc;
-#endif // __AVR_XMEGA__
-        
-        SREG = saved_status;
-        return XB_SUCCESS;
-}
-
 uint8_t xboot_erase_application_page(uint32_t address)
 {
         uint8_t saved_status = SREG;
@@ -132,7 +114,7 @@ uint8_t xboot_erase_application_page(uint32_t address)
         return XB_SUCCESS;
 }
 
-uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
+uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t erase)
 {
         uint8_t saved_status = SREG;
         
@@ -141,16 +123,7 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
         
         cli();
         
-        if (erase)
-        {
-                Flash_EraseWriteApplicationPage(address);
-        }
-        else
-        {
-                Flash_WriteApplicationPage(address);
-        }
-        
-        Flash_WaitForSPM();
+        Flash_ProgramPage(address, data, erase);
         
 #ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
@@ -161,11 +134,12 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
 }
 
 #ifdef __AVR_XMEGA__
-uint8_t xboot_write_user_signature_row(void)
+uint8_t xboot_write_user_signature_row(uint8_t *data)
 {
         uint8_t saved_status = SREG;
         cli();
         
+        Flash_LoadFlashPage(data);
         Flash_EraseUserSignatureRow();
         Flash_WaitForSPM();
         Flash_WriteUserSignatureRow();
@@ -200,9 +174,7 @@ uint8_t xboot_app_temp_erase(void)
 
 uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase)
 {
-        xboot_load_flash_page(data);
-        xboot_write_application_page(addr + XB_APP_TEMP_START, erase);
-        return XB_SUCCESS;
+        return xboot_write_application_page(addr + XB_APP_TEMP_START, data, erase);
 }
 
 

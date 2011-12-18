@@ -93,11 +93,10 @@ uint8_t xboot_get_api_version(uint8_t *ver);
 
 // Low level flash access
 uint8_t xboot_spm_wrapper(void);
-uint8_t xboot_load_flash_page(uint8_t *data);
 uint8_t xboot_erase_application_page(uint32_t address);
-uint8_t xboot_write_application_page(uint32_t address, uint8_t erase);
+uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t erase);
 #ifdef __AVR_XMEGA__
-uint8_t xboot_write_user_signature_row(void);
+uint8_t xboot_write_user_signature_row(uint8_t *data);
 #endif // __AVR_XMEGA__
 
 // Higher level firmware update functions

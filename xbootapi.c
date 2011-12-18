@@ -120,7 +120,7 @@ uint8_t xboot_spm_wrapper(void)
         return XB_ERR_NOT_FOUND;
 }
 
-uint8_t xboot_load_flash_page(uint8_t *data)
+uint8_t xboot_erase_application_page(uint32_t address)
 {
         uint8_t ret = init_api();
         uint16_t ptr;
@@ -143,7 +143,7 @@ uint8_t xboot_load_flash_page(uint8_t *data)
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
                 
-                ret = ( (uint8_t(*)(uint8_t *)) ptr )(data);
+                ret = ( (uint8_t(*)(uint32_t)) ptr )(address);
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
@@ -155,7 +155,7 @@ uint8_t xboot_load_flash_page(uint8_t *data)
         return XB_ERR_NOT_FOUND;
 }
 
-uint8_t xboot_erase_application_page(uint32_t address)
+uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t erase)
 {
         uint8_t ret = init_api();
         uint16_t ptr;
@@ -178,7 +178,7 @@ uint8_t xboot_erase_application_page(uint32_t address)
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
                 
-                ret = ( (uint8_t(*)(uint32_t)) ptr )(address);
+                ret = ( (uint8_t(*)(uint32_t, uint8_t *, uint8_t)) ptr )(address, data, erase);
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
@@ -190,7 +190,8 @@ uint8_t xboot_erase_application_page(uint32_t address)
         return XB_ERR_NOT_FOUND;
 }
 
-uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
+#ifdef __AVR_XMEGA__
+uint8_t xboot_write_user_signature_row(uint8_t *data)
 {
         uint8_t ret = init_api();
         uint16_t ptr;
@@ -213,43 +214,7 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t erase)
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
                 
-                ret = ( (uint8_t(*)(uint32_t, uint8_t)) ptr )(address, erase);
-                
-                #ifdef NEED_EIND
-                EIND = saved_eind;
-                #endif // NEED_EIND
-                
-                return ret;
-        }
-        
-        return XB_ERR_NOT_FOUND;
-}
-
-#ifdef __AVR_XMEGA__
-uint8_t xboot_write_user_signature_row(void)
-{
-        uint8_t ret = init_api();
-        uint16_t ptr;
-        
-        #ifdef NEED_EIND
-        uint8_t saved_eind;
-        #endif // NEED_EIND
-        
-        if (ret != XB_SUCCESS)
-                return ret;
-        
-        if (api_version == 1)
-        {
-                ptr = PGM_READ_WORD(JUMP_TABLE_INDEX(5));
-                if (ptr == 0 || ptr == 0xffff)
-                        return XB_ERR_NOT_FOUND;
-                
-                #ifdef NEED_EIND
-                saved_eind = EIND;
-                EIND = PROGMEM_SIZE >> 17;
-                #endif // NEED_EIND
-                
-                ret = ( (uint8_t(*)(void)) ptr )();
+                ret = ( (uint8_t(*)(uint8_t *)) ptr )(data);
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
@@ -278,7 +243,7 @@ uint8_t xboot_app_temp_erase(void)
         
         if (api_version == 1)
         {
-                ptr = PGM_READ_WORD(JUMP_TABLE_INDEX(6));
+                ptr = PGM_READ_WORD(JUMP_TABLE_INDEX(5));
                 if (ptr == 0 || ptr == 0xffff)
                 {
                         for (uint32_t addr = XB_APP_TEMP_START; addr < XB_APP_TEMP_END; addr += SPM_PAGESIZE)
@@ -321,13 +286,10 @@ uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase)
         
         if (api_version == 1)
         {
-                ptr = PGM_READ_WORD(JUMP_TABLE_INDEX(7));
+                ptr = PGM_READ_WORD(JUMP_TABLE_INDEX(6));
                 if (ptr == 0 || ptr == 0xffff)
                 {
-                        ret = xboot_load_flash_page(data);
-                        if (ret != XB_SUCCESS)
-                                return ret;
-                        ret = xboot_write_application_page(addr + XB_APP_TEMP_START, erase);
+                        ret = xboot_write_application_page(addr + XB_APP_TEMP_START, data, erase);
                         return ret;
                 }
                 

@@ -1187,24 +1187,24 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
                 (*address) += size >> 1;
                 
 #ifdef __AVR_XMEGA__
-                Flash_LoadFlashPage(buffer);
                 
                 if (mem == MEM_FLASH)
                 {
                         #ifdef ENABLE_FLASH_ERASE_WRITE
-                        Flash_EraseWriteApplicationPage(tempaddress);
+                        Flash_ProgramPage(tempaddress, buffer, 1);
                         #else
-                        Flash_WriteApplicationPage(tempaddress);
+                        Flash_ProgramPage(tempaddress, buffer, 0);
                         #endif
                 }
                 else if (mem == MEM_USERSIG)
                 {
+                        Flash_LoadFlashPage(buffer);
                         Flash_EraseUserSignatureRow();
                         Flash_WaitForSPM();
                         Flash_WriteUserSignatureRow();
+                        Flash_WaitForSPM();
                 }
                 
-                Flash_WaitForSPM();
 #else // __AVR_XMEGA__
                 #ifdef ENABLE_FLASH_ERASE_WRITE
                 Flash_ProgramPage(tempaddress, buffer, 1);
@@ -1319,20 +1319,18 @@ void install_firmware()
         // read last block
         Flash_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
         
+        // check for install command
         if (buffer[SPM_PAGESIZE-6] == 'X' && buffer[SPM_PAGESIZE-5] == 'B' &&
                 buffer[SPM_PAGESIZE-4] == 'I' && buffer[SPM_PAGESIZE-3] == 'F')
         {
                 crc = (buffer[SPM_PAGESIZE-2] << 8) | buffer[SPM_PAGESIZE-1];
                 
+                // skip last 6 bytes as they are the install command
                 crc2 = crc16_block(XB_APP_TEMP_START, XB_APP_TEMP_SIZE - 6);
                 
-                // crc last bytes as empty
+                // crc last 6 bytes as empty
                 for (int i = 0; i < 6; i++)
                         crc2 = _crc16_update(crc2, 0xff);
-                
-                Flash_ReadFlashPage(buffer, XB_APP_TEMP_START + XB_APP_TEMP_SIZE - SPM_PAGESIZE);
-                buffer[SPM_PAGESIZE-4] = (crc2 >> 8);
-                buffer[SPM_PAGESIZE-3] = crc2;
                 
                 if (crc == crc2)
                 {
@@ -1347,26 +1345,17 @@ void install_firmware()
                                 #endif // USE_LED
                                 
                                 Flash_ReadFlashPage(buffer, ptr + XB_APP_TEMP_START);
+                                // if it's the last page, clear out the last 6 bytes
                                 if (ptr >= XB_APP_SIZE - SPM_PAGESIZE)
                                 {
                                         for (int i = SPM_PAGESIZE-6; i < SPM_PAGESIZE; i++)
-                                        buffer[i] = 0xff;
+                                                buffer[i] = 0xff;
                                 }
-#ifdef __AVR_XMEGA__
-                                Flash_LoadFlashPage(buffer);
-                                Flash_EraseWriteApplicationPage(ptr);
-                                Flash_WaitForSPM();
-#else // __AVR_XMEGA__
                                 Flash_ProgramPage(ptr, buffer, 1);
-#endif // __AVR_XMEGA__
                         }
                 }
                 
-                for (uint32_t ptr = XB_APP_TEMP_START; ptr < XB_APP_TEMP_END; ptr += SPM_PAGESIZE)
-                {
-                        Flash_EraseApplicationPage(ptr);
-                        Flash_WaitForSPM();
-                }
+                xboot_app_temp_erase();
         }
 }
 
