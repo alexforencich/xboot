@@ -36,6 +36,10 @@
 #include <avr/pgmspace.h>
 #include <util/crc16.h>
 
+#ifndef __AVR_XMEGA__
+#include <avr/wdt.h>
+#endif
+
 // defines
 // offsets and addresses
 #ifndef PROGMEM_SIZE

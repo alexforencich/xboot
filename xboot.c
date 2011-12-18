@@ -263,6 +263,11 @@ int main(void)
         fifo_init();
         #endif // USE_FIFO
         
+#ifndef __AVR_XMEGA__
+        // ATMEGA must reset via watchdog, so turn it off
+        wdt_disable();
+#endif
+        
         // --------------------------------------------------
         // End initialization section
         
@@ -358,6 +363,12 @@ int main(void)
                 
                 // --------------------------------------------------
                 // End main trigger section
+                
+#ifdef __AVR_XMEGA__
+                WDT_Reset();
+#else // __AVR_XMEGA__
+                wdt_reset();
+#endif // __AVR_XMEGA__
                 
 #ifdef USE_ENTER_DELAY
         }

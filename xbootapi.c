@@ -365,6 +365,9 @@ void __attribute__ ((noreturn)) xboot_reset(void)
         #ifdef __AVR_XMEGA__
         CCP = CCP_IOREG_gc;
         RST.CTRL = RST_SWRST_bm;
+        #else // __AVR_XMEGA__
+        wdt_disable();  
+        wdt_enable(WDTO_15MS);
         #endif // __AVR_XMEGA__
         
         // don't return

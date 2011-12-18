@@ -356,6 +356,10 @@ typedef uint32_t ADDR_T;
 #include "watchdog.h"
 #include "api.h"
 
+#ifndef __AVR_XMEGA__
+#include <avr/wdt.h>
+#endif // __AVR_XMEGA__
+
 // globals
 #ifdef USE_INTERRUPTS
 extern volatile unsigned char comm_mode;
