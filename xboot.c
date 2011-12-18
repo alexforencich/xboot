@@ -265,6 +265,7 @@ int main(void)
         
 #ifndef __AVR_XMEGA__
         // ATMEGA must reset via watchdog, so turn it off
+        MCUSR = 0;
         wdt_disable();
 #endif
         
