@@ -1,6 +1,6 @@
 #!/bin/bash
 
-files="README
+files="README.md
 Makefile
 xboot.c
 xboot.h
