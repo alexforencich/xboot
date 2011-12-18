@@ -32,11 +32,11 @@
 #include "xbootapi.h"
 
 // defines
-#if PROGMEM_SIZE > 0x1FFFF
+#if PROGMEM_SIZE > 0x020000
 #define NEED_EIND
 #endif
 
-#if PROGMEM_SIZE > 0xFFFF
+#if PROGMEM_SIZE > 0x010000
 #define PGM_READ_BYTE pgm_read_byte_far
 #define PGM_READ_WORD pgm_read_word_far
 #define PGM_READ_DWORD pgm_read_dword_far
