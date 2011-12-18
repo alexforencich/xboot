@@ -128,28 +128,27 @@ Before building XBoot, please configure it so it will interface properly with
 your system. This will involve editing some parameters in the makefile and
 some parameters in xboot.h. The main parameters that need to be set in the
 makefile are the target chip (MCU) and the frequency (F_CPU). For ATMEGA
-chips, the boot size must also be set, generally to the largest setting. All
-you need to do is make sure the only line that's not commented out is the one
-for your chip and the proper frequency. For the simplest bootloader
-configuration on the XMEGA, you may only choose 2000000 and 32000000 for the
-clock speed, corresponding to the two internal RC oscillator frequencies. For
-ATMEGA chips, the specific start up clock speed (based on the fuse settings
-and/or external crystal or other clock source) must be specifically entered
-manually. For the rest of the configuration, see the section 3, “Configuring
-XBoot”.
+chips, the boot size (BOOTSZ) must also be set, generally to the largest
+setting. All you need to do is make sure the only line that's not commented
+out is the one for your chip and the proper frequency. For the simplest
+bootloader configuration on the XMEGA, you may only choose 2000000 and
+32000000 for the clock speed, corresponding to the two internal RC oscillator
+frequencies. For ATMEGA chips, the specific start up clock speed (based on the
+fuse settings and/or external crystal or other clock source) must be
+specifically entered manually. For the rest of the configuration, see the
+section 3, “Configuring XBoot”.
 
 ### 2.2 Build XBoot and Program to Chip
 
 To build XBoot, open up the Makefile and make sure the MCU line for the target
 processor is the only one uncommented. Then type “make”. This will compile the
 whole package and generate xboot.hex, which can be downloaded with any
-programming cable capable of programming XMEGA chips. If you want to save some
-time and just program the boot section, type “make xboot-boot.hex” and then
-write the new file xboot-boot.hex to the boot section. The makefile includes
-built-in support for the Atmel JTAGICE mkII programmer over USB via avrdude,
-so if you have one connected you can type “make program” and it will take care
-of everything. If you don't have one of these but still want to use avrdude,
-modify the avrdude parameters in the makefile.
+programming cable capable of programming AVR chips. If you have and XMEGA and
+want to save some time and just program the boot section, type “make xboot-
+boot.hex” and then write the new file xboot-boot.hex to the boot section
+directly with avrdude. The makefile includes built-in support for avrdude, so
+all you need to do is modify the avrdude parameters in the makefile for the
+programmer you have and type “make program”.
 
 ### 2.3 Write Main Application Program
 
@@ -165,9 +164,9 @@ Or for windows:
 
 Also, feel free to re-use XBoot's makefile for your own code. Like XBoot, it
 is reconfigurable and can be used to compile most projects, just make sure to
-turn off the MAKE_BOOTLOADER flag for regular programs. It also has these
-programming configuration for XBoot built in, all you need to do is switch a
-couple of comments around.
+turn off the MAKE_BOOTLOADER flag for regular programs. It also has the
+configuration options for XBoot as a target built in, all you need to do is
+switch a couple of comments around.
 
 **NOTE:** At this time, avrdude (currently 5.10) does NOT support programming the XMEGA flash boot section (see [https://savannah.nongnu.org/bugs/?28744](https://savannah.nongnu.org/bugs/?28744)) due to the fact that a different programming command must be sent to the chip to write flash pages in the boot section. If you want to use avrdude, you will need to compile it from source with one of the patches listed on the bug report. 
 
@@ -549,29 +548,38 @@ for low-level Flash programming access. The third are for controlled firmware
 updating. The low-level Flash programming calls and the firmware update calls
 can be selectively disabled separately.
 
+**Note:** XBoot automatically disables interrupts during Flash programming
+operations. This is necessary because, despite the name, RWW flash cannot be
+read and written at the same time (NRWW can be read while RWW is written,
+though). The interrupt bit will be automatically restored on return from an
+API call. 
+
 ### 4.1 Using the API
 
 The API requires some loader code to find and execute the APIs. This code is
 fully contained within `xbootapi.c` and `xbootapi.h`. Include these files in
 your application to use all of the xboot API calls.
 
-The loader must also know the size of the boot section on the chip. This is
-defined in the header files for XMEGA chips as `BOOT_SECTION_START` since it
-is constant. Since ATMEGA chips are generally reconfigurable, it is not
-constant and therefore must be defined manually in xbootapi.h or passed to
-avr-gcc with `-DBOOT_SECTION_START=0x…`. The xboot makefile does this
-automatically when it builds xboot for many ATMEGA chips and the makefile can
-be freely reused for your application, simplifying this process.
+The loader must also know the size of the boot section on the chip in order to
+calculate all of its offsets and find the jump table. This is defined in the
+header files for XMEGA chips as `BOOT_SECTION_SIZE` since it is constant.
+Since ATMEGA chips are generally reconfigurable, it is not constant and
+therefore must be defined manually in xbootapi.h or passed to avr-gcc with
+`-DBOOT_SECTION_SIZE=0x…`. The xboot makefile does this automatically when it
+builds xboot for many ATMEGA chips and the makefile can be freely reused for
+your application, simplifying this process.
+
+**Note:** All the page-based flash access commands work on Flash pages
+`SPM_PAGESIZE` bytes in size, located at addresses of multiples of
+`SPM_PAGESIZE`. 
 
 ### 4.2 Return Values
 
 All of the API calls except for `xboot_reset` return a value indicating
 success or an error code, defined in `xbootapi.h`.
 
-    
     #define XB_SUCCESS 0
     #define XB_ERR_NO_API 1
-    
     #define XB_ERR_NOT_FOUND 2
     #define XB_INVALID_ADDRESS 3
 
@@ -587,16 +595,19 @@ success or an error code, defined in `xbootapi.h`.
 
 The general API functions are informational only.
 
-    
     uint8_t xboot_get_version(uint16_t *ver);
     uint8_t xboot_get_api_version(uint8_t *ver);
 
 #### 4.3.1 xboot_get_version
 
+    uint8_t xboot_get_version(uint16_t *ver);
+
 Returns the version of xboot in `ver`, MSB is major version and LSB is minor
 version.
 
 #### 4.3.2 xboot_get_api_version
+
+    uint8_t xboot_get_api_version(uint8_t *ver);
 
 Returns the API version in `ver`. Currently the only legal value is 1.
 
@@ -605,15 +616,14 @@ Returns the API version in `ver`. Currently the only legal value is 1.
 The low-level Flash programming API provides low-level access to the Flash
 memory. Can be disabled in xboot via `ENABLE_API_LOW_LEVEL_FLASH`
 
-    
     uint8_t xboot_spm_wrapper(void);
-    
     uint8_t xboot_erase_application_page(uint32_t address);
     uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t erase);
-    
     uint8_t xboot_write_user_signature_row(uint8_t *data);
 
 #### 4.4.1 xboot_spm_wrapper
+
+    uint8_t xboot_spm_wrapper(void);
 
 Not currently implemented. Will eventually be used to execute any valid SPM
 command. Use with caution. Can be independently disabled in xboot via
@@ -621,14 +631,21 @@ command. Use with caution. Can be independently disabled in xboot via
 
 #### 4.4.2 xboot_erase_application_page
 
-Erase the page in application memory pointed to by `address`.
+    uint8_t xboot_erase_application_page(uint32_t address);
+
+Erase the page in application memory (`SPM_PAGESIZE` bytes) pointed to by
+`address`.
 
 #### 4.4.3 xboot_write_application_page
 
-Write `data` to the page in application memory pointed to by `address`,
-erasing before hand if `erase` is nonzero.
+    uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t erase);
+
+Write `SPM_PAGESIZE` bytes of `data` to the page in application memory pointed
+to by `address`, erasing before hand if `erase` is nonzero.
 
 #### 4.4.4 xboot_write_user_signature_row
+
+    uint8_t xboot_write_user_signature_row(uint8_t *data);
 
 XMEGA only. Write `data` to the user signature row, automatically erasing it
 beforehand.
@@ -652,54 +669,84 @@ application flash but the beginning of the application temporary section,
 generally about the halfway point of the chip's memory. Hence, when using
 these calls, it is impossible to overwrite the application section directly.
 
-    
     uint8_t xboot_app_temp_erase(void);
-    
     uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase);
-    
     uint8_t xboot_app_temp_crc16_block(uint32_t start, uint32_t length, uint16_t *crc);
-    
     uint8_t xboot_app_temp_crc16(uint16_t *crc);
     uint8_t xboot_app_crc16_block(uint32_t start, uint32_t length, uint16_t *crc);
-    
     uint8_t xboot_app_crc16(uint16_t *crc);
     uint8_t xboot_install_firmware(uint16_t crc);
-    
     void __attribute__ ((noreturn)) xboot_reset(void);
 
 #### 4.5.1 xboot_app_temp_erase
+
+    uint8_t xboot_app_temp_erase(void);
 
 Erase the application temporary section
 
 #### 4.5.2 xboot_app_temp_write_page
 
-Write `data` to page in temporary section pointed to by `addr`, erasing
-beforehand if `erase` is nonzero. Note that `addr = 0` is not the beggining of
-application flash but the beginning of the application temporary section.
+    uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase);
+
+Write `SPM_PAGESIZE` bytes of `data` to page in temporary section pointed to
+by `addr`, erasing beforehand if `erase` is nonzero. Note that `addr = 0` is
+not the beggining of application flash but the beginning of the application
+temporary section.
+
+Equivalent to:
+
+    xboot_write_application_page(address + XB_APP_TEMP_START, data, erase);
 
 #### 4.5.3 xboot_app_temp_crc16_block
+
+    uint8_t xboot_app_temp_crc16_block(uint32_t start, uint32_t length, uint16_t *crc);
 
 Compute the crc hash of `length` bytes, starting at `start` in the application
 temporary section and return in `crc`. Note that `start = 0` is not the
 beggining of application flash but the beginning of the application temporary
 section.
 
+Equivalent to:
+
+    xboot_app_crc16_block(start + XB_APP_TEMP_START, length, crc);
+
 #### 4.5.4 xboot_app_temp_crc16
+
+    uint8_t xboot_app_temp_crc16(uint16_t *crc);
 
 Computer the crc hash of the complete application temporary section and return
 in `crc`.
 
-#### 4.5.5 xboot_app_temp_crc16_block
+Equivalent to:
+
+    xboot_app_temp_crc16_block(0, XB_APP_TEMP_SIZE, crc);
+
+#### 4.5.5 xboot_app_crc16_block
+
+    uint8_t xboot_app_crc16_block(uint32_t start, uint32_t length, uint16_t *crc);
 
 Compute the crc hash of `length` bytes, starting at `start` in the application
 section and return in `crc`. Note that `start = 0` is actually address 0 in
 flash, the beginning of the application section.
 
-#### 4.5.6 xboot_app_temp_crc16
+`xboot_app_crc16_block` uses `_crc16_update` from [avr-
+libc](http://www.nongnu.org/avr-libc/) <[util/crc16.h](http://www.nongnu.org
+/avr-libc/user-manual/group__util__crc.html)> with an initial value of 0
+internally to compute the crc.
+
+#### 4.5.6 xboot_app_crc16
+
+    uint8_t xboot_app_crc16(uint16_t *crc);
 
 Computer the crc hash of the complete application section and return in `crc`.
 
+Equivalent to:
+
+    xboot_app_crc16_block(0, XB_APP_SIZE, crc);
+
 #### 4.5.7 xboot_install_firmware
+
+    uint8_t xboot_install_firmware(uint16_t crc);
 
 Write the install firmware command to the end of application temporary flash,
 along with the crc of the section passed in `crc`. This crc must be calculated
@@ -724,34 +771,30 @@ resetting the chip.
 
 The crc functions all use `_crc16_update` from [avr-
 libc](http://www.nongnu.org/avr-libc/) <[util/crc16.h](http://www.nongnu.org
-/avr-libc/user-manual/group__util__crc.html)>. The equivalent C code is:
+/avr-libc/user-manual/group__util__crc.html)> with an initial crc of 0. The
+equivalent C code is:
 
-    
     uint16_t crc16_update(uint16_t crc, uint8_t a)
     {
         int i;
-    
      
         crc ^= a;
         for (i = 0; i < 8; ++i)
-    
         {
             if (crc & 1)
                 crc = (crc >> 1) ^ 0xA001;
-    
             else
                 crc = (crc >> 1);
         }
      
         return crc;
-    
     }
 
 Calculating the crc for a new firmware must be done before it is sent to the
 chip for an update. As the crc passed to `xboot_install_firmware` must match
 the crc that XBoot calculates over the entire application temporary section,
 the firmware must be padded to the size of the application temporary section
-with 0xff when the crc is calculated beforehand.
+(`XB_APP_TEMP_SIZE`) with 0xff when the crc is calculated beforehand.
 
 This checksum will be the same as the one calculated by
 `xboot_app_temp_crc16`. The temptation to simply pass the output of this
@@ -762,6 +805,8 @@ passed to `xboot_install_firmware`.
 
 #### 4.5.8 xboot_reset
 
+    void __attribute__ ((noreturn)) xboot_reset(void);
+
 This call will trigger a device reset and will not return. In XMEGA devices,
 it is done via the `RST.CTRL` register. In ATMEGA devices, it uses the
 watchdog timer, which XBoot will disable automatically after the reset.
@@ -769,7 +814,8 @@ watchdog timer, which XBoot will disable automatically after the reset.
 ### 4.6 Offsets defined in xbootapi.h
 
 Several offsets and addresses are defined in `xbootapi.h`. They are detailed
-in the following table, along with example values:
+in the following table, along with example values (XMEGA with 64K application
+flash and 8K boot flash, 72K total flash):
 
     Name                    Value           Description
     
@@ -811,7 +857,8 @@ is not entirely foolproof, but with sufficient testing it is very difficult to
 'brick' a device with the firmware upgrade API.
 
 The memory map of a device using the firmware update API looks something like
-the following, depending on the size of the flash memory and boot section:
+the following (XMEGA with 64K application flash and 8K boot flash, 72K total
+flash):
 
     Section                 Address
     --------------------------------------------
@@ -819,6 +866,7 @@ the following, depending on the size of the flash memory and boot section:
                             XB_APP_START
     
     Application
+    32K
       
                             XB_APP_END
                             0x007FFF
@@ -827,23 +875,25 @@ the following, depending on the size of the flash memory and boot section:
                             XB_APP_TEMP_START
     
     Temporary Storage
+    32K
     
                             XB_APP_TEMP_END
                             0x00FFFF
     --------------------------------------------
                             0x010000
     XBoot
+    8K
                             0x011FFF
     --------------------------------------------
 
 To successfully use the firmware update API, the application must fit
 completely inside the application section.
 
-Updating is performed by writing the firmware one page at a time to the
-temporary storage section with `xboot_app_temp_write_page`, then calling
-`xboot_install_firmware` to schedule the firmware update, and finally calling
-`xboot_reset` to enter XBoot to reset the chip and actually install the
-firmware.
+Updating is performed by writing the firmware one page of `SPM_PAGESIZE` bytes
+at a time to the temporary storage section with `xboot_app_temp_write_page`,
+then calling `xboot_install_firmware` to schedule the firmware update, and
+finally calling `xboot_reset` to enter XBoot to reset the chip and actually
+install the firmware.
 
 When the firmware is not being updated, the temporary storage section can be
 used for storing application data.
@@ -866,40 +916,32 @@ install process, cleans up, and resets the chip.
     {
         uint8_t page_buffer[SPM_PAGESIZE];
         uint8_t read_data[1024];
-    
         uint8_t *read_ptr;
      
         uint32_t addr = 0;
-    
         uint16_t page_addr = 0;
         uint16_t read_bytes;
      
         uint16_t target_crc = get_new_firmware_crc();
-    
         uint16_t crc;
      
         if (xboot_app_temp_erase() != XB_SUCCESS)
             return;
-    
      
         while (read_bytes = read_new_firmware(read_data, 1024))
         {
             read_ptr = read_data;
-    
      
             while (read_bytes > 0)
             {
                 page_buffer[page_addr++] = *read_ptr++;
-    
                 read_bytes--;
                 if (page_addr >= SPM_PAGESIZE)
                 {
                     if (xboot_app_temp_write_page(addr, page_buffer, 0) != XB_SUCCESS)
-    
                         return;
                     addr += SPM_PAGESIZE;
                     page_addr = 0;
-    
                 }
             }
         }
@@ -907,19 +949,16 @@ install process, cleans up, and resets the chip.
         if (page_addr > 0)
         {
             while (page_addr < SPM_PAGESIZE)
-    
             {
                 page_buffer[page_addr++] = 0xff;
             }
             if (xboot_app_temp_write_page(addr, page_buffer, 0) != XB_SUCCESS)
-    
                 return;
         }
      
         xboot_app_temp_crc16(&crc);
      
         if (crc != target_crc)
-    
             return;
      
         if (xboot_install_firmware(target_crc) != XB_SUCCESS)
