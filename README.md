@@ -9,11 +9,8 @@ https://github.com/alexforencich/xboot
 ### Table of Contents
 
 1. Introduction
-
 2. Using XBoot
-
 3. Configuring XBoot
-
 4. XBoot API
 
 ## 1 Introduction
@@ -45,79 +42,42 @@ currently supported. An asterisk denotes the MCU has been tested and confirmed
 XBoot compatible.
 
   * XMEGA 
-
     * atxmega16a4 * 
-
     * atxmega32a4 * 
-
     * atxmega64a1 
-
     * atxmega64a3 * 
-
     * atxmega64a4 
-
     * atxmega128a1 * 
-
     * atxmega128a3 
-
     * atxmega128a4 
-
     * atxmega192a1 
-
     * atxmega192a3 
-
     * atxmega256a1 
-
     * atxmega256a3b 
-
     * atxmega256a3 * 
-
     * atxmega16d4 
-
     * atxmega32d4 
-
     * atxmega64d3 
-
     * atxmega64d4 
-
     * atxmega128d3 
-
     * atxmega128d4 
-
     * atxmega192d3 
-
     * atxmega256d3 
-
     * atxmega16a4u 
-
     * atxmega32a4u 
-
     * atxmega64a3u 
-
     * atxmega64a4u 
-
     * atxmega128a3u 
-
     * atxmega128a4u 
-
     * atxmega192a3u 
-
     * atxmega256a3u 
-
     * atxmega256a3bu 
-
     * atxmega64b1 
-
     * atxmega64b3 
-
     * atxmega128b1 
-
     * atxmega128b3 
-
   * ATMEGA 
-
     * atmega328p * 
-
     * atmega1284p * 
 
 ## 2 Using XBoot
@@ -154,12 +114,10 @@ programmer you have and type “make program”.
 
 To write a program to a device with XBoot installed, use a command like this:
 
-    
     avrdude -p atxmega64a3 -P /dev/ttyUSB0 -c avr109 -b 115200 -U flash:w:main.hex
 
 Or for windows:
 
-    
     avrdude -p atxmega64a3 -P com1 -c avr109 -b 115200 -U flash:w:main.hex
 
 Also, feel free to re-use XBoot's makefile for your own code. Like XBoot, it
@@ -168,7 +126,12 @@ turn off the MAKE_BOOTLOADER flag for regular programs. It also has the
 configuration options for XBoot as a target built in, all you need to do is
 switch a couple of comments around.
 
-**NOTE:** At this time, avrdude (currently 5.10) does NOT support programming the XMEGA flash boot section (see [https://savannah.nongnu.org/bugs/?28744](https://savannah.nongnu.org/bugs/?28744)) due to the fact that a different programming command must be sent to the chip to write flash pages in the boot section. If you want to use avrdude, you will need to compile it from source with one of the patches listed on the bug report. 
+**NOTE:** At this time, avrdude (currently 5.10) does NOT support programming 
+the XMEGA flash boot section (see https://savannah.nongnu.org/bugs/?28744)
+due to the fact that a different programming command must be sent to the chip
+to write flash pages in the boot section. If you want to use avrdude, you
+will need to compile it from source with one of the patches listed on the
+bug report. 
 
 ### 2.4 Notes for Main Application
 
@@ -191,17 +154,13 @@ ASCII, or only transmits Binary during certain program states, you can monitor
 the UART for the escape character and cause a software reset to enter the
 bootloader, as shown in the following snippet on an XMEGA:
 
-    
     if (rx_byte == 0x1B) {
-    
        CCPWrite( &RST.CTRL, RST_SWRST_bm );
     }
 
 Or, if CCPWrite is not available, this should also work:
 
-    
     if (rx_byte == 0x1B) {
-    
        CCP = CCP_IOREG_gc;
        RST.CTRL = RST_SWRST_bm;
     }
@@ -218,13 +177,11 @@ open up xboot.h and change the #defines.
 
 Recommended configuration:
 
-    
     // bootloader entrace
     #define USE_ENTER_DELAY
     #define USE_ENTER_UART
      
     // bootloader communication
-    
     #define USE_LED
     #define USE_UART
      
@@ -279,7 +236,6 @@ don't make a whole lot of sense…)
 Options
 
   * `ENTER_BLINK_COUNT` defines the number of times to blink the LED, e.g. 3 
-
   * `ENTER_BLINK_WAIT` defines the number of loops to make between blinks, e.g. 30000 
 
 #### 3.3.2 USE_ENTER_PIN
@@ -292,13 +248,9 @@ jump into the main program.
 Options
 
   * `ENTER_PORT` defines the port that the in is in, e.g. `PORTC`
-
   * `ENTER_PIN` defines the pin in the port, an integer from 0 to 7 
-
   * `ENTER_PIN_CTRL` defines the `PINnCTRL` register for the pin, e.g. `ENTER_PORT.PIN0CTRL`
-
   * `ENTER_PIN_STATE` defines the “asserted” state of the pin, 0 or 1 
-
   * `ENTER_PIN_PUEN` enables a pull-up resistor on the pin if nonzero 
 
 #### 3.3.3 USE_ENTER_UART
@@ -339,9 +291,7 @@ If this is defined, XBoot will use an LED for feedback, specified by the
 Options
 
   * `LED_PORT_NAME` defines the port, e.g. `A` for `PORTA`
-
   * `LED_PIN` defines the pin, e.g. 0 
-
   * `LED_INV` inverts the LED state if nonzero 
 
 #### 3.5.2 USE_UART
@@ -351,15 +301,10 @@ If this is defined, XBoot will configure and use a UART for communication.
 Options
 
   * `UART_BAUD_RATE` defines the baud rate of the UART, e.g. 19200 
-
   * `UART_PORT_NAME` defines the port that the UART is connected to, e.g. `D`
-
     * Note: this only applies to XMEGA devices 
-
   * `UART_NUMBER` defines number of the UART device on the port, e.g. 1 for USARTD1 (or USART1 for ATMEGA) 
-
   * `UART_U2X` turns on the double-rate BRG in ATMEGA parts 
-
     * Note: this only applies to ATMEGA devices 
 
 #### 3.5.3 USE_UART_EN_PIN
@@ -371,9 +316,7 @@ connection.
 Options
 
   * `UART_EN_PORT_NAME` defines the port, e.g. `C` for `PORTC`
-
   * `UART_EN_PIN` defines the pin, e.g. 4 
-
   * `UART_EN_INV` inverts the EN pin output state if nonzero 
 
 #### 3.5.4 USE_I2C
@@ -386,11 +329,8 @@ Note: Currently only implemented on XMEGA.
 Options
 
   * `I2C_DEVICE_PORT` defines the port the I2C interface is on, e.g. `E` for TWIE 
-
   * `I2C_MATCH_ANY` will enable the I2C controller promiscuous mode (match any address) if nonzero 
-
   * `I2C_ADDRESS` defines the default I2C address 0x10 
-
   * `I2C_GC_ENABLE` enables the I2C bus general call capability (address 0) if nonzero 
 
 #### 3.5.5 USE_I2C_ADDRESS_NEGOTIATION
@@ -404,11 +344,8 @@ suitable workaround for ATMEGA has not yet been implemented.
 Options
 
   * `I2C_AUTONEG_DIS_PROMISC` will disable I2C promiscuous mode after completion of autonegotiation routine if nonzero 
-
   * `I2C_AUTONEG_DIS_GC` will disable I2C general call detection after completion of autonegotiation routine if nonzero 
-
   * `I2C_AUTONEG_PORT` defines the port in which the autonegotiation pin is located, e.g. `PORTA`
-
   * `I2C_AUTONEG_PIN` defines the pin, e.g. 2 
 
 #### 3.5.6 USE_ATTACH_LED
@@ -419,9 +356,7 @@ received.
 Options
 
   * `ATTACH_LED_PORT_NAME` defines the port, e.g. `A` for `PORTA`
-
   * `ATTACH_LED_PIN` defines the pin, e.g. 1 
-
   * `ATTACH_LED_INV` inverts the LED state if nonzero 
 
 #### 3.5.7 USE_FIFO
@@ -432,17 +367,11 @@ communication.
 Options
 
   * `FIFO_DATA_PORT_NAME` defines the FIFO data port, e.g. `C` for `PORTC`
-
   * `FIFO_CTL_PORT_NAME` defines the FIFO control port, e.g. `D` for `PORTD`
-
   * `FIFO_RXF_N_bm` defines the receive flag pin mask on the control port, e.g. `(1 << 3)` for pin 3 
-
   * `FIFO_TXE_N_bm` defines the transmit enable pin mask on the control port 
-
   * `FIFO_RD_N_bm` defines the read strobe pin mask on the control port 
-
   * `FIFO_WR_N_bm` defines the write strobe pin mask on the control port 
-
   * `FIFO_BIT_REVERSE` will reverse the data bits 
 
 ### 3.6 General Options
@@ -514,11 +443,8 @@ Select API version to implement. Currently the only legal value is 1.
 Enable low level flash access APIs. Turns on the following API calls:
 
   * `xboot_spm_wrapper` (can be separately disabled) 
-
   * `xboot_erase_application_page`
-
   * `xboot_write_application_page`
-
   * `xboot_write_user_signature_row` (XMEGA specific) 
 
 #### 3.8.4 ENABLE_API_SPM_WRAPPER
@@ -531,7 +457,6 @@ Enable firmware update APIs. Turns on the following API calls in addition to
 enabling the firmware upgrade code in xboot:
 
   * `xboot_app_temp_erase`
-
   * `xboot_app_temp_write_page`
 
 ## 4 XBoot API
@@ -584,11 +509,8 @@ success or an error code, defined in `xbootapi.h`.
     #define XB_INVALID_ADDRESS 3
 
   * `XB_SUCCESS` is returned when the call succeeds 
-
   * `XB_ERR_NO_API` is returned when the loader cannot find the API calls in xboot (either the APIs are disabled, xboot is not installed, or the loader is not looking at the right address) 
-
   * `XB_ERR_NOT_FOUND` is returned when the particular API call is not found because it is disabled in xboot 
-
   * `XB_INVALID_ADDRESS` is returned when an invalid address is passed to an API call 
 
 ### 4.3 General API Functions
@@ -729,10 +651,9 @@ Compute the crc hash of `length` bytes, starting at `start` in the application
 section and return in `crc`. Note that `start = 0` is actually address 0 in
 flash, the beginning of the application section.
 
-`xboot_app_crc16_block` uses `_crc16_update` from [avr-
-libc](http://www.nongnu.org/avr-libc/) <[util/crc16.h](http://www.nongnu.org
-/avr-libc/user-manual/group__util__crc.html)> with an initial value of 0
-internally to compute the crc.
+`xboot_app_crc16_block` uses `_crc16_update` from [avr-libc](http://www.nongnu.org/avr-libc/)
+<[util/crc16.h](http://www.nongnu.org/avr-libc/user-manual/group__util__crc.html)>
+with an initial value of 0 internally to compute the crc.
 
 #### 4.5.6 xboot_app_crc16
 
@@ -769,10 +690,9 @@ Note that the firmware install process can be cancelled by erasing the last
 page of the application temporary section (or the whole section) before
 resetting the chip.
 
-The crc functions all use `_crc16_update` from [avr-
-libc](http://www.nongnu.org/avr-libc/) <[util/crc16.h](http://www.nongnu.org
-/avr-libc/user-manual/group__util__crc.html)> with an initial crc of 0. The
-equivalent C code is:
+The crc functions all use `_crc16_update` from [avr-libc](http://www.nongnu.org/avr-libc/)
+<[util/crc16.h](http://www.nongnu.org/avr-libc/user-manual/group__util__crc.html)>
+with an initial crc of 0. The equivalent C code is:
 
     uint16_t crc16_update(uint16_t crc, uint8_t a)
     {
