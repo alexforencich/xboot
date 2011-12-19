@@ -200,6 +200,13 @@ int main(void)
         #ifdef USE_ENTER_PIN
         // Make sure it's an input
         ENTER_PORT_DDR &= ~(1 << ENTER_PIN);
+        #if ENTER_PIN_PUEN
+        // Enable bootloader entry pin pullup
+        ENTER_PORT |= (1 << ENTER_PIN);
+        #else // ENER_PIN_PUEN
+        // Disable bootloader entry pin pullup
+        ENTER_PORT &= ~(1 << ENTER_PIN);
+        #endif // ENTER_PIN_PUEN
         #endif // USE_ENTER_PIN
         
 #endif // __AVR_XMEGA__
