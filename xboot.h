@@ -49,6 +49,11 @@
 #define XBOOT_VERSION_MAJOR 1
 #define XBOOT_VERSION_MINOR 7
 
+// config.h
+#ifdef USE_CONFIG_H
+#include "config.h"
+#endif // USE_CONFIG_H
+
 // Configuration
 
 // clock config
@@ -63,6 +68,11 @@
 #endif // F_CPU
 
 #endif // __AVR_XMEGA__
+
+#ifndef USE_CONFIG_H
+
+// Begin Default Configuration Section
+// --------------------------------------------------
 
 #ifdef __AVR_XMEGA__
 // AVR1008 fixes
@@ -115,13 +125,6 @@
 #define ENTER_PIN_STATE         0
 #define ENTER_PIN_PUEN          1
 
-#ifdef __AVR_XMEGA__
-#define ENTER_PIN_CTRL          token_paste3(ENTER_PORT.PIN, ENTER_PIN, CTRL)
-#else // __AVR_XMEGA__
-#define ENTER_PORT_DDR          token_paste2(DDR, ENTER_PORT_NAME)
-#define ENTER_PORT_PIN          token_paste2(PIN, ENTER_PORT_NAME)
-#endif // __AVR_XMEGA__
-
 // ENTER_DELAY
 #define ENTER_BLINK_COUNT       3
 #define ENTER_BLINK_WAIT        30000
@@ -149,13 +152,7 @@
 // LED
 #define LED_PORT_NAME           A
 #define LED_PIN                 0
-#define LED_PORT                token_paste2(PORT, LED_PORT_NAME)
 #define LED_INV                 1
-
-#ifndef __AVR_XMEGA__
-#define LED_PORT_DDR            token_paste2(DDR, LED_PORT_NAME)
-#define LED_PORT_PIN            token_paste2(PIN, LED_PORT_NAME)
-#endif // __AVR_XMEGA__
 
 // UART
 // Select BAUD rate, port name, and UART number
@@ -171,8 +168,61 @@
 // UART RS485 Enable Output
 #define UART_EN_PORT_NAME       C
 #define UART_EN_PIN             4
-#define UART_EN_PORT            token_paste2(PORT, UART_EN_PORT_NAME)
 #define UART_EN_PIN_INV         0
+
+// FIFO
+#define FIFO_DATA_PORT_NAME     C
+#define FIFO_CTL_PORT_NAME      D
+#define FIFO_RXF_N_bm           (1<<3)
+#define FIFO_TXE_N_bm           (1<<2)
+#define FIFO_RD_N_bm            (1<<1)
+#define FIFO_WR_N_bm            (1<<0)
+#define FIFO_BIT_REVERSE
+
+// I2C
+#define I2C_DEVICE_PORT         C
+
+#define I2C_MATCH_ANY           1
+#define I2C_ADDRESS             0x10
+#define I2C_GC_ENABLE           1
+
+// I2C Address Autonegotiation
+// Note: only works on XMega chips for the time being
+// There is no easy way to get this to work on regular
+// ATMega chips as they have no unique part ID number
+#define I2C_AUTONEG_DIS_PROMISC         1
+#define I2C_AUTONEG_DIS_GC              0
+#define I2C_AUTONEG_PORT_NAME           A
+#define I2C_AUTONEG_PIN                 2
+
+// Attach LED
+#define ATTACH_LED_PORT_NAME            A
+#define ATTACH_LED_PIN                  1
+#define ATTACH_LED_INV                  1
+
+// --------------------------------------------------
+// End Default Configuration Section
+
+#endif // USE_CONFIG_H
+
+// ENTER_PIN
+#ifdef __AVR_XMEGA__
+#define ENTER_PIN_CTRL          token_paste3(ENTER_PORT.PIN, ENTER_PIN, CTRL)
+#else // __AVR_XMEGA__
+#define ENTER_PORT_DDR          token_paste2(DDR, ENTER_PORT_NAME)
+#define ENTER_PORT_PIN          token_paste2(PIN, ENTER_PORT_NAME)
+#endif // __AVR_XMEGA__
+
+// LED
+#define LED_PORT                token_paste2(PORT, LED_PORT_NAME)
+
+#ifndef __AVR_XMEGA__
+#define LED_PORT_DDR            token_paste2(DDR, LED_PORT_NAME)
+#define LED_PORT_PIN            token_paste2(PIN, LED_PORT_NAME)
+#endif // __AVR_XMEGA__
+
+// UART RS485 Enable Output
+#define UART_EN_PORT            token_paste2(PORT, UART_EN_PORT_NAME)
 
 #ifndef __AVR_XMEGA__
 #define UART_EN_PORT_DDR        token_paste2(DDR, UART_EN_PORT_NAME)
@@ -261,13 +311,6 @@
 #endif // __AVR_XMEGA__
 
 // FIFO
-#define FIFO_DATA_PORT_NAME     C
-#define FIFO_CTL_PORT_NAME      D
-#define FIFO_RXF_N_bm           (1<<3)
-#define FIFO_TXE_N_bm           (1<<2)
-#define FIFO_RD_N_bm            (1<<1)
-#define FIFO_WR_N_bm            (1<<0)
-#define FIFO_BIT_REVERSE
 #define FIFO_DATA_PORT          token_paste2(PORT, FIFO_DATA_PORT_NAME)
 #define FIFO_CTL_PORT           token_paste2(PORT, FIFO_CTL_PORT_NAME)
 
@@ -279,32 +322,14 @@
 #endif // __AVR_XMEGA__
 
 // I2C
-#ifdef __AVR_XMEGA__
-
-#define I2C_DEVICE_PORT         C
 #define I2C_DEVICE              token_paste2(TWI, I2C_DEVICE_PORT)
 #define I2C_DEVICE_ISR          token_paste3(TWI, I2C_DEVICE_PORT, _TWIS_vect)
 
-#define I2C_MATCH_ANY           1
-#define I2C_ADDRESS             0x10
-#define I2C_GC_ENABLE           1
-
-#endif // __AVR_XMEGA__
-
 // I2C Address Autonegotiation
-// Note: only works on XMega chips for the time being
-// There is no easy way to get this to work on regular
-// ATMega chips as they have no unique part ID number
-#define I2C_AUTONEG_DIS_PROMISC         1
-#define I2C_AUTONEG_DIS_GC              0
-#define I2C_AUTONEG_PORT                PORTA
-#define I2C_AUTONEG_PIN                 2
+#define I2C_AUTONEG_PORT                token_paste2(PORT, I2C_AUTONEG_PORT_NAME);
 
 // Attach LED
-#define ATTACH_LED_PORT                 PORTA
-#define ATTACH_LED_PIN                  1
-#define ATTACH_LED_INV                  1
-
+#define ATTACH_LED_PORT                 token_paste2(PORT, ATTACH_LED_PORT_NAME)
 
 
 #ifndef EEPROM_PAGE_SIZE

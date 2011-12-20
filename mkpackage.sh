@@ -2,6 +2,8 @@
 
 files="README.md
 Makefile
+config.h.mk
+conf/*
 xboot.c
 xboot.h
 flash.c

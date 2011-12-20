@@ -80,16 +80,10 @@ MCU = atxmega64a3
 #MCU = atmega1284p
 #MCU = atmega328p
 
-# Is this an xmega?
-ifneq ($(findstring atxmega,$(MCU)),)
-  XMEGA=yes
-endif
-
 # Is this a bootloader?
 #MAKE_BOOTLOADER=no
 MAKE_BOOTLOADER=yes
 
-ifneq ($(XMEGA), yes)
 # Select boot size (ATmega only)
 # Note: if boot size is too small, xboot may not fit.
 # Generally, it should be left on largest
@@ -102,7 +96,6 @@ BOOTSZ=0
 #BOOTSZ=2
 # Small
 #BOOTSZ=3
-endif
 
 # Only program boot section
 # (XMega only)
@@ -119,8 +112,13 @@ F_CPU=2000000
 #F_CPU=32000000
 #F_CPU=16000000
 
-# for xboot automated configuration - overrides MCU and F_CPU if present
--include xboot-config.mk
+# Configuration support
+-include config.mk
+
+# Is this an xmega?
+ifneq ($(findstring atxmega,$(MCU)),)
+  XMEGA=yes
+endif
 
 # Preprocessor defines
 DEFINES = -DF_CPU=$(F_CPU)L
@@ -680,6 +678,11 @@ MSG_ASSEMBLING = Assembling:
 MSG_CLEANING = Cleaning project:
 
 
+# Configuration support
+ifeq ($(USE_CONFIG_H), yes)
+  CONFIG_H = config.h
+  DEFINES += -DUSE_CONFIG_H
+endif
 
 
 # Define all object files.
@@ -715,6 +718,12 @@ lss: $(TARGET).lss
 sym: $(TARGET).sym
 
 
+# Configuration support
+%.conf %.conf.mk: force
+	cp $@ config.mk
+	$(MAKE)
+
+-include config.h.mk
 
 # Eye candy.
 # AVR Studio 3.x does not check make's exit code but relies on
@@ -810,7 +819,7 @@ extcoff: $(TARGET).elf
 # Link: create ELF output file from object files.
 .SECONDARY : $(TARGET).elf
 .PRECIOUS : $(OBJ)
-%.elf: $(OBJ)
+%.elf: $(CONFIG_H) $(OBJ)
 	@echo
 	@echo $(MSG_LINKING) $@
 	$(CC) $(ALL_CFLAGS) $(OBJ) --output $@ $(LDFLAGS)
@@ -867,6 +876,7 @@ clean_list :
 	$(REMOVE) $(TARGET).lss
 	$(REMOVE) $(OBJ)
 	$(REMOVE) $(LST)
+	$(REMOVE) config.mk config.h
 	$(REMOVE) $(addsuffix .s,$(basename $(SRC)))
 	$(REMOVE) $(addsuffix .d,$(basename $(SRC)))
 	$(REMOVE) .dep/*
@@ -880,5 +890,5 @@ clean_list :
 # Listing of phony targets.
 .PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex eep lss sym coff extcoff \
-clean clean_list program
+clean clean_list program force
 
