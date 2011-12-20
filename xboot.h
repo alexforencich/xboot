@@ -121,7 +121,6 @@
 // ENTER_PIN
 #define ENTER_PORT_NAME         C
 #define ENTER_PIN               0
-#define ENTER_PORT              token_paste2(PORT, ENTER_PORT_NAME)
 #define ENTER_PIN_STATE         0
 #define ENTER_PIN_PUEN          1
 
@@ -206,6 +205,8 @@
 #endif // USE_CONFIG_H
 
 // ENTER_PIN
+#define ENTER_PORT              token_paste2(PORT, ENTER_PORT_NAME)
+
 #ifdef __AVR_XMEGA__
 #define ENTER_PIN_CTRL          token_paste3(ENTER_PORT.PIN, ENTER_PIN, CTRL)
 #else // __AVR_XMEGA__
