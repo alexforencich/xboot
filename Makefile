@@ -274,7 +274,7 @@ LDFLAGS += $(EXTMEMOPTS)
 LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 
 # Programming support using avrdude. Settings and variables.
-
+ifeq ($(OVERRIDE_AVRDUDE_PROGRAMMER),)
 # Programming hardware: alf avr910 avrisp bascom bsd
 # dt006 pavr picoweb pony-stk200 sp12 stk200 stk500
 #
@@ -295,6 +295,7 @@ AVRDUDE_PORT = usb
 
 # BAUD Rate
 #AVRDUDE_BAUD = 115200
+endif
 
 # Sections to write
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
