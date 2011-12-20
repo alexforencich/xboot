@@ -85,10 +85,10 @@ XBoot compatible.
 ### 2.1 Configure
 
 Before building XBoot, please configure it so it will interface properly with
-your system. This will involve editing some parameters in the makefile and
-some parameters in xboot.h. The main parameters that need to be set in the
-makefile are the target chip (MCU) and the frequency (F_CPU). For ATMEGA
-chips, the boot size (BOOTSZ) must also be set, generally to the largest
+your system. This will involve selecting a .conf.mk file in the conf directory
+and then editing some parameters. The main parameters that need to be set in
+the .conf.mkfile are the target chip (MCU) and the frequency (F_CPU). For
+ATMEGA chips, the boot size (BOOTSZ) must also be set, generally to the largest
 setting. All you need to do is make sure the only line that's not commented
 out is the one for your chip and the proper frequency. For the simplest
 bootloader configuration on the XMEGA, you may only choose 2000000 and
@@ -100,15 +100,21 @@ section 3, “Configuring XBoot”.
 
 ### 2.2 Build XBoot and Program to Chip
 
-To build XBoot, open up the Makefile and make sure the MCU line for the target
-processor is the only one uncommented. Then type “make”. This will compile the
-whole package and generate xboot.hex, which can be downloaded with any
-programming cable capable of programming AVR chips. If you have and XMEGA and
-want to save some time and just program the boot section, type “make xboot-
-boot.hex” and then write the new file xboot-boot.hex to the boot section
-directly with avrdude. The makefile includes built-in support for avrdude, so
-all you need to do is modify the avrdude parameters in the makefile for the
-programmer you have and type “make program”.
+To build XBoot, select a .conf.mk file from the conf directory and make sure
+the settings are appropriate for your chip, programmer, and configuration.
+Then type “make [file].conf.mk”. This will copy [file].conf.mk to config.mk,
+generate config.h, compile the whole package, and generate xboot.hex, which
+can be downloaded with any programming cable capable of programming AVR chips.
+If you have and XMEGA and want to save some time and just program the boot
+section, type “make xboot-boot.hex” and then write the new file xboot-boot.hex
+to the boot section directly with avrdude. The makefile includes built-in
+support for avrdude, so all you need to do is modify the avrdude parameters
+in the .conf.mk file for the programmer you have and type “make program”.
+
+Note that after typing “make [file].conf.mk”, the settings from [file].conf.mk
+will remain active until either a new .conf.mk file is selected or “make
+clean” is run.
+
 
 ### 2.3 Write Main Application Program
 
@@ -172,30 +178,35 @@ having to manually reset the AVR. Alternatively, if the API is used, calling
 ## 3 Configuring XBoot
 
 XBoot is designed to be reconfigured to suit specific needs. Out of the box,
-everything is turned on. Turning off features and reassigning pins is easy,
-open up xboot.h and change the #defines.
+all of the standard features are turned on. Turning off features and
+reassigning pins is easy, just pick a .conf.mk file in the .conf folder, make
+a copy of it, and edit the appropriate parameters. Then build xboot with your
+parameters by running “make [file].conf.mk”.
 
 Recommended configuration:
 
-    // bootloader entrace
-    #define USE_ENTER_DELAY
-    #define USE_ENTER_UART
+    # Entry
+    USE_ENTER_DELAY = yes
+    USE_ENTER_UART = yes
      
-    // bootloader communication
-    #define USE_LED
-    #define USE_UART
+    # Communication
+    USE_LED = yes
+    USE_UART = yes
      
-    // bootloader features
-    #define ENABLE_BLOCK_SUPPORT
-    #define ENABLE_FLASH_BYTE_SUPPORT
-    #define ENABLE_EEPROM_BYTE_SUPPORT
-    #define ENABLE_LOCK_BITS
-    #define ENABLE_FUSE_BITS
+    # Bootloader Features
+    ENABLE_BLOCK_SUPPORT = yes
+    ENABLE_FLASH_BYTE_SUPPORT = yes
+    ENABLE_EEPROM_BYTE_SUPPORT = yes
+    ENABLE_LOCK_BITS = yes
+    ENABLE_FUSE_BITS = yes
 
 This configuration will make the bootloader work similarly to an Arduino. It
 will blink its light a few times, polling for a character. If none is
 received, it starts the application. If one shows up, it enters the bootloader
 and processes it.
+
+In fact, the file arduino328p.conf.mk can be used to build XBoot for use on an
+atmega328p based Arduino. 
 
 ### 3.1 Bootloader clock options
 
@@ -345,7 +356,7 @@ Options
 
   * `I2C_AUTONEG_DIS_PROMISC` will disable I2C promiscuous mode after completion of autonegotiation routine if nonzero 
   * `I2C_AUTONEG_DIS_GC` will disable I2C general call detection after completion of autonegotiation routine if nonzero 
-  * `I2C_AUTONEG_PORT` defines the port in which the autonegotiation pin is located, e.g. `PORTA`
+  * `I2C_AUTONEG_PORT_NAME` defines the port in which the autonegotiation pin is located, e.g. `A`
   * `I2C_AUTONEG_PIN` defines the pin, e.g. 2 
 
 #### 3.5.6 USE_ATTACH_LED
