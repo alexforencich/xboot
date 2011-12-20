@@ -327,12 +327,12 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_CHIP_ERASE = -D
 
 # Fuses and Lock Bits
-AVRDUDE_FUSES =
 
 ifeq ($(OVERRIDE_AVRDUDE_FUSES),)
 ifeq ($(XMEGA), yes)
 
 # XMEGA
+AVRDUDE_FUSES =
 
 # See XMega A series datasheet (Atmel doc8077) section 4.16
 
@@ -397,6 +397,7 @@ AVRDUDE_FUSES += $(AVRDUDE_FUSES_RESET_CONFIG)
 else # xmega
 
 # ATMEGA
+AVRDUDE_FUSES =
 
 # Fuses for ATmega devices
 MCU_S = $(subst atmega,m,$(MCU))
