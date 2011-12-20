@@ -312,7 +312,7 @@ uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase)
 
 uint8_t xboot_app_temp_crc16_block(uint32_t start, uint32_t length, uint16_t *crc)
 {
-        return xboot_app_crc16_block(XB_APP_TEMP_START, length, crc);
+        return xboot_app_crc16_block(XB_APP_TEMP_START + start, length, crc);
 }
 
 uint8_t xboot_app_temp_crc16(uint16_t *crc)
