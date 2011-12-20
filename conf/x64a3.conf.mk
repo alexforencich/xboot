@@ -15,6 +15,62 @@ OVERRIDE_AVRDUDE_PROGRAMMER = yes
 AVRDUDE_PROGRAMMER = jtag2pdi
 AVRDUDE_PORT = usb
 
+# Fuse settings
+AVRDUDE_FUSES =
+# If you wish to override the default fuse settings
+# determined in main Makefile, change them here
+# and then uncomment OVERRIDE_AVRDUDE_FUSES
+# See XMega A series datasheet (Atmel doc8077) section 4.16
+
+# Fuse byte 0: JTAG User ID
+# If a custom JTAG User ID is required, uncomment
+# and set it here
+#AVRDUDE_FUSES += -U fuse0:w:0x00:m
+
+# Fuse byte 1: Watchdog
+# Set WDPER and WDWPER
+# See datasheet sections 4.16.2, 11.7.1, and 11.7.2
+# for more information
+#AVRDUDE_FUSES += -U fuse1:w:0x00:m
+
+# Fuse byte 2: Reset configuration
+# Spike detector, reset vector location, and BOD
+# in power down configuration
+# See datasheet section 4.16.3 for more information
+#AVRDUDE_FUSES += -U fuse2:w:0xBF:m
+
+# There is no fuse byte 3.....
+
+# Fuse byte 4: Start-up configuration
+# See datasheet section 4.16.4
+# Configures external reset disable, start-up time,
+# watchdog timer lock, and jtag enable
+#AVRDUDE_FUSES += -U fuse4:w:0xFE:m
+
+# Fuse byte 5
+# See datasheet section 4.16.5
+# Configures BOD operation in active mode,
+# EEPROM preserved through chip erase, and
+# BOD detection leven
+#AVRDUDE_FUSES += -U fuse5:w:0xFF:m
+
+# Lock byte
+# See datasheet section 4.16.6
+# Lock bits for boot loader, application,
+# and application table sections via internal
+# SPM commands and external programming interface
+#AVRDUDE_FUSES += -U lock:w:0xFF:m
+
+# Write user sig row (256 bytes max)
+# Uncomment to initialize user sig row with custom data
+##AVRDUDE_USERSIG = -U usersig:w:0x01,0x02,0x03:m
+##AVRDUDE_USERSIG = -U usersig:w:filename
+#AVRDUDE_USERSIG = -U usersig:w:...:m
+
+# Uncomment to override default fuse configurations
+# from main Makefile
+#OVERRIDE_AVRDUDE_FUSES = yes
+
 # XBoot settings
 
 # AVR1008 fixes

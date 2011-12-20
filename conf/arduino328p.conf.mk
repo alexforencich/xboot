@@ -15,6 +15,21 @@ OVERRIDE_AVRDUDE_PROGRAMMER = yes
 AVRDUDE_PROGRAMMER = jtag2isp
 AVRDUDE_PORT = usb
 
+# Fuse settings
+AVRDUDE_FUSES =
+# If you wish to override the default fuse settings
+# determined in main Makefile, change them here
+# and then uncomment OVERRIDE_AVRDUDE_FUSES
+
+#AVRDUDE_FUSES += -U lfuse:w:0xFF:m
+#AVRDUDE_FUSES += -U hfuse:w:0xFF:m
+#AVRDUDE_FUSES += -U efuse:w:0xFF:m
+#AVRDUDE_FUSES += -U lock:w:0xFF:m
+
+# Uncomment to override default fuse configurations
+# from main Makefile
+#OVERRIDE_AVRDUDE_FUSES = yes
+
 # XBoot settings
 
 # Entry

@@ -327,12 +327,14 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_CHIP_ERASE = -D
 
 # Fuses and Lock Bits
+AVRDUDE_FUSES =
 
+ifeq ($(OVERRIDE_AVRDUDE_FUSES),)
 ifeq ($(XMEGA), yes)
+
 # XMEGA
 
 # See XMega A series datasheet (Atmel doc8077) section 4.16
-AVRDUDE_FUSES =
 
 # Resest Configuration (for fuse byte 2)
 # If a custom configuration is needed, please
@@ -392,7 +394,8 @@ AVRDUDE_FUSES += $(AVRDUDE_FUSES_RESET_CONFIG)
 ##AVRDUDE_USERSIG = -U usersig:w:filename
 #AVRDUDE_USERSIG = -U usersig:w:...:m
 
-else
+else # xmega
+
 # ATMEGA
 
 # Fuses for ATmega devices
@@ -464,18 +467,13 @@ endif
 #AVRDUDE_FUSES += -U hfuse:w:0xFF:m
 #AVRDUDE_FUSES += -U efuse:w:0xFF:m
 
-#AVRDUDE_FUSES += -U lfuse:w:0xe2:m
-#AVRDUDE_FUSES += -U hfuse:w:0x99:m
-#AVRDUDE_FUSES += -U efuse:w:0xff:m
-
-#AVRDUDE_FUSES += -U lfuse:w:0xe2:m
-#AVRDUDE_FUSES += -U hfuse:w:0x98:m
-#AVRDUDE_FUSES += -U efuse:w:0xff:m
-
-#AVRDUDE_FUSES += -U hfuse:w:0xD8:m
-
 AVRDUDE_FUSES += $(AVRDUDE_FUSES_BOOT_CONFIG)
 
+endif # xmega
+endif # override fuses
+
+ifeq ($(AVRDUDE_FUSES),)
+  $(warning AVRDUDE will not change any fuses.  Please double check the fuse configuration to ensure proper startup.)
 endif
 
 AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
@@ -611,6 +609,10 @@ ifneq ($(filter $(MCU_S), m1284p),)
     BOOT_SECTION_START		=0x01FC00
     BOOT_SECTION_SIZE		=0x000400
   endif
+endif
+
+ifeq ($(BOOT_SECTION_START),)
+  $(error $(MCU) not found in makefile, BOOT_SECTION_START not defined!)
 endif
 
 ifeq ($(MAKE_BOOTLOADER), yes)
