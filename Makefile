@@ -85,7 +85,7 @@ MCU = atxmega64a3
 MAKE_BOOTLOADER=yes
 
 # Select boot size (ATmega only)
-# Note: if boot size is too small, xboot may not fit.
+# Note: if boot size is too small, XBoot may not fit.
 # Generally, it should be left on largest
 # See part datasheet for specific values
 # Largest

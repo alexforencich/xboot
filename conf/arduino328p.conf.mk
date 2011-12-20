@@ -6,6 +6,19 @@ USE_CONFIG_H = yes
 # MCU
 MCU = atmega328p
 
+# Select boot size
+# Note: if boot size is too small, XBoot may not fit.
+# Generally, it should be left on largest
+# See part datasheet for specific values
+# Largest
+BOOTSZ=0
+# Large
+#BOOTSZ=1
+# Medium
+#BOOTSZ=2
+# Small
+#BOOTSZ=3
+
 # Clock Speed
 # Use 16 MHz external crystal oscillator
 F_CPU = 16000000
