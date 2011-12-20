@@ -3,7 +3,8 @@
 files="README.md
 Makefile
 config.h.mk
-conf/*
+conf/x64a3.conf.mk
+conf/arduino328p.conf.mk
 xboot.c
 xboot.h
 flash.c
@@ -30,9 +31,15 @@ name=xboot
 
 output=xboot-$(date +%Y%m%d).tar.gz
 
-mkdir -p pkg/$name
-rm -rf pkg/$name/*
-cp -r $files pkg/$name
+pkg=pkg/$name
+
+mkdir -p $pkg
+rm -rf $pkg/*
+for f in $files
+do
+  mkdir -p $pkg/$(dirname $f)
+  cp $f $pkg/$f
+done
 
 cd pkg
 tar -cvzf ../$output xboot
