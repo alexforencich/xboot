@@ -875,7 +875,12 @@ autoneg_done:
         
         // Jump into main code
         asm("jmp 0");
+        
+        #ifdef __builtin_unreachable
+        // Size optimization as the asm jmp will not return
+        // However, it seems it is not available on older versions of gcc
         __builtin_unreachable();
+        #endif
 }
 
 #ifdef USE_I2C_ADDRESS_NEGOTIATION
