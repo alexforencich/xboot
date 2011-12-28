@@ -106,6 +106,10 @@ uint8_t xboot_erase_application_page(uint32_t address)
         Flash_EraseApplicationPage(address);
         Flash_WaitForSPM();
         
+#ifndef __AVR_XMEGA__
+        boot_rww_enable();
+#endif // __AVR_XMEGA__
+        
 #ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
 #endif // __AVR_XMEGA__
@@ -163,6 +167,10 @@ uint8_t xboot_app_temp_erase(void)
                 Flash_EraseApplicationPage(addr);
                 Flash_WaitForSPM();
         }
+        
+#ifndef __AVR_XMEGA__
+        boot_rww_enable();
+#endif // __AVR_XMEGA__
         
 #ifdef __AVR_XMEGA__
         NVM_CMD = NVM_CMD_NO_OPERATION_gc;
