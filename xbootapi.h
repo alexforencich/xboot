@@ -33,6 +33,7 @@
 #define __XBOOTAPI_H
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/crc16.h>
 
