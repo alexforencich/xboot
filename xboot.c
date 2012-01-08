@@ -173,9 +173,9 @@ int main(void)
         // Initialize ATTACH_LED
         ATTACH_LED_PORT_DDR |= (1 << ATTACH_LED_PIN);
         #if ATTACH_LED_INV
-        ATTACH_LED_PORT &= ~(1 << ATTACH_LED_PIN);
-        #else
         ATTACH_LED_PORT |= (1 << ATTACH_LED_PIN);
+        #else
+        ATTACH_LED_PORT &= ~(1 << ATTACH_LED_PIN);
         #endif // ATTACH_LED_INV
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
@@ -821,25 +821,35 @@ autoneg_done:
         
         // Shut down UART EN pin
         #ifdef USE_UART_EN_PIN
+#ifdef __AVR_XMEGA__
         UART_EN_PORT.DIRCLR = (1 << UART_EN_PIN);
+        UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
+#else // __AVR_XMEGA__
+        UART_EN_PORT_DDR &= ~(1 << UART_EN_PIN);
+        UART_EN_PORT &= ~(1 << UART_EN_PIN);
+#endif // __AVR_XMEGA__
         #endif // USE_UART_EN_PIN
         #endif // USE_UART
         
+#ifdef __AVR_XMEGA__
         #ifdef LOCK_SPM_ON_EXIT
         // Lock SPM writes
         SP_LockSPM();
         #endif // LOCK_SPM_ON_EXIT
+#endif // __AVR_XMEGA__
         
         // LED
 #ifdef __AVR_XMEGA__
         #ifdef USE_LED
         // Turn off LED on exit
         LED_PORT.DIRCLR = (1 << LED_PIN);
+        LED_PORT.OUTCLR = (1 << LED_PIN);
         #endif // USE_LED
 #else // __AVR_XMEGA__
         #ifdef USE_LED
         // Turn off LED on exit
         LED_PORT_DDR &= ~(1 << LED_PIN);
+        LED_PORT &= ~(1 << LED_PIN);
         #endif // USE_LED
 #endif //__AVR_XMEGA__
         
@@ -849,6 +859,7 @@ autoneg_done:
         #ifdef USE_ATTACH_LED
         // Disable ATTACH_LED
         ATTACH_LED_PORT.DIRCLR = (1 << ATTACH_LED_PIN);
+        ATTACH_LED_PORT.OUTCLR = (1 << ATTACH_LED_PIN);
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
 #else // __AVR_XMEGA__
@@ -856,15 +867,18 @@ autoneg_done:
         #ifdef USE_ATTACH_LED
         // Disable ATTACH_LED
         ATTACH_LED_PORT_DDR &= ~(1 << ATTACH_LED_PIN);
+        ATTACH_LED_PORT &= ~(1 << ATTACH_LED_PIN);
         #endif // USE_ATTACH_LED
         #endif // USE_I2C_ADDRESS_NEGOTIATION
 #endif // __AVR_XMEGA__
         
+#ifdef __AVR_XMEGA__
         #ifdef NEED_INTERRUPTS
         // remap interrupts back to application section
         CCP = CCP_IOREG_gc;
         PMIC.CTRL = 0;
         #endif // NEED_INTERRUPTS
+#endif // __AVR_XMEGA__
         
         #ifdef USE_WATCHDOG
         WDT_Disable();

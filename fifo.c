@@ -65,10 +65,12 @@ void __attribute__ ((always_inline)) fifo_deinit(void)
 {
 #ifdef __AVR_XMEGA__
         FIFO_DATA_PORT.DIR = 0xff;
+        FIFO_DATA_PORT.OUTCLR = 0xff;
         FIFO_CTL_PORT.OUTCLR = FIFO_RD_N_bm | FIFO_WR_N_bm;
         FIFO_CTL_PORT.DIRCLR = FIFO_RD_N_bm | FIFO_WR_N_bm;
 #else // __AVR_XMEGA__
         FIFO_DATA_PORT_DDR = 0xff;
+        FIFO_DATA_PORT= 0x00;
         FIFO_DATA_PORT &= ~(FIFO_RD_N_bm | FIFO_WR_N_bm);
         FIFO_CTL_PORT_DDR &= ~(FIFO_RD_N_bm | FIFO_WR_N_bm);
 #endif // __AVR_XMEGA__

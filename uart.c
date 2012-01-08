@@ -71,7 +71,7 @@ ISR(UART_DEVICE_TXC_ISR)
 void __attribute__ ((always_inline)) uart_init(void)
 {
 #ifdef __AVR_XMEGA__
-        UART_PORT.DIRSET |= (1 << UART_TX_PIN);
+        UART_PORT.DIRSET = (1 << UART_TX_PIN);
         UART_DEVICE.BAUDCTRLA = (UART_BSEL_VALUE & USART_BSEL_gm);
         UART_DEVICE.BAUDCTRLB = ((UART_BSCALE_VALUE << USART_BSCALE_gp) & USART_BSCALE_gm) | ((UART_BSEL_VALUE >> 8) & ~USART_BSCALE_gm);
         #if UART_CLK2X
@@ -102,8 +102,14 @@ void __attribute__ ((always_inline)) uart_deinit(void)
         #ifdef USE_INTERRUPTS
         UART_DEVICE.CTRLA = 0;
         #endif // USE_INTERRUPTS
+        UART_DEVICE.BAUDCTRLA = 0;
+        UART_DEVICE.BAUDCTRLB = 0;
+        UART_PORT.DIRCLR = (1 << UART_TX_PIN);
 #else // __AVR_XMEGA__
+        UART_UBRR = 0;
+        UART_UCSRA = 0;
         UART_UCSRB = 0;
+        UART_UCSRC = 0;
 #endif // __AVR_XMEGA__
 }
 
