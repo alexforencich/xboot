@@ -106,10 +106,10 @@ void __attribute__ ((always_inline)) uart_deinit(void)
         UART_DEVICE.BAUDCTRLB = 0;
         UART_PORT.DIRCLR = (1 << UART_TX_PIN);
 #else // __AVR_XMEGA__
-        UART_UBRR = 0;
         UART_UCSRA = 0;
         UART_UCSRB = 0;
-        UART_UCSRC = 0;
+        UART_UCSRC = _BV(UCSZ01) | _BV(UCSZ00);
+        UART_UBRR = 0;
 #endif // __AVR_XMEGA__
 }
 
