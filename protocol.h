@@ -84,6 +84,8 @@
 #define CMD_CLEAR_LED           'y'
 #define CMD_SET_TYPE            'T'
 
+#define CMD_CRC                 'h'
+
 // I2C Address Autonegotiation Commands
 #define CMD_AUTONEG_START       '@'
 #define CMD_AUTONEG_DONE        '#'
@@ -93,6 +95,13 @@
 #define MEM_FLASH               'F'
 #define MEM_USERSIG             'U'
 #define MEM_PRODSIG             'P'
+
+// Sections for CRC checks
+#define SECTION_FLASH           'F'
+#define SECTION_APPLICATION     'A'
+#define SECTION_BOOT            'B'
+#define SECTION_APP             'a'
+#define SECTION_APP_TEMP        't'
 
 // Command Responses
 #define REPLY_ACK               '\r'

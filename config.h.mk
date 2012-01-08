@@ -82,6 +82,9 @@ endif
 ifneq ($(ENABLE_FLASH_ERASE_WRITE), )
 	@echo "#define ENABLE_FLASH_ERASE_WRITE" >> config.h
 endif
+ifneq ($(ENABLE_CRC_SUPPORT), )
+	@echo "#define ENABLE_CRC_SUPPORT" >> config.h
+endif
 	@echo >> config.h
 	@echo "// API" >> config.h
 ifneq ($(ENABLE_API), )

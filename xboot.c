@@ -639,6 +639,47 @@ int main(void)
                         send_char(SIGNATURE_1);
                         send_char(SIGNATURE_0);
                 }
+                #ifdef ENABLE_CRC_SUPPORT
+                else if (val == CMD_CRC)
+                {
+                        uint32_t start = 0;
+                        uint32_t length = 0;
+                        uint16_t crc;
+                        
+                        val = get_char();
+                        
+                        switch (val)
+                        {
+                                case SECTION_FLASH:
+                                        length = PROGMEM_SIZE;
+                                        break;
+                                case SECTION_APPLICATION:
+                                        length = APP_SECTION_SIZE;
+                                        break;
+                                case SECTION_BOOT:
+                                        start = BOOT_SECTION_START;
+                                        length = BOOT_SECTION_SIZE;
+                                        break;
+                                #ifdef ENABLE_API
+                                case SECTION_APP:
+                                        length = XB_APP_SIZE;
+                                        break;
+                                case SECTION_APP_TEMP:
+                                        start = XB_APP_TEMP_START;
+                                        length = XB_APP_TEMP_SIZE;
+                                        break;
+                                #endif // ENABLE_API
+                                default:
+                                        send_char(REPLY_ERROR);
+                                        continue;
+                        }
+                        
+                        crc = crc16_block(start, length);
+                        
+                        send_char((crc >> 8) & 0xff);
+                        send_char(crc & 0xff);
+                }
+                #endif // ENABLE_CRC_SUPPORT
                 #ifdef USE_I2C
                 #ifdef USE_I2C_ADDRESS_NEGOTIATION
                 // Enter autonegotiate mode
