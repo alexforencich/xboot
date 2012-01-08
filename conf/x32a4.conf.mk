@@ -1,10 +1,10 @@
-# xmega64a3 configuration
+# xmega32a4 configuration
 
 # use config.h
 USE_CONFIG_H = yes
 
 # MCU
-MCU = atxmega16a4
+MCU = atxmega32a4
 
 # Clock Speed
 # Use 2 MHz internal RC oscillator
@@ -146,9 +146,9 @@ WATCHDOG_TIMEOUT      = WDT_PER_1KCLK_gc
 #WATCHDOG_TIMEOUT      = WDT_PER_8KCLK_gc
 
 # LED
-LED_PORT_NAME         = D
-LED_PIN               = 7
-LED_INV               = 0
+LED_PORT_NAME         = A
+LED_PIN               = 0
+LED_INV               = 1
 
 # UART
 # Select BAUD rate, port name, and UART number

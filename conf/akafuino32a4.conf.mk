@@ -1,4 +1,5 @@
-# xmega64a3 configuration
+# XBoot Configuration for Akafuino X
+# http://www.akafugu.jp/
 
 # use config.h
 USE_CONFIG_H = yes

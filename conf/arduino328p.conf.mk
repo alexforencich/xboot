@@ -1,4 +1,5 @@
-# Arduino (atmega328p) configuration
+# XBoot Configuration for Arduino (atmega328p)
+# http://www.arduino.cc/
 
 # use config.h
 USE_CONFIG_H = yes
