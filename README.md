@@ -438,6 +438,10 @@ Note: only supported on XMEGA
 Erase each page before writing. This allows the device to be reprogrammed
 without a complete erase sequence.
 
+#### 3.7.7 ENABLE_CRC_SUPPORT
+
+Enables commands for computing the CRC of various sections of Flash memory.
+
 ### 3.8 API Support
 
 #### 3.8.1 ENABLE_API
