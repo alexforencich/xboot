@@ -362,10 +362,16 @@ uint8_t xboot_install_firmware(uint16_t crc)
 
 void __attribute__ ((noreturn)) xboot_reset(void)
 {
+        // disable interrupts
+        cli();
+        
+        // reset chip
         #ifdef __AVR_XMEGA__
+        // can do this directly on xmega
         CCP = CCP_IOREG_gc;
         RST.CTRL = RST_SWRST_bm;
         #else // __AVR_XMEGA__
+        // need to force a watchdog reset on atmega
         wdt_disable();  
         wdt_enable(WDTO_15MS);
         #endif // __AVR_XMEGA__
