@@ -412,6 +412,7 @@ unsigned int __attribute__ ((noinline)) get_2bytes(void);
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address);
 void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address);
 
+uint16_t crc16_block(uint32_t start, uint32_t length);
 void install_firmware(void);
 
 
