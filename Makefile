@@ -82,17 +82,32 @@
 ## MCU = atmega164
 ## MCU = atmega168
 ## MCU = atmega168p
+## MCU = atmega169
+## MCU = atmega169p
+## MCU = atmega169pa
 ## MCU = atmega324
 ## MCU = atmega324pa
 ## MCU = atmega325
 ## MCU = atmega3250
 ## MCU = atmega328p
+## MCU = atmega329
+## MCU = atmega3290
+## MCU = atmega64
+## MCU = atmega640
 ## MCU = atmega644
 ## MCU = atmega644p
 ## MCU = atmega644pa
 ## MCU = atmega645
 ## MCU = atmega6450
+## MCU = atmega649
+## MCU = atmega649p
+## MCU = atmega6490
+## MCU = atmega128
+## MCU = atmega1280
+## MCU = atmega1281
 ## MCU = atmega1284p
+## MCU = atmega2560
+## MCU = atmega2561
 MCU = atxmega64a3
 
 # Is this a bootloader?
@@ -452,7 +467,7 @@ ifneq ($(filter $(MCU_S), m328p),)
     BOOT_FUSE_BL	= -U hfuse:w:0xDE:m
   endif
 endif
-ifneq ($(filter $(MCU_S), m164 m324 m324pa m325 m3250 m644 m644p m644pa m645 m6450 m1284p),)
+ifneq ($(filter $(MCU_S), m164 m169 m169p m169pa m324 m324pa m325 m3250 m329 m3290 m64 m640 m644 m644p m644pa m645 m6450 m649 m649p m6490 m128 m1280 m1281 m1284p m2560 m2561),)
   ifeq ($(BOOTSZ), 0)
     BOOT_FUSE_NOBL	= -U hfuse:w:0x99:m
     BOOT_FUSE_BL	= -U hfuse:w:0x98:m
@@ -572,7 +587,7 @@ ifneq ($(filter $(MCU_S), m164 m168 m168p),)
     BOOT_SECTION_SIZE		=0x000100
   endif
 endif
-ifneq ($(filter $(MCU_S), m324 m324pa m328p m325 m3250),)
+ifneq ($(filter $(MCU_S), m324 m324pa m328p m325 m3250 m329 m3290),)
   ifeq ($(BOOTSZ), 0)
     BOOT_SECTION_START		=0x007000
     BOOT_SECTION_SIZE		=0x001000
@@ -590,7 +605,7 @@ ifneq ($(filter $(MCU_S), m324 m324pa m328p m325 m3250),)
     BOOT_SECTION_SIZE		=0x000200
   endif
 endif
-ifneq ($(filter $(MCU_S), m644 m644p m644pa m645 m6450),)
+ifneq ($(filter $(MCU_S), m64 m640 m644 m644p m644pa m645 m6450 m649 m649p m6490),)
   ifeq ($(BOOTSZ), 0)
     BOOT_SECTION_START		=0x00E000
     BOOT_SECTION_SIZE		=0x002000
@@ -608,7 +623,7 @@ ifneq ($(filter $(MCU_S), m644 m644p m644pa m645 m6450),)
     BOOT_SECTION_SIZE		=0x000400
   endif
 endif
-ifneq ($(filter $(MCU_S), m1284p),)
+ifneq ($(filter $(MCU_S), m128 m1280 m1281 m1284p),)
   ifeq ($(BOOTSZ), 0)
     BOOT_SECTION_START		=0x01E000
     BOOT_SECTION_SIZE		=0x002000
@@ -623,6 +638,24 @@ ifneq ($(filter $(MCU_S), m1284p),)
   endif
   ifeq ($(BOOTSZ), 3)
     BOOT_SECTION_START		=0x01FC00
+    BOOT_SECTION_SIZE		=0x000400
+  endif
+endif
+ifneq ($(filter $(MCU_S), m2560 m2561),)
+  ifeq ($(BOOTSZ), 0)
+    BOOT_SECTION_START		=0x03E000
+    BOOT_SECTION_SIZE		=0x002000
+  endif
+  ifeq ($(BOOTSZ), 1)
+    BOOT_SECTION_START		=0x03F000
+    BOOT_SECTION_SIZE		=0x001000
+  endif
+  ifeq ($(BOOTSZ), 2)
+    BOOT_SECTION_START		=0x03F800
+    BOOT_SECTION_SIZE		=0x000800
+  endif
+  ifeq ($(BOOTSZ), 3)
+    BOOT_SECTION_START		=0x03FC00
     BOOT_SECTION_SIZE		=0x000400
   endif
 endif

@@ -103,11 +103,23 @@ XBoot compatible.
     * atmega325
     * atmega3250
     * atmega328p *
+    * atmega329
+    * atmega3290
+    * atmega64
+    * atmega640
     * atmega644
     * atmega644pa
     * atmega645
     * atmega6450
+    * atmega649
+    * atmega649p
+    * atmega6490
+    * atmega128
+    * atmega1280
+    * atmega1281
     * atmega1284p *
+    * atmega2560
+    * atmega2561
 
 ## 2 Using XBoot
 
