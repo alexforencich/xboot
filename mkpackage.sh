@@ -4,6 +4,8 @@ files="README.md
 Makefile
 config.h.mk
 conf/x64a3.conf.mk
+conf/x32a4.conf.mk
+conf/akafuino32a4.conf.mk
 conf/arduino328p.conf.mk
 xboot.c
 xboot.h
