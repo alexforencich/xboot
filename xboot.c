@@ -1233,15 +1233,22 @@ unsigned int __attribute__ ((noinline)) get_2bytes()
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 {
         ADDR_T tempaddress;
+        int i;
         
         #ifdef USE_WATCHDOG
         WDT_Reset();
         #endif // USE_WATCHDOG
         
         // fill up buffer
-        for (int i = 0; i < size; i++)
+        for (i = 0; i < size; i++)
         {
                 buffer[i] = get_char();
+        }
+        
+        // clear the rest of the buffer
+        for (; i < SPM_PAGESIZE; i++)
+        {
+                buffer[i] = 0xff;
         }
         
         // EEPROM memory type.
