@@ -8,10 +8,31 @@ https://github.com/alexforencich/xboot
 
 ### Table of Contents
 
-1. Introduction
-2. Using XBoot
-3. Configuring XBoot
-4. XBoot API
+    1 Introduction
+        1.1 Compatibility List
+    2 Using XBoot
+        2.1 Configure
+        2.2 Build XBoot and Program to Chip
+        2.3 Write Main Application Program
+        2.4 Notes for Main Application
+    3 Configuring XBoot
+        3.1 Bootloader clock options
+        3.2 AVR 1008 fixes
+        3.3 Bootloader entrance options
+        3.4 Bootloader exit options
+        3.5 Bootloader communication
+        3.6 General Options
+        3.7 Bootloader features
+        3.8 API Support
+        3.9 Code Protection
+    4 XBoot API
+        4.1 Using the API
+        4.2 Return Values
+        4.3 General API Functions
+        4.4 Low-level Flash Programming API
+        4.5 Firmware Update API
+        4.6 Offsets defined in xbootapi.h
+        4.7 Using the Firmware Update API
 
 ## 1 Introduction
 
@@ -78,6 +99,10 @@ XBoot compatible.
     * atxmega128b3 
   * ATMEGA 
     * atmega328p * 
+    * atmega324 
+    * atmega324pa 
+    * atmega644 
+    * atmega644pa
     * atmega1284p * 
 
 ## 2 Using XBoot
@@ -105,7 +130,7 @@ the settings are appropriate for your chip, programmer, and configuration.
 Then type “make [file].conf.mk”. This will copy [file].conf.mk to config.mk,
 generate config.h, compile the whole package, and generate xboot.hex, which
 can be downloaded with any programming cable capable of programming AVR chips.
-If you have and XMEGA and want to save some time and just program the boot
+If you have an XMEGA and want to save some time and just program the boot
 section, type “make xboot-boot.hex” and then write the new file xboot-boot.hex
 to the boot section directly with avrdude. The makefile includes built-in
 support for avrdude, so all you need to do is modify the avrdude parameters
@@ -144,15 +169,7 @@ bug report.
 Here are a few tips for your main application that will make using XBoot a
 much more pleasant experience.
 
-#### 2.4.1 Program UART Bits Properly
-
-If you select the `USE_UART` option, XBoot will program the UART. If your
-program uses the same UART as XBoot, you should not assume any of the UART
-registers are blank! Manually force all bits to the desired state. In
-particular, the 2x bit is often left out of UART configuration routines, but
-is set by XBoot.
-
-#### 2.4.2 Catch the "Enter Bootloader" command
+#### 2.4.1 Catch the "Enter Bootloader" command
 
 When AVRDude starts programming the chip, the first character sent out is the
 the sync command; the “Escape” character, 0x1B. If your program transmits
@@ -172,7 +189,7 @@ Or, if CCPWrite is not available, this should also work:
     }
 
 In many cases, this allows you to use the AVRDude program command without
-having to manually reset the AVR. Alternatively, if the API is used, calling
+having to manually reset the AVR. Alternatively, the API call
 `xboot_reset()` will have the same effect.
 
 ## 3 Configuring XBoot
@@ -473,6 +490,32 @@ enabling the firmware upgrade code in xboot:
 
   * `xboot_app_temp_erase`
   * `xboot_app_temp_write_page`
+
+### 3.9 Code Protection
+
+The code protection features built into xboot keep your code safe from reverse
+engineering. Protected areas will read the same as unprogrammed flash or
+EEPROM (0xff).
+
+#### 3.9.1 ENABLE_CODE_PROTECTION
+
+Enable basic code protection. Code protection prevents reading of the flash
+memory via xboot's interface. Code protection is temporarily disabled by an
+erase command, allowing verification of newly written firmware. Code 
+protection does not disable CRC commands.
+
+#### 3.9.2 ENABLE_EEPROM_PROTECTION
+
+Enable EEPROM protection. EEPROM protection prevents reading of the EEPROM
+memory via xboot's interface. Like code protection, EEPROM protection is
+temporarily disabled by an erase command, allowing verification of newly
+written firmware.
+
+#### 3.9.3 ENABLE_BOOTLOADER_PROTECTION
+
+Enable bootloader protection. Bootloader protection prevents reading of the
+boot block via xboot's interface. Unlike code protection, bootloader
+protection is not disabled by an erase command.
 
 ## 4 XBoot API
 
