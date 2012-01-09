@@ -48,6 +48,10 @@ unsigned char comm_mode;
 
 unsigned char buffer[SPM_PAGESIZE];
 
+#ifdef NEED_CODE_PROTECTION
+unsigned char protected;
+#endif // NEED_CODE_PROTECTION
+
 // Main code
 int main(void)
 {
@@ -57,6 +61,10 @@ int main(void)
         int i = 0;
         uint32_t j;
         uint8_t k;
+        
+        #ifdef NEED_CODE_PROTECTION
+        protected = 1;
+        #endif // NEED_CODE_PROTECTION
         
         #ifdef USE_I2C_ADDRESS_NEGOTIATION
         unsigned short devid_bit;
@@ -460,6 +468,11 @@ int main(void)
                         // Erase EEPROM
                         EEPROM_erase_all();
                         
+                        // turn off read protection
+                        #ifdef NEED_CODE_PROTECTION
+                        protected = 0;
+                        #endif // NEED_CODE_PROTECTION
+                        
                         // acknowledge
                         send_char(REPLY_ACK);
                 }
@@ -498,8 +511,15 @@ int main(void)
                 // Read program memory byte
                 else if (val == CMD_READ_BYTE)
                 {
-                        send_char(Flash_ReadByte((address << 1)+1));
-                        send_char(Flash_ReadByte((address << 1)+0));
+                        unsigned int w = Flash_ReadWord((address << 1));
+                        
+                        #ifdef ENABLE_CODE_PROTECTION
+                        if (protected)
+                                w = 0xffff;
+                        #endif // ENABLE_CODE_PROTECTION
+                        
+                        send_char(w >> 8);
+                        send_char(w);
                         
                         address++;
                 }
@@ -544,7 +564,14 @@ int main(void)
                 // Read EEPROM memory
                 else if (val == CMD_READ_EEPROM_BYTE)
                 {
-                        send_char(EEPROM_read_byte(address));
+                        char c = EEPROM_read_byte(address);
+                        
+                        #ifdef ENABLE_EEPROM_PROTECTION
+                        if (protected)
+                                c = 0xff;
+                        #endif // ENABLE_EEPROM_PROTECTION
+                        
+                        send_char(c);
                         address++;
                 }
                 #endif // ENABLE_EEPROM_BYTE_SUPPORT
@@ -1230,25 +1257,32 @@ unsigned int __attribute__ ((noinline)) get_2bytes()
         return result;
 }
 
+void clear_buffer(void)
+{
+        unsigned char *ptr = buffer;
+        for (long i = 0; i < SPM_PAGESIZE; i++)
+        {
+                *(ptr++) = 0xff;
+        }
+}
+
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
 {
         ADDR_T tempaddress;
-        int i;
         
         #ifdef USE_WATCHDOG
         WDT_Reset();
         #endif // USE_WATCHDOG
         
         // fill up buffer
-        for (i = 0; i < size; i++)
+        for (int i = 0; i < SPM_PAGESIZE; i++)
         {
-                buffer[i] = get_char();
-        }
-        
-        // clear the rest of the buffer
-        for (; i < SPM_PAGESIZE; i++)
-        {
-                buffer[i] = 0xff;
+                char c = 0xff;
+                
+                if (i < size)
+                        c = get_char();
+                
+                buffer[i] = c;
         }
         
         // EEPROM memory type.
@@ -1365,6 +1399,21 @@ void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address)
                 // bad memory type
                 return;
         }
+        
+        // code protection
+        if (
+        #ifdef ENABLE_CODE_PROTECTION
+                (protected && mem == MEM_FLASH) ||
+        #endif // ENABLE_CODE_PROTECTION
+        #ifdef ENABLE_EEPROM_PROTECTION
+                (protected && mem == MEM_EEPROM) ||
+        #endif // ENABLE_EEPROM_PROTECTION
+        #ifdef ENABLE_BOOTLOADER_PROTECTION
+                (*address >= (BOOT_SECTION_START >> 1) && mem == MEM_FLASH) ||
+        #endif // ENABLE_BOOTLOADER_PROTECTION
+                0
+        )
+                clear_buffer();
         
         // send bytes
         for (int i = 0; i < size2; i++)

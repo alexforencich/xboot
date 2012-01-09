@@ -119,6 +119,11 @@
 #define ENABLE_API_SPM_WRAPPER
 #define ENABLE_API_FIRMWARE_UPDATE
 
+// Code Protection
+#define ENABLE_CODE_PROTECTION
+#define ENABLE_EEPROM_PROTECTION
+#define ENABLE_BOOTLOADER_PROTECTION
+
 // ENTER_PIN
 #define ENTER_PORT_NAME         C
 #define ENTER_PIN               0
@@ -364,6 +369,18 @@
 #endif // NEED_INTERRUPTS
 #endif // USE_AVR1008_EEPROM
 
+#ifdef ENABLE_CODE_PROTECTION
+#ifndef NEED_CODE_PROTECTION
+#define NEED_CODE_PROTECTION
+#endif // NEED_CODE_PROTECTION
+#endif // ENABLE_CODE_PROTECTION
+
+#ifdef ENABLE_EEPROM_PROTECTION
+#ifndef NEED_CODE_PROTECTION
+#define NEED_CODE_PROTECTION
+#endif // NEED_CODE_PROTECTION
+#endif // ENABLE_EEPROM_PROTECTION
+
 // communication modes
 #define MODE_UNDEF              0
 #define MODE_UART               1
@@ -409,6 +426,8 @@ void ow_slave_wait_bit(void);
 unsigned char __attribute__ ((noinline)) get_char(void);
 void __attribute__ ((noinline)) send_char(unsigned char c);
 unsigned int __attribute__ ((noinline)) get_2bytes(void);
+
+void clear_buffer(void);
 
 unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address);
 void BlockRead(unsigned int size, unsigned char mem, ADDR_T *address);

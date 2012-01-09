@@ -103,6 +103,17 @@ ifneq ($(ENABLE_API_FIRMWARE_UPDATE), )
 	@echo "#define ENABLE_API_FIRMWARE_UPDATE" >> config.h
 endif
 	@echo >> config.h
+	@echo "// Code Protection" >> config.h
+ifneq ($(ENABLE_CODE_PROTECTION), )
+	@echo "#define ENABLE_CODE_PROTECTION" >> config.h
+endif
+ifneq ($(ENABLE_EEPROM_PROTECTION), )
+	@echo "#define ENABLE_EEPROM_PROTECTION" >> config.h
+endif
+ifneq ($(ENABLE_BOOTLOADER_PROTECTION), )
+	@echo "#define ENABLE_BOOTLOADER_PROTECTION" >> config.h
+endif
+	@echo >> config.h
 	@echo "// ENTER_PIN" >> config.h
 ifneq ($(ENTER_PORT_NAME), )
 	@echo "#define ENTER_PORT_NAME $(ENTER_PORT_NAME)" >> config.h

@@ -86,6 +86,7 @@
 // (sp_driver wrapper)
 
 #define Flash_ReadByte SP_ReadByte
+#define Flash_ReadWord SP_ReadWord
 #define Flash_LoadFlashWord SP_LoadFlashWord
 #define Flash_EraseApplicationSection SP_EraseApplicationSection
 #define Flash_EraseApplicationPage SP_EraseApplicationPage
@@ -102,6 +103,7 @@
 // ATMega Functions
 
 #define Flash_ReadByte PGM_READ_BYTE
+#define Flash_ReadWord PGM_READ_WORD
 #define Flash_LoadFlashWord boot_page_fill
 void Flash_EraseApplicationSection(void);
 #define Flash_EraseApplicationPage boot_page_erase
