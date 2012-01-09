@@ -63,47 +63,51 @@ currently supported. An asterisk denotes the MCU has been tested and confirmed
 XBoot compatible.
 
   * XMEGA 
-    * atxmega16a4 * 
-    * atxmega32a4 * 
-    * atxmega64a1 
-    * atxmega64a3 * 
-    * atxmega64a4 
-    * atxmega128a1 * 
-    * atxmega128a3 
-    * atxmega128a4 
-    * atxmega192a1 
-    * atxmega192a3 
-    * atxmega256a1 
-    * atxmega256a3b 
-    * atxmega256a3 * 
-    * atxmega16d4 
-    * atxmega32d4 
-    * atxmega64d3 
-    * atxmega64d4 
-    * atxmega128d3 
-    * atxmega128d4 
-    * atxmega192d3 
-    * atxmega256d3 
-    * atxmega16a4u 
-    * atxmega32a4u 
-    * atxmega64a3u 
-    * atxmega64a4u 
-    * atxmega128a3u 
-    * atxmega128a4u 
-    * atxmega192a3u 
-    * atxmega256a3u 
-    * atxmega256a3bu 
-    * atxmega64b1 
-    * atxmega64b3 
-    * atxmega128b1 
-    * atxmega128b3 
-  * ATMEGA 
-    * atmega328p * 
-    * atmega324 
-    * atmega324pa 
-    * atmega644 
+    * atxmega16a4 *
+    * atxmega32a4 *
+    * atxmega64a1
+    * atxmega64a3 *
+    * atxmega64a4
+    * atxmega128a1 *
+    * atxmega128a3 *
+    * atxmega128a4
+    * atxmega192a1
+    * atxmega192a3
+    * atxmega256a1
+    * atxmega256a3b
+    * atxmega256a3 *
+    * atxmega16d4
+    * atxmega32d4
+    * atxmega64d3
+    * atxmega64d4
+    * atxmega128d3
+    * atxmega128d4
+    * atxmega192d3
+    * atxmega256d3
+    * atxmega16a4u
+    * atxmega32a4u
+    * atxmega64a3u
+    * atxmega64a4u
+    * atxmega128a3u
+    * atxmega128a4u
+    * atxmega192a3u
+    * atxmega256a3u
+    * atxmega256a3bu
+    * atxmega64b1
+    * atxmega64b3
+    * atxmega128b1
+    * atxmega128b3
+  * ATMEGA
+    * atmega324
+    * atmega324pa
+    * atmega325
+    * atmega3250
+    * atmega328p *
+    * atmega644
     * atmega644pa
-    * atmega1284p * 
+    * atmega645
+    * atmega6450
+    * atmega1284p *
 
 ## 2 Using XBoot
 

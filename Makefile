@@ -40,6 +40,7 @@
 # user defined values
 
 # MCU name
+# XMEGA
 ## MCU = atxmega16a4
 ## MCU = atxmega32a4
 ## MCU = atxmega64a1
@@ -74,11 +75,25 @@
 ## MCU = atxmega64b3
 ## MCU = atxmega128b1
 ## MCU = atxmega128b3
+# ATMEGA
+## MCU = atmega88
+## MCU = atmega88p
+## MCU = atmega88pa
+## MCU = atmega164
+## MCU = atmega168
+## MCU = atmega168p
+## MCU = atmega324
+## MCU = atmega324pa
+## MCU = atmega325
+## MCU = atmega3250
+## MCU = atmega328p
+## MCU = atmega644
+## MCU = atmega644p
+## MCU = atmega644pa
+## MCU = atmega645
+## MCU = atmega6450
+## MCU = atmega1284p
 MCU = atxmega64a3
-#MCU = atxmega32a4
-#MCU = atxmega16a4
-#MCU = atmega1284p
-#MCU = atmega328p
 
 # Is this a bootloader?
 #MAKE_BOOTLOADER=no
@@ -437,7 +452,7 @@ ifneq ($(filter $(MCU_S), m328p),)
     BOOT_FUSE_BL	= -U hfuse:w:0xDE:m
   endif
 endif
-ifneq ($(filter $(MCU_S), m164 m324 m324pa m644 m644p m644pa m1284p),)
+ifneq ($(filter $(MCU_S), m164 m324 m324pa m325 m3250 m644 m644p m644pa m645 m6450 m1284p),)
   ifeq ($(BOOTSZ), 0)
     BOOT_FUSE_NOBL	= -U hfuse:w:0x99:m
     BOOT_FUSE_BL	= -U hfuse:w:0x98:m
@@ -557,7 +572,7 @@ ifneq ($(filter $(MCU_S), m164 m168 m168p),)
     BOOT_SECTION_SIZE		=0x000100
   endif
 endif
-ifneq ($(filter $(MCU_S), m324 m324pa m328p),)
+ifneq ($(filter $(MCU_S), m324 m324pa m328p m325 m3250),)
   ifeq ($(BOOTSZ), 0)
     BOOT_SECTION_START		=0x007000
     BOOT_SECTION_SIZE		=0x001000
@@ -575,7 +590,7 @@ ifneq ($(filter $(MCU_S), m324 m324pa m328p),)
     BOOT_SECTION_SIZE		=0x000200
   endif
 endif
-ifneq ($(filter $(MCU_S), m644 m644p m644pa),)
+ifneq ($(filter $(MCU_S), m644 m644p m644pa m645 m6450),)
   ifeq ($(BOOTSZ), 0)
     BOOT_SECTION_START		=0x00E000
     BOOT_SECTION_SIZE		=0x002000
