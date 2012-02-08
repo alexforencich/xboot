@@ -41,6 +41,11 @@
 #include <avr/wdt.h>
 #endif
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 // defines
 // offsets and addresses
 #ifndef PROGMEM_SIZE
@@ -113,6 +118,10 @@ uint8_t xboot_app_crc16_block(uint32_t start, uint32_t length, uint16_t *crc);
 uint8_t xboot_app_crc16(uint16_t *crc);
 uint8_t xboot_install_firmware(uint16_t crc);
 void __attribute__ ((noreturn)) xboot_reset(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __XBOOTAPI_H
 
