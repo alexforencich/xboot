@@ -7,6 +7,7 @@ conf/x64a3.conf.mk
 conf/x32a4.conf.mk
 conf/akafuino32a4.conf.mk
 conf/arduino328p.conf.mk
+conf/mongoose.conf.mk
 xboot.c
 xboot.h
 flash.c
