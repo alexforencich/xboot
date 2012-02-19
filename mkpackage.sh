@@ -31,7 +31,7 @@ xbootapi.h"
 
 name=xboot
 
-output=xboot-$(date +%Y%m%d).tar.gz
+output=$name-$(date +%Y%m%d).tar.gz
 
 pkg=pkg/$name
 
@@ -44,5 +44,5 @@ do
 done
 
 cd pkg
-tar -cvzf ../$output xboot
+tar -cvzf ../$output $name
 
