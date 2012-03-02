@@ -208,13 +208,28 @@ In many cases, this allows you to use the AVRDude program command without
 having to manually reset the AVR. Alternatively, the API call
 `xboot_reset()` will have the same effect.
 
+#### 2.4.2 Combine hex files
+
+To streamline programming multiple chips for a production run, the tool
+`srec_cat` can be used to combine the hex files.  Use the command as follows:
+
+    srec_cat xboot.hex -intel main.hex -intel -o mergedfile.hex -intel
+
+This will concatenate the two hex files together with the proper offsets.  
+Please make sure to use xboot.hex and not xboot-boot.hex to ensure tha the
+correct offset is used (xboot.hex is relative to address 0 while
+xboot-boot.hex is relative to the start of the boot section).  Note that the
+combined hex file cannot be programmed with xboot; it is intended to be
+written with an ISP programmer so both xboot and the application are written
+in one step.  
+
 ## 3 Configuring XBoot
 
 XBoot is designed to be reconfigured to suit specific needs. Out of the box,
 all of the standard features are turned on. Turning off features and
 reassigning pins is easy, just pick a .conf.mk file in the .conf folder, make
 a copy of it, and edit the appropriate parameters. Then build xboot with your
-parameters by running “make [file].conf.mk”.
+parameters by running `make [file].conf.mk`.
 
 Recommended configuration:
 
