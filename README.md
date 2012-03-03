@@ -365,6 +365,7 @@ Options
   * `UART_NUMBER` defines number of the UART device on the port, e.g. 1 for USARTD1 (or USART1 for ATMEGA) 
   * `UART_U2X` turns on the double-rate BRG in ATMEGA parts 
     * Note: this only applies to ATMEGA devices 
+  * `UART_RX_PUEN` enables a pull-up on the UART RX pin
 
 #### 3.5.3 USE_UART_EN_PIN
 
