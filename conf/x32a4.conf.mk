@@ -161,6 +161,7 @@ LED_INV               = 1
 UART_BAUD_RATE        = 115200
 UART_PORT_NAME        = C
 UART_NUMBER           = 0
+UART_RX_PUEN          = yes
 
 # UART RS485 Enable Output
 UART_EN_PORT_NAME     = C
@@ -174,7 +175,7 @@ FIFO_RXF_N_bm         = (1<<3)
 FIFO_TXE_N_bm         = (1<<2)
 FIFO_RD_N_bm          = (1<<1)
 FIFO_WR_N_bm          = (1<<0)
-FIFO_BIT_REVERSE = yes
+FIFO_BIT_REVERSE      = yes
 
 # I2C
 I2C_DEVICE_PORT       = C

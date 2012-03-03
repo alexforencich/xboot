@@ -169,6 +169,7 @@
 #define UART_PORT_NAME          C
 #define UART_NUMBER             0
 #define UART_U2X
+#define UART_RX_PUEN
 
 // UART RS485 Enable Output
 #define UART_EN_PORT_NAME       C
@@ -239,8 +240,10 @@
 #ifdef __AVR_XMEGA__
 
 #if (UART_NUMBER == 0)
+#define UART_RX_PIN             2
 #define UART_TX_PIN             3
 #else
+#define UART_RX_PIN             6
 #define UART_TX_PIN             7
 #endif
 #define UART_PORT               token_paste2(PORT, UART_PORT_NAME)
@@ -249,6 +252,8 @@
 #define UART_DEVICE_RXC_ISR     token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
 #define UART_DEVICE_DRE_ISR     token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
 #define UART_DEVICE_TXC_ISR     token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
+#define UART_RX_PIN_CTRL        token_paste3(UART_PORT.PIN, UART_RX_PIN, CTRL)
+#define UART_TX_PIN_CTRL        token_paste3(UART_PORT.PIN, UART_TX_PIN, CTRL)
 
 // BAUD Rate Values
 // Known good at 2MHz
@@ -308,6 +313,32 @@
 #define UART_UBRR               token_paste2(UBRR, UART_NUMBER)
 #define UART_UBRRL              token_paste3(UBRR, UART_NUMBER, L)
 #define UART_UBRRH              token_paste3(UBRR, UART_NUMBER, H)
+
+#if (UART_NUMBER == 0)
+
+#define UART_RX_PIN             0
+#define UART_TX_PIN             1
+
+#ifdef PORTE
+
+#define UART_PORT               PORTE
+#define UART_DDR                DDRE
+
+#else // PORTE
+
+#define UART_PORT               PORTD
+#define UART_DDR                DDRD
+
+#endif
+
+#else // UART_NUMBER
+
+#define UART_RX_PIN             2
+#define UART_TX_PIN             3
+#define UART_PORT               PORTD
+#define UART_DDR                DDRD
+
+#endif // UART_NUMBER
 
 #ifdef UART_U2X
 #define UART_BRV                ((uint32_t)((F_CPU) + ((uint32_t)(UART_BAUD_RATE) * 4UL)) / ((uint32_t)(UART_BAUD_RATE) * 8UL) - 1)

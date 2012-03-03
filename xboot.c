@@ -223,6 +223,24 @@ int main(void)
         // Initialize UART
         uart_init();
         
+        // Initialize RX pin pull-up
+        
+#ifdef __AVR_XMEGA__
+        
+        #ifdef UART_RX_PUEN
+        // Enable RX pin pullup
+        UART_RX_PIN_CTRL = 0x18;
+        #endif // UART_RX_PUEN
+        
+#else // __AVR_XMEGA__
+        
+        #ifdef UART_RX_PUEN
+        // Enable RX pin pullup
+        UART_PORT |= (1 << UART_RX_PIN);
+        #endif // UART_RX_PUEN
+        
+#endif // __AVR_XMEGA__
+        
         // Initialize UART EN pin
         
 #ifdef __AVR_XMEGA__
@@ -887,6 +905,19 @@ autoneg_done:
         // Shut down UART
         uart_deinit();
         
+        // Disable RX pin pull-up
+#ifdef __AVR_XMEGA__
+        #ifdef UART_RX_PUEN
+        // Disable RX pin pullup
+        UART_RX_PIN_CTRL = 0;
+        #endif // UART_RX_PUEN
+#else // __AVR_XMEGA__
+        #ifdef UART_RX_PUEN
+        // Disable RX pin pullup
+        UART_PORT &= ~(1 << UART_RX_PIN);
+        #endif // UART_RX_PUEN
+#endif // __AVR_XMEGA__
+        
         // Shut down UART EN pin
         #ifdef USE_UART_EN_PIN
 #ifdef __AVR_XMEGA__
@@ -904,6 +935,23 @@ autoneg_done:
         // Lock SPM writes
         SP_LockSPM();
         #endif // LOCK_SPM_ON_EXIT
+#endif // __AVR_XMEGA__
+        
+        // Disable bootloader entry pin
+#ifdef __AVR_XMEGA__
+        #ifdef USE_ENTER_PIN
+        #if ENTER_PIN_PUEN
+        // Disable bootloader entry pin pullup
+        ENTER_PIN_CTRL = 0;
+        #endif // ENTER_PIN_PUEN
+        #endif // USE_ENTER_PIN
+#else // __AVR_XMEGA__
+        #ifdef USE_ENTER_PIN
+        #if ENTER_PIN_PUEN
+        // Disable bootloader entry pin pullup
+        ENTER_PORT &= ~(1 << ENTER_PIN);
+        #endif // ENTER_PIN_PUEN
+        #endif // USE_ENTER_PIN
 #endif // __AVR_XMEGA__
         
         // LED
