@@ -85,7 +85,7 @@ XBoot compatible.
     * atxmega192d3
     * atxmega256d3
     * atxmega16a4u
-    * atxmega32a4u
+    * atxmega32a4u *
     * atxmega64a3u
     * atxmega64a4u
     * atxmega128a3u
