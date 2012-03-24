@@ -68,7 +68,7 @@ ISR(UART_DEVICE_TXC_ISR)
 #endif // USE_INTERRUPTS
 
 // Initialize UART
-void __attribute__ ((always_inline)) uart_init(void)
+void uart_init(void)
 {
 #ifdef __AVR_XMEGA__
         UART_PORT.DIRSET = (1 << UART_TX_PIN);
@@ -95,7 +95,7 @@ void __attribute__ ((always_inline)) uart_init(void)
 }
 
 // Shut down UART
-void __attribute__ ((always_inline)) uart_deinit(void)
+void uart_deinit(void)
 {
 #ifdef __AVR_XMEGA__
         UART_DEVICE.CTRLB = 0;

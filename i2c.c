@@ -101,7 +101,7 @@ ISR(I2C_DEVICE_ISR)
 #endif // USE_I2C
 #endif // USE_INTERRUPTS
 
-void __attribute__ ((always_inline)) i2c_init(void)
+void i2c_init(void)
 {
 #ifdef __AVR_XMEGA__
         I2C_DEVICE.CTRL = 0;
@@ -127,7 +127,7 @@ void __attribute__ ((always_inline)) i2c_init(void)
 #endif // __AVR_XMEGA__
 }
 
-void __attribute__ ((always_inline)) i2c_deinit(void)
+void i2c_deinit(void)
 {
         // Shut down I2C module and turn off interrupt
 #ifdef __AVR_XMEGA__

@@ -47,7 +47,7 @@
 } while(0)
 
 // Initialize FIFO
-void __attribute__ ((always_inline)) fifo_init(void)
+void fifo_init(void)
 {
 #ifdef __AVR_XMEGA__
         FIFO_DATA_PORT.DIR = 0;
@@ -61,7 +61,7 @@ void __attribute__ ((always_inline)) fifo_init(void)
 }
 
 // Shut down UART
-void __attribute__ ((always_inline)) fifo_deinit(void)
+void fifo_deinit(void)
 {
 #ifdef __AVR_XMEGA__
         FIFO_DATA_PORT.DIR = 0xff;
@@ -76,66 +76,66 @@ void __attribute__ ((always_inline)) fifo_deinit(void)
 #endif // __AVR_XMEGA__
 }
 
-uint8_t __attribute__ ((always_inline)) fifo_cur_char(void)
+uint8_t fifo_cur_char(void)
 {
-    uint8_t ret;
+        uint8_t ret;
 #ifdef __AVR_XMEGA__
-    FIFO_CTL_PORT.OUTCLR = FIFO_RD_N_bm;
-    ret = FIFO_DATA_PORT.IN;
-    #ifdef  FIFO_BIT_REVERSE
-    REVERSE(ret);
-    #endif
-    FIFO_CTL_PORT.OUTSET = FIFO_RD_N_bm;
+        FIFO_CTL_PORT.OUTCLR = FIFO_RD_N_bm;
+        ret = FIFO_DATA_PORT.IN;
+        #ifdef  FIFO_BIT_REVERSE
+        REVERSE(ret);
+        #endif
+        FIFO_CTL_PORT.OUTSET = FIFO_RD_N_bm;
 #else // __AVR_XMEGA__
-    FIFO_CTL_PORT &= ~FIFO_RD_N_bm;
-    ret = FIFO_DATA_PORT_PIN;
-    #ifdef  FIFO_BIT_REVERSE
-    REVERSE(ret);
-    #endif
-    FIFO_CTL_PORT |= FIFO_RD_N_bm;
+        FIFO_CTL_PORT &= ~FIFO_RD_N_bm;
+        ret = FIFO_DATA_PORT_PIN;
+        #ifdef  FIFO_BIT_REVERSE
+        REVERSE(ret);
+        #endif
+        FIFO_CTL_PORT |= FIFO_RD_N_bm;
 #endif // __AVR_XMEGA__
-    return ret;
+        return ret;
 }
 
-void __attribute__ ((always_inline))  fifo_send_char(uint8_t c)
+void fifo_send_char(uint8_t c)
 {
 #ifdef __AVR_XMEGA__
-    if ((FIFO_CTL_PORT.IN & FIFO_TXE_N_bm) !=  FIFO_TXE_N_bm)
-    {
-        FIFO_DATA_PORT.DIR = 0xff;
-        #ifdef  FIFO_BIT_REVERSE
-        REVERSE(c);
-        #endif
-        FIFO_DATA_PORT.OUT = c;
-        FIFO_DATA_PORT.DIR = 0xff;
-        FIFO_CTL_PORT.OUTCLR = FIFO_WR_N_bm;
-        FIFO_DATA_PORT.DIR = 0;
-        FIFO_CTL_PORT.OUTSET = FIFO_WR_N_bm;
-    }
+        if ((FIFO_CTL_PORT.IN & FIFO_TXE_N_bm) !=  FIFO_TXE_N_bm)
+        {
+                FIFO_DATA_PORT.DIR = 0xff;
+                #ifdef  FIFO_BIT_REVERSE
+                REVERSE(c);
+                #endif
+                FIFO_DATA_PORT.OUT = c;
+                FIFO_DATA_PORT.DIR = 0xff;
+                FIFO_CTL_PORT.OUTCLR = FIFO_WR_N_bm;
+                FIFO_DATA_PORT.DIR = 0;
+                FIFO_CTL_PORT.OUTSET = FIFO_WR_N_bm;
+        }
 #else // __AVR_XMEGA__
-    if ((FIFO_CTL_PORT_PIN & FIFO_TXE_N_bm) !=  FIFO_TXE_N_bm)
-    {
-        FIFO_DATA_PORT_DDR = 0xff;
-        #ifdef  FIFO_BIT_REVERSE
-        REVERSE(c);
-        #endif
-        FIFO_DATA_PORT = c;
-        FIFO_DATA_PORT_DDR = 0xff;
-        FIFO_CTL_PORT &= ~FIFO_WR_N_bm;
-        FIFO_DATA_PORT_DDR = 0;
-        FIFO_CTL_PORT |= FIFO_WR_N_bm;
-    }
+        if ((FIFO_CTL_PORT_PIN & FIFO_TXE_N_bm) !=  FIFO_TXE_N_bm)
+        {
+                FIFO_DATA_PORT_DDR = 0xff;
+                #ifdef  FIFO_BIT_REVERSE
+                REVERSE(c);
+                #endif
+                FIFO_DATA_PORT = c;
+                FIFO_DATA_PORT_DDR = 0xff;
+                FIFO_CTL_PORT &= ~FIFO_WR_N_bm;
+                FIFO_DATA_PORT_DDR = 0;
+                FIFO_CTL_PORT |= FIFO_WR_N_bm;
+        }
 #endif // __AVR_XMEGA__
 }
 
-void __attribute__ ((always_inline))  fifo_send_char_blocking(uint8_t c)
+void fifo_send_char_blocking(uint8_t c)
 {
 #ifdef __AVR_XMEGA__
-    while (FIFO_CTL_PORT.IN & FIFO_TXE_N_bm)
+        while (FIFO_CTL_PORT.IN & FIFO_TXE_N_bm)
 #else // __AVR_XMEGA__
-    while (FIFO_CTL_PORT_PIN & FIFO_TXE_N_bm)
+        while (FIFO_CTL_PORT_PIN & FIFO_TXE_N_bm)
 #endif // __AVR_XMEGA__
-    {
-    };
-    fifo_send_char(c);
+        {
+        };
+        fifo_send_char(c);
 }

@@ -49,14 +49,14 @@
 #endif // __AVR_XMEGA__
 
 // current character in UART receive buffer
-extern uint8_t __attribute__ ((always_inline)) fifo_cur_char(void);
+extern uint8_t fifo_cur_char(void);
 // send character
-extern void __attribute__ ((always_inline))  fifo_send_char(uint8_t c); 
+extern void fifo_send_char(uint8_t c); 
 // send character, block until it is completely sent
-extern void __attribute__ ((always_inline))  fifo_send_char_blocking(uint8_t c); 
+extern void fifo_send_char_blocking(uint8_t c); 
 
 // Prototypes
-extern void __attribute__ ((always_inline)) fifo_init(void);
-extern void __attribute__ ((always_inline)) fifo_deinit(void);
+extern void fifo_init(void);
+extern void fifo_deinit(void);
 
 #endif // __UART_H

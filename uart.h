@@ -68,8 +68,8 @@
 #endif // __AVR_XMEGA__
 
 // Prototypes
-extern void __attribute__ ((always_inline)) uart_init(void);
-extern void __attribute__ ((always_inline)) uart_deinit(void);
+extern void uart_init(void);
+extern void uart_deinit(void);
 
 #endif // __UART_H
 
