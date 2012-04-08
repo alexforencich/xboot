@@ -51,12 +51,12 @@ void fifo_init(void)
 {
 #ifdef __AVR_XMEGA__
         FIFO_DATA_PORT.DIR = 0;
-        FIFO_CTL_PORT.OUTSET = FIFO_RD_N_bm | FIFO_WR_N_bm;
-        FIFO_CTL_PORT.DIRSET = FIFO_RD_N_bm | FIFO_WR_N_bm;
+        FIFO_CTL_PORT.OUTSET = _BV(FIFO_RD_N) | _BV(FIFO_WR_N);
+        FIFO_CTL_PORT.DIRSET = _BV(FIFO_RD_N) | _BV(FIFO_WR_N);
 #else // __AVR_XMEGA__
         FIFO_DATA_PORT_DDR = 0;
-        FIFO_DATA_PORT |= (FIFO_RD_N_bm | FIFO_WR_N_bm);
-        FIFO_CTL_PORT_DDR |= (FIFO_RD_N_bm | FIFO_WR_N_bm);
+        FIFO_DATA_PORT |= (_BV(FIFO_RD_N) | _BV(FIFO_WR_N));
+        FIFO_CTL_PORT_DDR |= (_BV(FIFO_RD_N) | _BV(FIFO_WR_N));
 #endif // __AVR_XMEGA__
 }
 
@@ -66,13 +66,13 @@ void fifo_deinit(void)
 #ifdef __AVR_XMEGA__
         FIFO_DATA_PORT.DIR = 0xff;
         FIFO_DATA_PORT.OUTCLR = 0xff;
-        FIFO_CTL_PORT.OUTCLR = FIFO_RD_N_bm | FIFO_WR_N_bm;
-        FIFO_CTL_PORT.DIRCLR = FIFO_RD_N_bm | FIFO_WR_N_bm;
+        FIFO_CTL_PORT.OUTCLR = _BV(FIFO_RD_N) | _BV(FIFO_WR_N);
+        FIFO_CTL_PORT.DIRCLR = _BV(FIFO_RD_N) | _BV(FIFO_WR_N);
 #else // __AVR_XMEGA__
         FIFO_DATA_PORT_DDR = 0xff;
         FIFO_DATA_PORT= 0x00;
-        FIFO_DATA_PORT &= ~(FIFO_RD_N_bm | FIFO_WR_N_bm);
-        FIFO_CTL_PORT_DDR &= ~(FIFO_RD_N_bm | FIFO_WR_N_bm);
+        FIFO_DATA_PORT &= ~(_BV(FIFO_RD_N) | _BV(FIFO_WR_N));
+        FIFO_CTL_PORT_DDR &= ~(_BV(FIFO_RD_N) | _BV(FIFO_WR_N));
 #endif // __AVR_XMEGA__
 }
 
@@ -80,19 +80,19 @@ uint8_t fifo_cur_char(void)
 {
         uint8_t ret;
 #ifdef __AVR_XMEGA__
-        FIFO_CTL_PORT.OUTCLR = FIFO_RD_N_bm;
+        FIFO_CTL_PORT.OUTCLR = _BV(FIFO_RD_N);
         ret = FIFO_DATA_PORT.IN;
         #ifdef  FIFO_BIT_REVERSE
         REVERSE(ret);
         #endif
-        FIFO_CTL_PORT.OUTSET = FIFO_RD_N_bm;
+        FIFO_CTL_PORT.OUTSET = _BV(FIFO_RD_N);
 #else // __AVR_XMEGA__
-        FIFO_CTL_PORT &= ~FIFO_RD_N_bm;
+        FIFO_CTL_PORT &= ~_BV(FIFO_RD_N);
         ret = FIFO_DATA_PORT_PIN;
         #ifdef  FIFO_BIT_REVERSE
         REVERSE(ret);
         #endif
-        FIFO_CTL_PORT |= FIFO_RD_N_bm;
+        FIFO_CTL_PORT |= _BV(FIFO_RD_N);
 #endif // __AVR_XMEGA__
         return ret;
 }
@@ -100,7 +100,7 @@ uint8_t fifo_cur_char(void)
 void fifo_send_char(uint8_t c)
 {
 #ifdef __AVR_XMEGA__
-        if ((FIFO_CTL_PORT.IN & FIFO_TXE_N_bm) !=  FIFO_TXE_N_bm)
+        if ((FIFO_CTL_PORT.IN & _BV(FIFO_TXE_N)) !=  _BV(FIFO_TXE_N))
         {
                 FIFO_DATA_PORT.DIR = 0xff;
                 #ifdef  FIFO_BIT_REVERSE
@@ -108,12 +108,12 @@ void fifo_send_char(uint8_t c)
                 #endif
                 FIFO_DATA_PORT.OUT = c;
                 FIFO_DATA_PORT.DIR = 0xff;
-                FIFO_CTL_PORT.OUTCLR = FIFO_WR_N_bm;
+                FIFO_CTL_PORT.OUTCLR = _BV(FIFO_WR_N);
                 FIFO_DATA_PORT.DIR = 0;
-                FIFO_CTL_PORT.OUTSET = FIFO_WR_N_bm;
+                FIFO_CTL_PORT.OUTSET = _BV(FIFO_WR_N);
         }
 #else // __AVR_XMEGA__
-        if ((FIFO_CTL_PORT_PIN & FIFO_TXE_N_bm) !=  FIFO_TXE_N_bm)
+        if ((FIFO_CTL_PORT_PIN & _BV(FIFO_TXE_N)) !=  _BV(FIFO_TXE_N))
         {
                 FIFO_DATA_PORT_DDR = 0xff;
                 #ifdef  FIFO_BIT_REVERSE
@@ -121,9 +121,9 @@ void fifo_send_char(uint8_t c)
                 #endif
                 FIFO_DATA_PORT = c;
                 FIFO_DATA_PORT_DDR = 0xff;
-                FIFO_CTL_PORT &= ~FIFO_WR_N_bm;
+                FIFO_CTL_PORT &= ~_BV(FIFO_WR_N);
                 FIFO_DATA_PORT_DDR = 0;
-                FIFO_CTL_PORT |= FIFO_WR_N_bm;
+                FIFO_CTL_PORT |= _BV(FIFO_WR_N);
         }
 #endif // __AVR_XMEGA__
 }
@@ -131,9 +131,9 @@ void fifo_send_char(uint8_t c)
 void fifo_send_char_blocking(uint8_t c)
 {
 #ifdef __AVR_XMEGA__
-        while (FIFO_CTL_PORT.IN & FIFO_TXE_N_bm)
+        while (FIFO_CTL_PORT.IN & _BV(FIFO_TXE_N))
 #else // __AVR_XMEGA__
-        while (FIFO_CTL_PORT_PIN & FIFO_TXE_N_bm)
+        while (FIFO_CTL_PORT_PIN & _BV(FIFO_TXE_N))
 #endif // __AVR_XMEGA__
         {
         };

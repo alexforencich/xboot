@@ -179,10 +179,10 @@
 // FIFO
 #define FIFO_DATA_PORT_NAME     C
 #define FIFO_CTL_PORT_NAME      D
-#define FIFO_RXF_N_bm           (1<<3)
-#define FIFO_TXE_N_bm           (1<<2)
-#define FIFO_RD_N_bm            (1<<1)
-#define FIFO_WR_N_bm            (1<<0)
+#define FIFO_RXF_N              3
+#define FIFO_TXE_N              2
+#define FIFO_RD_N               1
+#define FIFO_WR_N               0
 #define FIFO_BIT_REVERSE
 
 // I2C

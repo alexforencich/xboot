@@ -143,10 +143,10 @@ UART_EN_PIN_INV       = 0
 # FIFO
 FIFO_DATA_PORT_NAME   = C
 FIFO_CTL_PORT_NAME    = D
-FIFO_RXF_N_bm         = (1<<3)
-FIFO_TXE_N_bm         = (1<<2)
-FIFO_RD_N_bm          = (1<<1)
-FIFO_WR_N_bm          = (1<<0)
+FIFO_RXF_N            = 3
+FIFO_TXE_N            = 2
+FIFO_RD_N             = 1
+FIFO_WR_N             = 0
 FIFO_BIT_REVERSE      = yes
 
 # I2C
