@@ -5,7 +5,7 @@ config.h: config.mk
 	@echo "// MCU: $(MCU)" >> config.h
 	@echo "// F_CPU: $(F_CPU)" >> config.h
 	@echo >> config.h
-	$(foreach v, \
+	@$(foreach v, \
 	$(sort $(filter-out USE_CONFIG_H, $(filter \
 				ATTACH_% \
 				ENABLE_% \
