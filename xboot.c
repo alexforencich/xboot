@@ -43,7 +43,14 @@ volatile unsigned char rx_char_cnt;
 volatile unsigned char tx_buff0;
 volatile unsigned char tx_char_cnt;
 #else
+#ifdef __AVR_XMEGA__
 unsigned char comm_mode;
+#else // __AVR_XMEGA__
+// Force data section on atmega
+// Seems to be a bug in newer versions of gcc
+// this ensures .bss is placed after .data
+unsigned char comm_mode = 1;
+#endif // __AVR_XMEGA__
 #endif // USE_INTERRUPTS
 
 unsigned char buffer[SPM_PAGESIZE];
