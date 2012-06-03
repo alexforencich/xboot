@@ -31,6 +31,8 @@
 /*                                                                      */
 /************************************************************************/
 
+#ifdef USE_FIFO
+
 #include "fifo.h"
 /* As discussed in
  * http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&t=41613
@@ -139,3 +141,4 @@ void __attribute__ ((always_inline))  fifo_send_char_blocking(uint8_t c)
     };
     fifo_send_char(c);
 }
+#endif // USE_FIFO
