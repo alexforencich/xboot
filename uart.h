@@ -46,7 +46,12 @@
 // current character in UART receive buffer
 #define uart_cur_char() UART_DEVICE.DATA
 // send character
+#ifndef UART_ECHOES
 #define uart_send_char(c) UART_DEVICE.DATA = (c)
+#else
+#define uart_send_char(c) do { UART_DEVICE.DATA = (c); \
+   uart_echo_ignore++; } while(0)
+#endif
 // send character, block until it is completely sent
 #define uart_send_char_blocking(c) do {uart_send_char(c); \
     while (!(UART_DEVICE.STATUS & USART_TXCIF_bm)) { } \
@@ -59,13 +64,22 @@
 // current character in UART receive buffer
 #define uart_cur_char() UART_UDR
 // send character
+#ifndef UART_ECHOES
 #define uart_send_char(c) UART_UDR = (c)
+#else
+#define do { uart_send_char(c) UART_UDR = (c); \
+   uart_echo_ignore++; } while(0)
+#endif
 // send character, block until it is completely sent
 #define uart_send_char_blocking(c) do {uart_send_char(c); \
     while (!(UART_UCSRA & _BV(TXC0))) { } \
     UART_UCSRA |= _BV(TXC0); } while (0)
 
 #endif // __AVR_XMEGA__
+
+#ifdef UART_ECHOES
+extern volatile uint8_t uart_echo_ignore;
+#endif
 
 // Prototypes
 extern void __attribute__ ((always_inline)) uart_init(void);

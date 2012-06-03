@@ -249,6 +249,7 @@
 #define UART_DEVICE_RXC_ISR     token_paste3(USART, UART_DEVICE_PORT, _RXC_vect)
 #define UART_DEVICE_DRE_ISR     token_paste3(USART, UART_DEVICE_PORT, _DRE_vect)
 #define UART_DEVICE_TXC_ISR     token_paste3(USART, UART_DEVICE_PORT, _TXC_vect)
+#define UART_PIN_CTRL           token_paste3(UART_PORT.PIN, UART_TX_PIN, CTRL)
 
 // BAUD Rate Values
 // Known good at 2MHz

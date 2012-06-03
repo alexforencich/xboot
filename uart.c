@@ -33,6 +33,10 @@
 
 #include "uart.h"
 
+#ifdef UART_ECHOES
+volatile uint8_t uart_echo_ignore = 0;
+#endif
+
 // Interrupts
 #ifdef USE_INTERRUPTS
 #ifdef USE_UART
@@ -48,6 +52,12 @@ ISR(UART_DEVICE_RXC_ISR)
                 #endif // __AVR_XMEGA__
                 #endif // USE_I2C
         }
+#ifdef UART_ECHOES
+        if (uart_echoes_ignore) {
+               uart_echo_ignore--;
+               return;
+        }
+#endif
         if (rx_char_cnt == 0)
         {
                 rx_buff0 = UART_DEVICE.DATA;
@@ -82,6 +92,9 @@ void __attribute__ ((always_inline)) uart_init(void)
         #ifdef USE_INTERRUPTS
         UART_DEVICE.CTRLA = USART_RXCINTLVL0_bm | USART_TXCINTLVL0_bm;
         #endif // USE_INTERRUPTS
+        #ifdef UART_WIREDANDPULL
+        UART_PIN_CTRL = PORT_OPC_WIREDANDPULL_gc;
+        #endif
 #else // __AVR_XMEGA__
         UART_UBRR = UART_BRV;
         #ifdef UART_U2X
@@ -105,6 +118,9 @@ void __attribute__ ((always_inline)) uart_deinit(void)
         UART_DEVICE.BAUDCTRLA = 0;
         UART_DEVICE.BAUDCTRLB = 0;
         UART_PORT.DIRCLR = (1 << UART_TX_PIN);
+        #ifdef UART_WIREDANDPULL
+        UART_PIN_CTRL = 0;
+        #endif
 #else // __AVR_XMEGA__
         UART_UCSRA = 0;
         UART_UCSRB = 0;
