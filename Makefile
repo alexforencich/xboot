@@ -685,14 +685,14 @@ endif
 
 
 # Define programs and commands.
-#SHELL = $(DIRAVRUTILS)/sh
-#NM = $(DIRAVRBIN)/avr-nm
-#CC = $(DIRAVRBIN)/avr-gcc
-#CXX = $(DIRAVRBIN)/avr-g++
-#OBJCOPY = $(DIRAVRBIN)/avr-objcopy
-#OBJDUMP= $(DIRAVRBIN)/avr-objdump
-#SIZE = $(DIRAVRBIN)/avr-size
-#AVRDUDE = $(DIRAVRBIN)/avrdude.sh
+#SHELL = "$(DIRAVRUTILS)/sh"
+#NM = "$(DIRAVRBIN)/avr-nm"
+#CC = "$(DIRAVRBIN)/avr-gcc"
+#CXX = "$(DIRAVRBIN)/avr-g++"
+#OBJCOPY = "$(DIRAVRBIN)/avr-objcopy"
+#OBJDUMP= "$(DIRAVRBIN)/avr-objdump"
+#SIZE = "$(DIRAVRBIN)/avr-size"
+#AVRDUDE = "$(DIRAVRBIN)/avrdude.sh"
 #REMOVE = rm -f
 #COPY = cp
 
