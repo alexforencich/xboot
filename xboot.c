@@ -585,6 +585,7 @@ int main(void)
                 {
                         EEPROM_write_byte(address, get_char());
                         address++;
+                        send_char(REPLY_ACK);
                 }
                 // Read EEPROM memory
                 else if (val == CMD_READ_EEPROM_BYTE)
