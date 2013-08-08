@@ -16,7 +16,7 @@ config.h: config.mk
 				UART_% \
 				USE_% \
 				WATCHDOG_%, $(.VARIABLES)))), \
-	if [[ "$($(v))" == "y" || "$($(v))" == "yes" ]] ; then \
+	if [ "$($(v))" = "y" ] || [ "$($(v))" = "yes" ] ; then \
 	echo "#define $(v)" >> config.h ; \
-	elif [[ -n "$($(v))" && "$($(v))" != "n" && "$($(v))" != "no" ]] ; then \
+	elif [ -n "$($(v))" ] && [ "$($(v))" != "n" ] && [ "$($(v))" != "no" ] ; then \
 	echo "#define $(v) $($(v))" >> config.h ; fi ;)
