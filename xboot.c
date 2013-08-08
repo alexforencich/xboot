@@ -1304,8 +1304,9 @@ unsigned int __attribute__ ((noinline)) get_2bytes()
         unsigned int result;
         asm volatile (
                 "call get_char"    "\n\t"
-                "mov  %B0,r24"     "\n\t"
+                "push r24"         "\n\t"
                 "call get_char"    "\n\t"
+                "pop  %B0"         "\n\t"
                 "mov  %A0,r24"     "\n\t"
                 : "=r" (result)
                 :
