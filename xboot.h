@@ -287,8 +287,8 @@
 #define UART_BSCALE_VALUE       0
 #define UART_CLK2X              0
 #elif (F_CPU == 32000000L) && (UART_BAUD_RATE == 115200)
-#define UART_BSEL_VALUE         16
-#define UART_BSCALE_VALUE       0
+#define UART_BSEL_VALUE         1047
+#define UART_BSCALE_VALUE       -6
 #define UART_CLK2X              0
 // None of the above, so calculate something
 #else
