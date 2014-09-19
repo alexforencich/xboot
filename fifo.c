@@ -60,7 +60,7 @@ void fifo_init(void)
 #endif // __AVR_XMEGA__
 }
 
-// Shut down UART
+// Shut down FIFO
 void fifo_deinit(void)
 {
 #ifdef __AVR_XMEGA__
