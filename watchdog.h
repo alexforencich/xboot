@@ -36,7 +36,9 @@
 
 #include "xboot.h"
 
+#ifdef __AVR_XMEGA__
 // Globals
+
 
 // Defines
 
@@ -47,5 +49,17 @@
 // Prototypes
 extern void WDT_EnableAndSetTimeout( void );
 extern void WDT_Disable( void );
+
+#else // __AVR_XMEGA__
+
+// ATMEGA -- no sense calling a function for these.
+#include <avr/wdt.h>
+
+#define WDT_IsSyncBusy() (0)
+#define WDT_Reset() wdt_reset()
+#define WDT_EnableAndSetTimeout() wdt_enable(WATCHDOG_TIMEOUT)
+#define WDT_Disable() wdt_disable()
+
+#endif // __AVR_XMEGA__
 
 #endif // __WATCHDOG_H
