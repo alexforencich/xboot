@@ -38,6 +38,9 @@
 #include <avr/sleep.h>
 
 #endif // USE_AVR1008_EEPROM
+#else
+#include <avr/boot.h>
+#include <avr/io.h>
 #endif // __AVR_XMEGA__
 
 #ifdef __AVR_XMEGA__
@@ -251,13 +254,93 @@ void EEPROM_erase_all(void)
 
 void EEPROM_erase_all(void)
 {
+    uint8_t hfuse = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+    if ((hfuse & (1 << 3)) != 0) {
         for (uint16_t i = 0; i < E2END; i++)
         {
-                eeprom_update_byte((uint8_t *)i, 0xff);
+            eeprom_update_byte((uint8_t *)i, 0xff);
         }
+    }
 }
 
+#ifdef USE_ENTER_EEPROM
+
+// Parts taken from Atmega's AVR103 App Note.
+
+void eeprom_overwrite_byte(unsigned int addr, char value)
+{
+#ifdef USE_INTERRUPTS
+    cli();
+#endif // USE_INTERRUPTS
+
+    do {} while(EECR & (1<<EEPE));  // Wait for completion of previous write.
+    do {} while(SPMCSR & (1<<SELFPRGEN));   // Wait for SPM completion.
+
+    EEAR = addr;        // Set EEPROM address register.
+    EECR = (1<<EERE);   // Start EEPROM read operation.
+
+    EEDR = value;       // Set EEPROM data register.
+    EECR = (1<<EEMPE) | // Set Master Write Enable bit...
+           (1<<EEPM1);  // ...and Write-only mode.
+    EECR |= (1<<EEPE);  // Start Write-only operation.
+
+#ifdef USE_INTERRUPTS
+    sei();
+#endif // USE_INTERRUPTS
+}
+
+
+uint8_t enter_eeprom_index;
+uint8_t enter_eeprom_value;
+uint8_t enter_eeprom_count;
+
+/**
+ * Check whether to enter the bootloader based on a 32-bit EEPROM value.
+ * Enter the bootloader if the number of set bits is odd.  Fully erased
+ * there are 32-set bits.  The program resets the highest rank set bit
+ * first, and the bootloader resets the next highest order bit.  Each
+ * bootloader entry requires two bits be reset.
+ *
+ * It is the program's, not the bootloader's responsibility to erase the
+ * values when 0 is reached.
+ *
+ * @return 1 if an odd number of bits is set, otherwise 0.
+ */
+uint8_t enter_eeprom_check(void)
+{
+    enter_eeprom_count = 0;
+    for (uint8_t i = 0; i != 4; i++)
+    {
+        enter_eeprom_value = eeprom_read_byte((uint8_t*) ENTER_EEPROM_ADDR + i);
+        if (enter_eeprom_value != 0)
+        {
+            enter_eeprom_index = i;
+            break;
+        }
+    }
+
+    uint8_t c = enter_eeprom_value;
+
+    // Now check bit at a time.
+    while (c & 1)
+    {
+        enter_eeprom_count += 1;
+        c >>= 1;
+    }
+
+    return enter_eeprom_count & 1;
+}
+
+void enter_eeprom_reset()
+{
+    // Set bits to an even value.
+
+    if ((enter_eeprom_count & 1) == 0) return;  // Already even.
+    enter_eeprom_value &= ~_BV(enter_eeprom_count - 1);
+    eeprom_overwrite_byte(
+        ENTER_EEPROM_ADDR + enter_eeprom_index, enter_eeprom_value);
+}
+
+#endif // USE_ENTER_EEPROM
+
 #endif // __AVR_XMEGA__
-
-
-

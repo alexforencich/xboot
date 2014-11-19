@@ -402,6 +402,13 @@ int main(void)
                 
                 #endif // USE_ENTER_FIFO
                 
+                #ifdef USE_ENTER_EEPROM
+                if (enter_eeprom_check())
+                {
+                    enter_eeprom_reset();
+                    in_bootloader = 1;
+                }
+                #endif // USE_ENTER_EEPROM
                 // --------------------------------------------------
                 // End main trigger section
                 
@@ -492,7 +499,7 @@ int main(void)
                         
                         // Erase EEPROM
                         EEPROM_erase_all();
-                        
+
                         // turn off read protection
                         #ifdef NEED_CODE_PROTECTION
                         protected = 0;

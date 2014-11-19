@@ -68,6 +68,11 @@ void EEPROM_erase_page(uint16_t addr);
 #define EEPROM_read_block(addr, dest, len) eeprom_read_block((dest), (void *)((uint16_t)(addr)), (len))
 #define EEPROM_write_block(addr, src, len) eeprom_write_block((src), (void *)((uint16_t)(addr)), (len))
 
+#ifdef USE_ENTER_EEPROM
+uint8_t enter_eeprom_check(void);
+void enter_eeprom_reset(void);
+#endif // USE_ENTER_EEPROM
+
 #endif // __AVR_XMEGA__
 
 void EEPROM_erase_all(void);
