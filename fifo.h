@@ -48,7 +48,7 @@
 #define fifo_char_received() ((FIFO_CTL_PORT_PIN & _BV(FIFO_RXF_N)) != _BV(FIFO_RXF_N))
 #endif // __AVR_XMEGA__
 
-// current character in UART receive buffer
+// get current character in the FIFO
 extern uint8_t fifo_cur_char(void);
 // send character
 extern void fifo_send_char(uint8_t c); 
@@ -59,4 +59,4 @@ extern void fifo_send_char_blocking(uint8_t c);
 extern void fifo_init(void);
 extern void fifo_deinit(void);
 
-#endif // __UART_H
+#endif // __FIFO_H

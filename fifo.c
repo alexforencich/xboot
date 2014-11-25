@@ -60,7 +60,7 @@ void fifo_init(void)
 #endif // __AVR_XMEGA__
 }
 
-// Shut down UART
+// Shut down FIFO
 void fifo_deinit(void)
 {
 #ifdef __AVR_XMEGA__
@@ -109,8 +109,10 @@ void fifo_send_char(uint8_t c)
                 FIFO_DATA_PORT.OUT = c;
                 FIFO_DATA_PORT.DIR = 0xff;
                 FIFO_CTL_PORT.OUTCLR = _BV(FIFO_WR_N);
-                FIFO_DATA_PORT.DIR = 0;
+                asm volatile("nop");
+                asm volatile("nop");
                 FIFO_CTL_PORT.OUTSET = _BV(FIFO_WR_N);
+                FIFO_DATA_PORT.DIR = 0;
         }
 #else // __AVR_XMEGA__
         if ((FIFO_CTL_PORT_PIN & _BV(FIFO_TXE_N)) !=  _BV(FIFO_TXE_N))
@@ -122,8 +124,10 @@ void fifo_send_char(uint8_t c)
                 FIFO_DATA_PORT = c;
                 FIFO_DATA_PORT_DDR = 0xff;
                 FIFO_CTL_PORT &= ~_BV(FIFO_WR_N);
-                FIFO_DATA_PORT_DDR = 0;
+                asm volatile("nop");
+                asm volatile("nop");
                 FIFO_CTL_PORT |= _BV(FIFO_WR_N);
+                FIFO_DATA_PORT_DDR = 0;
         }
 #endif // __AVR_XMEGA__
 }
