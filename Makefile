@@ -776,7 +776,7 @@ sym: $(TARGET).sym
 # Configuration support
 %.conf %.conf.mk: force
 	cp $@ config.mk
-	$(MAKE)
+	"$(MAKE)"
 
 -include config.h.mk
 
