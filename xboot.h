@@ -58,8 +58,6 @@
 
 // clock config
 #ifdef __AVR_XMEGA__
-// DFLL for better stability
-#define USE_DFLL
 // use 32MHz osc if makefile calls for it
 #if (F_CPU == 32000000L)
 // defaults to 2MHz RC oscillator
