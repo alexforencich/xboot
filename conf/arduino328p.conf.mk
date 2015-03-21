@@ -24,6 +24,9 @@ BOOTSZ=0
 # Use 16 MHz external crystal oscillator
 F_CPU = 16000000
 
+# DFLL for better stability
+USE_DFLL = yes
+
 # Programmer settings
 OVERRIDE_AVRDUDE_PROGRAMMER = yes
 AVRDUDE_PROGRAMMER = jtag2isp

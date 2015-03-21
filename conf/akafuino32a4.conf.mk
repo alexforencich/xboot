@@ -11,6 +11,9 @@ MCU = atxmega32a4
 # Use 2 MHz internal RC oscillator
 F_CPU = 2000000
 
+# DFLL for better stability
+USE_DFLL = yes
+
 # Programmer settings
 OVERRIDE_AVRDUDE_PROGRAMMER = yes
 AVRDUDE_PROGRAMMER = jtag2pdi
