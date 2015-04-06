@@ -165,6 +165,7 @@ UART_BAUD_RATE        = 115200
 UART_PORT_NAME        = D
 UART_NUMBER           = 1
 UART_RX_PUEN          = yes
+UART_REMAP            = no
 
 # UART RS485 Enable Output
 UART_EN_PORT_NAME     = C
