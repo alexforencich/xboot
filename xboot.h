@@ -238,8 +238,13 @@
 #ifdef __AVR_XMEGA__
 
 #if (UART_NUMBER == 0)
+#ifdef UART_REMAP
+#define UART_RX_PIN             6
+#define UART_TX_PIN             7
+#else
 #define UART_RX_PIN             2
 #define UART_TX_PIN             3
+#endif
 #else
 #define UART_RX_PIN             6
 #define UART_TX_PIN             7
