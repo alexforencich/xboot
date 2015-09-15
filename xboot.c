@@ -248,17 +248,6 @@ int main(void)
         
 #endif // __AVR_XMEGA__
 
-        // Remap UART pins
-        
-#ifdef __AVR_XMEGA__
-        
-        #ifdef UART_REMAP
-        // Remap UART pins
-        UART_PORT.REMAP |= (1 << PORT_USART0_bp);
-        #endif // UART_REMAP
-
-#endif // __AVR_XMEGA__
-        
         // Initialize UART EN pin
         
 #ifdef __AVR_XMEGA__
@@ -963,14 +952,6 @@ autoneg_done:
         // Disable RX pin pullup
         UART_PORT &= ~(1 << UART_RX_PIN);
         #endif // UART_RX_PUEN
-#endif // __AVR_XMEGA__
-
-        // Remove UART remap
-#ifdef __AVR_XMEGA__
-        #ifdef UART_REMAP
-        // Remove UART remap
-        UART_PORT.REMAP &= ~(1 << PORT_USART0_bp);
-        #endif // UART_REMAP
 #endif // __AVR_XMEGA__
 
         // Shut down UART EN pin
