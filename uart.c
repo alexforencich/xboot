@@ -72,6 +72,9 @@ void uart_init(void)
 {
 #ifdef __AVR_XMEGA__
         UART_PORT.DIRSET = (1 << UART_TX_PIN);
+        #ifdef UART_REMAP
+        UART_PORT.REMAP |= PORT_USART0_bm;
+        #endif // UART_REMAP
         UART_DEVICE.BAUDCTRLA = (UART_BSEL_VALUE & USART_BSEL_gm);
         UART_DEVICE.BAUDCTRLB = ((UART_BSCALE_VALUE << USART_BSCALE_gp) & USART_BSCALE_gm) | ((UART_BSEL_VALUE >> 8) & ~USART_BSCALE_gm);
         #if UART_CLK2X
@@ -104,6 +107,9 @@ void uart_deinit(void)
         #endif // USE_INTERRUPTS
         UART_DEVICE.BAUDCTRLA = 0;
         UART_DEVICE.BAUDCTRLB = 0;
+        #ifdef UART_REMAP
+        UART_PORT.REMAP &= ~PORT_USART0_bm;
+        #endif // UART_REMAP
         UART_PORT.DIRCLR = (1 << UART_TX_PIN);
 #else // __AVR_XMEGA__
         UART_UCSRA = 0;
