@@ -105,6 +105,7 @@
 ## MCU = atmega128
 ## MCU = atmega1280
 ## MCU = atmega1281
+## MCU = atmega1284
 ## MCU = atmega1284p
 ## MCU = atmega2560
 ## MCU = atmega2561
@@ -467,7 +468,7 @@ ifneq ($(filter $(MCU_S), m328p),)
     BOOT_FUSE_BL	= -U hfuse:w:0xDE:m
   endif
 endif
-ifneq ($(filter $(MCU_S), m164 m169 m169p m169pa m324 m324pa m325 m3250 m329 m3290 m64 m640 m644 m644p m644pa m645 m6450 m649 m649p m6490 m128 m1280 m1281 m1284p m2560 m2561),)
+ifneq ($(filter $(MCU_S), m164 m169 m169p m169pa m324 m324pa m325 m3250 m329 m3290 m64 m640 m644 m644p m644pa m645 m6450 m649 m649p m6490 m128 m1280 m1281 m1284 m1284p m2560 m2561),)
   ifeq ($(BOOTSZ), 0)
     BOOT_FUSE_NOBL	= -U hfuse:w:0x99:m
     BOOT_FUSE_BL	= -U hfuse:w:0x98:m
@@ -623,7 +624,7 @@ ifneq ($(filter $(MCU_S), m64 m640 m644 m644p m644pa m645 m6450 m649 m649p m6490
     BOOT_SECTION_SIZE		=0x000400
   endif
 endif
-ifneq ($(filter $(MCU_S), m128 m1280 m1281 m1284p),)
+ifneq ($(filter $(MCU_S), m128 m1280 m1281 m1284 m1284p),)
   ifeq ($(BOOTSZ), 0)
     BOOT_SECTION_START		=0x01E000
     BOOT_SECTION_SIZE		=0x002000
