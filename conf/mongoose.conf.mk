@@ -24,6 +24,9 @@ BOOTSZ=0
 # Use 16 MHz external crystal oscillator
 F_CPU = 16000000
 
+# DFLL for better stability
+USE_DFLL = yes
+
 # Programmer settings
 OVERRIDE_AVRDUDE_PROGRAMMER = yes
 AVRDUDE_PROGRAMMER = jtag2isp
@@ -134,6 +137,7 @@ UART_BAUD_RATE        = 115200
 UART_NUMBER           = 0
 UART_U2X              = yes
 UART_RX_PUEN          = yes
+UART_REMAP            = no
 
 # UART RS485 Enable Output
 UART_EN_PORT_NAME     = C

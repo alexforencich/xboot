@@ -238,7 +238,7 @@ int main(void)
         // Enable RX pin pullup
         UART_RX_PIN_CTRL = 0x18;
         #endif // UART_RX_PUEN
-        
+
 #else // __AVR_XMEGA__
         
         #ifdef UART_RX_PUEN
@@ -247,7 +247,7 @@ int main(void)
         #endif // UART_RX_PUEN
         
 #endif // __AVR_XMEGA__
-        
+
         // Initialize UART EN pin
         
 #ifdef __AVR_XMEGA__
@@ -483,19 +483,40 @@ int main(void)
                 else if (val == CMD_CHIP_ERASE)
                 {
                         // Erase the application section
-                        Flash_EraseApplicationSection();
+                        // XMEGA E5: ERASE_APP NVM command (0x20) erases the entire flash - as a workaround, we erase page-by-page.
+                        // From Atmel Support: "The NVM controller design is such that the entire flash will get erased always when application/bootloader erase is called."
+                        #if defined(__AVR_ATxmega8E5__) || defined(__AVR_ATxmega16E5__) || defined(__AVR_ATxmega32E5__)
+                        for(uint32_t addr = APP_SECTION_START; addr < APP_SECTION_END; addr += SPM_PAGESIZE)
+                        {
+	                            Flash_EraseWriteApplicationPage(addr);
+	                            // Wait for completion
+	                            #ifdef __AVR_XMEGA__
+	                            #ifdef USE_WATCHDOG
+	                            while (NVM_STATUS & NVM_NVMBUSY_bp)
+	                            {
+	                                // reset watchdog while waiting for erase completion
+	                                WDT_Reset();
+	                            }
+	                            #else // USE_WATCHDOG
+	                            SP_WaitForSPM();
+	                            #endif // USE_WATCHDOG
+	                            #endif // __AVR_XMEGA__
+                        }
+                        #else
+                        Flash_EraseApplicationSection();       
                         // Wait for completion
-#ifdef __AVR_XMEGA__
+                        #ifdef __AVR_XMEGA__
                         #ifdef USE_WATCHDOG
                         while (NVM_STATUS & NVM_NVMBUSY_bp)
                         {
-                                // reset watchdog while waiting for erase completion
-                                WDT_Reset();
+	                            // reset watchdog while waiting for erase completion
+	                            WDT_Reset();
                         }
                         #else // USE_WATCHDOG
                         SP_WaitForSPM();
                         #endif // USE_WATCHDOG
-#endif // __AVR_XMEGA__
+                        #endif // __AVR_XMEGA__
+                        #endif
                         
                         // Erase EEPROM
                         EEPROM_erase_all();
@@ -932,7 +953,7 @@ autoneg_done:
         UART_PORT &= ~(1 << UART_RX_PIN);
         #endif // UART_RX_PUEN
 #endif // __AVR_XMEGA__
-        
+
         // Shut down UART EN pin
         #ifdef USE_UART_EN_PIN
 #ifdef __AVR_XMEGA__

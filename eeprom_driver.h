@@ -34,10 +34,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
-#ifndef __AVR_XMEGA__
 #include <avr/eeprom.h>
-#endif // __AVR_XMEGA__
 
 #include "xboot.h"
 
@@ -52,17 +49,6 @@
 
 // Prototypes
 
-#ifdef __AVR_XMEGA__
-
-uint8_t EEPROM_read_byte(uint16_t addr);
-void EEPROM_write_byte(uint16_t addr, uint8_t byte);
-uint16_t EEPROM_read_block(uint16_t addr, uint8_t *dest, uint16_t len);
-uint16_t EEPROM_write_block(uint16_t addr, const uint8_t *src, uint16_t len);
-
-void EEPROM_erase_page(uint16_t addr);
-
-#else // __AVR_XMEGA__
-
 #define EEPROM_read_byte(addr) eeprom_read_byte((const uint8_t *)((uint16_t)(addr)))
 #define EEPROM_write_byte(addr, value) eeprom_write_byte((uint8_t *)((uint16_t)(addr)), (value))
 #define EEPROM_read_block(addr, dest, len) eeprom_read_block((dest), (void *)((uint16_t)(addr)), (len))
@@ -73,12 +59,8 @@ uint8_t enter_eeprom_check(void);
 void enter_eeprom_reset(void);
 #endif // USE_ENTER_EEPROM
 
-#endif // __AVR_XMEGA__
 
 void EEPROM_erase_all(void);
 
 
 #endif // __EEPROM_DRIVER_H
-
-
-

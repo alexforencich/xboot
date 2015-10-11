@@ -11,6 +11,9 @@ MCU = atxmega32a4
 # Use 2 MHz internal RC oscillator
 F_CPU = 2000000
 
+# DFLL for better stability
+USE_DFLL = yes
+
 # Programmer settings
 OVERRIDE_AVRDUDE_PROGRAMMER = yes
 AVRDUDE_PROGRAMMER = jtag2pdi
@@ -163,6 +166,7 @@ UART_BAUD_RATE        = 115200
 UART_PORT_NAME        = C
 UART_NUMBER           = 0
 UART_RX_PUEN          = yes
+UART_REMAP            = no
 
 # UART RS485 Enable Output
 UART_EN_PORT_NAME     = C
