@@ -100,6 +100,8 @@ int main(void)
         CCP = CCP_IOREG_gc;
         CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
         #ifdef USE_DFLL
+        OSC.CTRL |= OSC_RC32KEN_bm;
+        while(!(OSC.STATUS & OSC_RC32KRDY_bm));
         DFLLRC32M.CTRL = DFLL_ENABLE_bm;
         #endif // USE_DFLL
         #else // USE_32MHZ_RC
@@ -107,6 +109,8 @@ int main(void)
         #error F_CPU must match oscillator setting!
         #endif // F_CPU
         #ifdef USE_DFLL
+        OSC.CTRL |= OSC_RC32KEN_bm;
+        while(!(OSC.STATUS & OSC_RC32KRDY_bm));
         DFLLRC2M.CTRL = DFLL_ENABLE_bm;
         #endif // USE_DFLL
         #endif // USE_32MHZ_RC
