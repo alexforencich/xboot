@@ -139,6 +139,8 @@ void EEPROM_erase_all(void)
     }
 }
 
+#endif // __AVR_XMEGA__
+
 #ifdef USE_ENTER_EEPROM
 
 // Parts taken from Atmega's AVR103 App Note.
@@ -149,6 +151,9 @@ void eeprom_overwrite_byte(unsigned int addr, char value)
     cli();
 #endif // USE_INTERRUPTS
 
+#ifdef __AVR_XMEGA__
+    // TODO: Implement me!
+#else // __AVR_XMEGA__
     do {} while(EECR & (1<<EEPE));  // Wait for completion of previous write.
     do {} while(SPMCSR & (1<<SELFPRGEN));   // Wait for SPM completion.
 
@@ -159,6 +164,7 @@ void eeprom_overwrite_byte(unsigned int addr, char value)
     EECR = (1<<EEMPE) | // Set Master Write Enable bit...
            (1<<EEPM1);  // ...and Write-only mode.
     EECR |= (1<<EEPE);  // Start Write-only operation.
+#endif // __AVR_XMEGA__
 
 #ifdef USE_INTERRUPTS
     sei();
@@ -218,5 +224,3 @@ void enter_eeprom_reset()
 }
 
 #endif // USE_ENTER_EEPROM
-
-#endif // __AVR_XMEGA__
