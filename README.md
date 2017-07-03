@@ -63,8 +63,11 @@ currently supported. An asterisk denotes the MCU has been tested and confirmed
 XBoot compatible.
 
   * XMEGA 
+    * atxmega8e5
     * atxmega16a4 *
+    * atxmega16e5
     * atxmega32a4 *
+    * atxmega32e5 *
     * atxmega64a1
     * atxmega64a3 *
     * atxmega64a4
