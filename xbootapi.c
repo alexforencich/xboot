@@ -87,6 +87,8 @@ uint8_t xboot_get_version(uint16_t *ver)
                         return XB_ERR_NOT_FOUND;
                 
                 #ifdef NEED_EIND
+                uint8_t saved_status = SREG;
+                cli();
                 saved_eind = EIND;
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
@@ -95,6 +97,7 @@ uint8_t xboot_get_version(uint16_t *ver)
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
+                SREG = saved_status;
                 #endif // NEED_EIND
                 
                 return ret;
@@ -139,6 +142,8 @@ uint8_t xboot_erase_application_page(uint32_t address)
                         return XB_ERR_NOT_FOUND;
                 
                 #ifdef NEED_EIND
+                uint8_t saved_status = SREG;
+                cli();
                 saved_eind = EIND;
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
@@ -147,6 +152,7 @@ uint8_t xboot_erase_application_page(uint32_t address)
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
+                SREG = saved_status;
                 #endif // NEED_EIND
                 
                 return ret;
@@ -174,6 +180,8 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t er
                         return XB_ERR_NOT_FOUND;
                 
                 #ifdef NEED_EIND
+                uint8_t saved_status = SREG;
+                cli();
                 saved_eind = EIND;
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
@@ -182,6 +190,7 @@ uint8_t xboot_write_application_page(uint32_t address, uint8_t *data, uint8_t er
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
+                SREG = saved_status;
                 #endif // NEED_EIND
                 
                 return ret;
@@ -210,6 +219,8 @@ uint8_t xboot_write_user_signature_row(uint8_t *data)
                         return XB_ERR_NOT_FOUND;
                 
                 #ifdef NEED_EIND
+                uint8_t saved_status = SREG;
+                cli();
                 saved_eind = EIND;
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
@@ -218,6 +229,7 @@ uint8_t xboot_write_user_signature_row(uint8_t *data)
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
+                SREG = saved_status;
                 #endif // NEED_EIND
                 
                 return ret;
@@ -256,6 +268,8 @@ uint8_t xboot_app_temp_erase(void)
                 }
                 
                 #ifdef NEED_EIND
+                uint8_t saved_status = SREG;
+                cli();
                 saved_eind = EIND;
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
@@ -264,8 +278,9 @@ uint8_t xboot_app_temp_erase(void)
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
+                SREG = saved_status;
                 #endif // NEED_EIND
-                
+
                 return ret;
         }
         
@@ -294,6 +309,8 @@ uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase)
                 }
                 
                 #ifdef NEED_EIND
+                uint8_t saved_status = SREG;
+                cli();
                 saved_eind = EIND;
                 EIND = PROGMEM_SIZE >> 17;
                 #endif // NEED_EIND
@@ -302,6 +319,7 @@ uint8_t xboot_app_temp_write_page(uint32_t addr, uint8_t *data, uint8_t erase)
                 
                 #ifdef NEED_EIND
                 EIND = saved_eind;
+                SREG = saved_status;
                 #endif // NEED_EIND
                 
                 return ret;
