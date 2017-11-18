@@ -172,7 +172,7 @@
 // UART RS485 Enable Output
 #define UART_EN_PORT_NAME       C
 #define UART_EN_PIN             4
-#define UART_EN_PIN_INV         0
+#define UART_EN_INV             0
 
 // FIFO
 #define FIFO_DATA_PORT_NAME     C

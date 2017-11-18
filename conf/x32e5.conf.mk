@@ -170,7 +170,7 @@ UART_REMAP            = yes
 # UART RS485 Enable Output
 UART_EN_PORT_NAME     = C
 UART_EN_PIN           = 4
-UART_EN_PIN_INV       = 0
+UART_EN_INV           = 0
 
 # FIFO
 FIFO_DATA_PORT_NAME   = C

@@ -148,11 +148,11 @@ int main(void)
         #ifdef USE_LED
         // Initialize LED pin
         LED_PORT.DIRSET = (1 << LED_PIN);
-        #if LED_PIN_INV
+        #if LED_INV
         LED_PORT.OUTCLR = (1 << LED_PIN);
         #else
         LED_PORT.OUTSET = (1 << LED_PIN);
-        #endif // LED_PIN_INV
+        #endif // LED_INV
         #endif // USE_LED
         
 #else // __AVR_XMEGA__
@@ -160,11 +160,11 @@ int main(void)
         #ifdef USE_LED
         // Initialize LED pin
         LED_PORT_DDR |= (1 << LED_PIN);
-        #if LED_PIN_INV
+        #if LED_INV
         LED_PORT &= ~(1 << LED_PIN);
         #else
         LED_PORT |= (1 << LED_PIN);
-        #endif // LED_PIN_INV
+        #endif // LED_INV
         #endif // USE_LED
         
 #endif // __AVR_XMEGA__
@@ -260,9 +260,9 @@ int main(void)
         UART_EN_PORT.DIRSET = (1 << UART_EN_PIN);
         #if UART_EN_INV
         UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
-        #else // UART_PIN_INV
+        #else // UART_EN_INV
         UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
-        #endif // UART_PIN_INV
+        #endif // UART_EN_INV
         #endif // USE_UART_EN_PIN
         
 #else // __AVR_XMEGA__
@@ -271,9 +271,9 @@ int main(void)
         UART_EN_PORT_DDR |= (1 << UART_EN_PIN);
         #if UART_EN_INV
         UART_EN_PORT |= (1 << UART_EN_PIN);
-        #else // UART_PIN_INV
+        #else // UART_EN_INV
         UART_EN_PORT &= ~(1 << UART_EN_PIN);
-        #endif // UART_PIN_INV
+        #endif // UART_EN_INV
         #endif // USE_UART_EN_PIN
         
 #endif // __AVR_XMEGA__
@@ -1241,17 +1241,17 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
-                #else // UART_PIN_INV
+                #else // UART_EN_INV
                 UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
-                #endif // UART_PIN_INV
+                #endif // UART_EN_INV
                 #endif // USE_UART_EN_PIN
 #else // __AVR_XMEGA__
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT &= ~(1 << UART_EN_PIN);
-                #else // UART_PIN_INV
+                #else // UART_EN_INV
                 UART_EN_PORT |= (1 << UART_EN_PIN);
-                #endif // UART_PIN_INV
+                #endif // UART_EN_INV
                 #endif // USE_UART_EN_PIN
 #endif // __AVR_XMEGA__
                 uart_send_char_blocking(c);
@@ -1259,17 +1259,17 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT.OUTSET = (1 << UART_EN_PIN);
-                #else // UART_PIN_INV
+                #else // UART_EN_INV
                 UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
-                #endif // UART_PIN_INV
+                #endif // UART_EN_INV
                 #endif // USE_UART_EN_PIN
 #else // __AVR_XMEGA__
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT |= (1 << UART_EN_PIN);
-                #else // UART_PIN_INV
+                #else // UART_EN_INV
                 UART_EN_PORT &= ~(1 << UART_EN_PIN);
-                #endif // UART_PIN_INV
+                #endif // UART_EN_INV
                 #endif // USE_UART_EN_PIN
 #endif // __AVR_XMEGA__
                 
