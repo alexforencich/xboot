@@ -277,6 +277,32 @@ int main(void)
         #endif // USE_UART_EN_PIN
         
 #endif // __AVR_XMEGA__
+
+        // Initialize UART RX EN pin
+        
+#ifdef __AVR_XMEGA__
+        
+        #ifdef USE_UART_RX_EN_PIN
+        UART_RX_EN_PORT.DIRSET = (1 << UART_RX_EN_PIN);
+        #if UART_RX_EN_INV
+        UART_RX_EN_PORT.OUTCLR = (1 << UART_RX_EN_PIN);
+        #else // UART_RX_EN_INV
+        UART_RX_EN_PORT.OUTSET = (1 << UART_RX_EN_PIN);
+        #endif // UART_RX_EN_INV
+        #endif // USE_UART_RX_EN_PIN
+        
+#else // __AVR_XMEGA__
+        
+        #ifdef USE_UART_RX_EN_PIN
+        UART_RX_EN_PORT_DDR |= (1 << UART_RX_EN_PIN);
+        #if UART_RX_EN_INV
+        UART_RX_EN_PORT &= ~(1 << UART_RX_EN_PIN);
+        #else // UART_RX_EN_INV
+        UART_RX_EN_PORT |= (1 << UART_RX_EN_PIN);
+        #endif // UART_RX_EN_INV
+        #endif // USE_UART_RX_EN_PIN
+        
+#endif // __AVR_XMEGA__
         
         #endif // USE_UART
         
@@ -968,6 +994,18 @@ autoneg_done:
         UART_EN_PORT &= ~(1 << UART_EN_PIN);
 #endif // __AVR_XMEGA__
         #endif // USE_UART_EN_PIN
+        
+        // Shut down UART RX EN pin
+        #ifdef USE_UART_RX_EN_PIN
+#ifdef __AVR_XMEGA__
+        UART_RX_EN_PORT.DIRCLR = (1 << UART_RX_EN_PIN);
+        UART_RX_EN_PORT.OUTCLR = (1 << UART_RX_EN_PIN);
+#else // __AVR_XMEGA__
+        UART_RX_EN_PORT_DDR &= ~(1 << UART_RX_EN_PIN);
+        UART_RX_EN_PORT &= ~(1 << UART_RX_EN_PIN);
+#endif // __AVR_XMEGA__
+        #endif // USE_UART_RX_EN_PIN
+
         #endif // USE_UART
         
 #ifdef __AVR_XMEGA__
@@ -1238,6 +1276,23 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
         {
 #ifdef __AVR_XMEGA__
+                #ifdef USE_UART_RX_EN_PIN
+                #if UART_RX_EN_INV
+                UART_RX_EN_PORT.OUTSET = (1 << UART_RX_EN_PIN);
+                #else // UART_RX_EN_INV
+                UART_RX_EN_PORT.OUTCLR = (1 << UART_RX_EN_PIN);
+                #endif // UART_RX_EN_INV
+                #endif // USE_UART_RX_EN_PIN
+#else // __AVR_XMEGA__
+                #ifdef USE_UART_RX_EN_PIN
+                #if UART_RX_EN_INV
+                UART_RX_EN_PORT |= (1 << UART_RX_EN_PIN);
+                #else // UART_RX_EN_INV
+                UART_RX_EN_PORT &= ~(1 << UART_RX_EN_PIN);
+                #endif // UART_RX_EN_INV
+                #endif // USE_UART_RX_EN_PIN
+#endif // __AVR_XMEGA__
+#ifdef __AVR_XMEGA__
                 #ifdef USE_UART_EN_PIN
                 #if UART_EN_INV
                 UART_EN_PORT.OUTCLR = (1 << UART_EN_PIN);
@@ -1272,7 +1327,23 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
                 #endif // UART_PIN_INV
                 #endif // USE_UART_EN_PIN
 #endif // __AVR_XMEGA__
-                
+#ifdef __AVR_XMEGA__
+                #ifdef USE_UART_RX_EN_PIN
+                #if UART_RX_EN_INV
+                UART_RX_EN_PORT.OUTCLR = (1 << UART_RX_EN_PIN);
+                #else // UART_RX_EN_INV
+                UART_RX_EN_PORT.OUTSET = (1 << UART_RX_EN_PIN);
+                #endif // UART_RX_EN_INV
+                #endif // USE_UART_RX_EN_PIN
+#else // __AVR_XMEGA__
+                #ifdef USE_UART_RX_EN_PIN
+                #if UART_RX_EN_INV
+                UART_RX_EN_PORT &= ~(1 << UART_RX_EN_PIN);
+                #else // UART_RX_EN_INV
+                UART_RX_EN_PORT |= (1 << UART_RX_EN_PIN);
+                #endif // UART_RX_EN_INV
+                #endif // USE_UART_RX_EN_PIN
+#endif // __AVR_XMEGA__                
         }
         #endif // USE_UART
         

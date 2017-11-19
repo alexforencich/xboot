@@ -235,6 +235,13 @@
 #define UART_EN_PORT_PIN        token_paste2(PIN, UART_EN_PORT_NAME)
 #endif // __AVR_XMEGA__
 
+// UART RS485 RX Enable Output
+#define UART_RX_EN_PORT         token_paste2(PORT, UART_RX_EN_PORT_NAME)
+
+#ifndef __AVR_XMEGA__
+#define UART_RX_EN_PORT_DDR     token_paste2(DDR, UART_RX_EN_PORT_NAME)
+#endif // __AVR_XMEGA__
+
 #ifdef __AVR_XMEGA__
 
 #if (UART_NUMBER == 0)
