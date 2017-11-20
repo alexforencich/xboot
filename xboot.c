@@ -321,7 +321,15 @@ int main(void)
         // whether or not USE_ENTER_DELAY is selected
         // --------------------------------------------------
         
-        
+        #ifdef USE_ENTER_SWRST
+        // Check for soft reset
+#ifdef __AVR_XMEGA__
+		if (RST.STATUS == RST_SRF_bm)
+                in_bootloader = 1;
+#else // __AVR_XMEGA__
+#error USE_ENTER_SWRST supported on XMEGA only!
+#endif // __AVR_XMEGA__
+		#endif // USE_ENTER_SWRST        
         
         // --------------------------------------------------
         // End one time trigger section
