@@ -48,9 +48,15 @@
 // send character
 #define uart_send_char(c) UART_DEVICE.DATA = (c)
 // send character, block until it is completely sent
+#ifdef USE_WATCHDOG
+#define uart_send_char_blocking(c) do {uart_send_char(c); \
+    while (!(UART_DEVICE.STATUS & USART_TXCIF_bm)) { WDT_Reset(); } \
+    UART_DEVICE.STATUS |= USART_TXCIF_bm; } while (0)
+#else // USE_WATCHDOG
 #define uart_send_char_blocking(c) do {uart_send_char(c); \
     while (!(UART_DEVICE.STATUS & USART_TXCIF_bm)) { } \
     UART_DEVICE.STATUS |= USART_TXCIF_bm; } while (0)
+#endif // USE_WATCHDOG
 
 #else // __AVR_XMEGA__
 
@@ -61,9 +67,15 @@
 // send character
 #define uart_send_char(c) UART_UDR = (c)
 // send character, block until it is completely sent
+#ifdef USE_WATCHDOG
+#define uart_send_char_blocking(c) do {uart_send_char(c); \
+    while (!(UART_UCSRA & _BV(TXC0))) { wdt_reset(); } \
+    UART_UCSRA |= _BV(TXC0); } while (0)
+#else // USE_WATCHDOG
 #define uart_send_char_blocking(c) do {uart_send_char(c); \
     while (!(UART_UCSRA & _BV(TXC0))) { } \
     UART_UCSRA |= _BV(TXC0); } while (0)
+#endif // USE_WATCHDOG
 
 #endif // __AVR_XMEGA__
 
