@@ -416,11 +416,13 @@ int main(void)
                 // --------------------------------------------------
                 // End main trigger section
                 
+                #ifdef USE_WATCHDOG
 #ifdef __AVR_XMEGA__
                 WDT_Reset();
 #else // __AVR_XMEGA__
                 wdt_reset();
 #endif // __AVR_XMEGA__
+                #endif // USE_WATCHDOG
                 
 #ifdef USE_ENTER_DELAY
         }
@@ -448,7 +450,11 @@ int main(void)
                 val = get_char();
                 
                 #ifdef USE_WATCHDOG
+#ifdef __AVR_XMEGA__
                 WDT_Reset();
+#else // __AVR_XMEGA__
+                wdt_reset();
+#endif // __AVR_XMEGA__
                 #endif // USE_WATCHDOG
                 
                 // Main bootloader parser
@@ -1100,7 +1106,15 @@ unsigned char __attribute__ ((noinline)) get_char(void)
 {
         unsigned char ret;
         
-        while (rx_char_cnt == 0) { };
+        while (rx_char_cnt == 0) {
+                #ifdef USE_WATCHDOG
+#ifdef __AVR_XMEGA__
+                WDT_Reset();
+#else // __AVR_XMEGA__
+                wdt_reset();
+#endif // __AVR_XMEGA__
+                #endif // USE_WATCHDOG
+        };
         
         cli();
         
@@ -1117,6 +1131,14 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
 {
         while (1)
         {
+                #ifdef USE_WATCHDOG
+#ifdef __AVR_XMEGA__
+                WDT_Reset();
+#else // __AVR_XMEGA__
+                wdt_reset();
+#endif // __AVR_XMEGA__
+                #endif // USE_WATCHDOG
+
                 cli();
                 
                 if (tx_char_cnt == 0)
@@ -1158,6 +1180,14 @@ unsigned char __attribute__ ((noinline)) get_char(void)
         
         while (1)
         {
+                #ifdef USE_WATCHDOG
+#ifdef __AVR_XMEGA__
+                WDT_Reset();
+#else // __AVR_XMEGA__
+                wdt_reset();
+#endif // __AVR_XMEGA__
+                #endif // USE_WATCHDOG
+
                 #ifdef USE_UART
                 // Get next character
                 if (comm_mode == MODE_UNDEF || comm_mode == MODE_UART)
@@ -1282,6 +1312,14 @@ void __attribute__ ((noinline)) send_char(unsigned char c)
         {
                 while (1)
                 {
+                        #ifdef USE_WATCHDOG
+#ifdef __AVR_XMEGA__
+                        WDT_Reset();
+#else // __AVR_XMEGA__
+                        wdt_reset();
+#endif // __AVR_XMEGA__
+                        #endif // USE_WATCHDOG
+
 #ifdef __AVR_XMEGA__
                         if (i2c_address_match())
                         {
@@ -1360,7 +1398,11 @@ unsigned char BlockLoad(unsigned int size, unsigned char mem, ADDR_T *address)
         ADDR_T tempaddress;
         
         #ifdef USE_WATCHDOG
+#ifdef __AVR_XMEGA__
         WDT_Reset();
+#else // __AVR_XMEGA__
+        wdt_reset();
+#endif // __AVR_XMEGA__
         #endif // USE_WATCHDOG
         
         // fill up buffer

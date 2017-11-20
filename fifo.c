@@ -136,10 +136,18 @@ void fifo_send_char_blocking(uint8_t c)
 {
 #ifdef __AVR_XMEGA__
         while (FIFO_CTL_PORT.IN & _BV(FIFO_TXE_N))
+        {
+                #ifdef USE_WATCHDOG
+                WDT_Reset();
+                #endif // USE_WATCHDOG
+        };
 #else // __AVR_XMEGA__
         while (FIFO_CTL_PORT_PIN & _BV(FIFO_TXE_N))
-#endif // __AVR_XMEGA__
         {
+                #ifdef USE_WATCHDOG
+                wdt_reset();
+                #endif // USE_WATCHDOG
         };
+#endif // __AVR_XMEGA__
         fifo_send_char(c);
 }
