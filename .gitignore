@@ -9,3 +9,5 @@
 *.swp
 *.sym
 .dep
+config.h
+config.mk
