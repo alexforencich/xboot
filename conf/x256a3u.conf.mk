@@ -1,10 +1,10 @@
-# xmega64a3 configuration
+# xmega256a3u configuration
 
 # use config.h
 USE_CONFIG_H = yes
 
 # MCU
-MCU = atxmega64a3
+MCU = atxmega256a3u
 
 # Clock Speed
 # Use 2 MHz internal RC oscillator
@@ -15,7 +15,7 @@ USE_DFLL = yes
 
 # Programmer settings
 OVERRIDE_AVRDUDE_PROGRAMMER = yes
-AVRDUDE_PROGRAMMER = jtag2pdi
+AVRDUDE_PROGRAMMER = atmelice
 AVRDUDE_PORT = usb
 
 # Fuse settings
@@ -78,11 +78,11 @@ AVRDUDE_FUSES =
 
 # AVR1008 fixes
 # Really only applicable to XMEGA 256a3 rev A and B devices
-USE_AVR1008_EEPROM = no
+USE_AVR1008_EEPROM = yes
 
 # Entry
 USE_ENTER_DELAY = yes
-USE_ENTER_PIN = no
+USE_ENTER_PIN = yes
 USE_ENTER_UART = yes
 USE_ENTER_I2C = no
 USE_ENTER_FIFO = no
@@ -113,11 +113,11 @@ ENABLE_FLASH_ERASE_WRITE = yes
 ENABLE_CRC_SUPPORT = yes
 
 # API
-ENABLE_API = yes
+ENABLE_API = no
 USE_API_VERSION = 1
-ENABLE_API_LOW_LEVEL_FLASH = yes
-ENABLE_API_SPM_WRAPPER = yes
-ENABLE_API_FIRMWARE_UPDATE = yes
+ENABLE_API_LOW_LEVEL_FLASH = no
+ENABLE_API_SPM_WRAPPER = no
+ENABLE_API_FIRMWARE_UPDATE = no
 
 # Code Protection
 ENABLE_CODE_PROTECTION = no
@@ -125,8 +125,8 @@ ENABLE_EEPROM_PROTECTION = no
 ENABLE_BOOTLOADER_PROTECTION = no
 
 # ENTER_PIN
-ENTER_PORT_NAME       = C
-ENTER_PIN             = 0
+ENTER_PORT_NAME       = D
+ENTER_PIN             = 3
 ENTER_PIN_STATE       = 0
 ENTER_PIN_PUEN        = 1
 
@@ -155,15 +155,15 @@ WATCHDOG_TIMEOUT      = WDT_PER_1KCLK_gc
 #WATCHDOG_TIMEOUT      = WDT_PER_8KCLK_gc
 
 # LED
-LED_PORT_NAME         = A
-LED_PIN               = 0
-LED_INV               = 1
+LED_PORT_NAME         = D
+LED_PIN               = 2
+LED_INV               = 0
 
 # UART
 # Select BAUD rate, port name, and UART number
 UART_BAUD_RATE        = 115200
-UART_PORT_NAME        = D
-UART_NUMBER           = 1
+UART_PORT_NAME        = F
+UART_NUMBER           = 0
 UART_RX_PUEN          = yes
 UART_REMAP            = no
 
