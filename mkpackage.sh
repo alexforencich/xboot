@@ -3,11 +3,7 @@
 files="README.md
 Makefile
 config.h.mk
-conf/x64a3.conf.mk
-conf/x32a4.conf.mk
-conf/akafuino32a4.conf.mk
-conf/arduino328p.conf.mk
-conf/mongoose.conf.mk
+conf/x256a3u.conf.mk
 xboot.c
 xboot.h
 flash.c

@@ -40,7 +40,7 @@ AVRDUDE_FUSES =
 # Spike detector, reset vector location, and BOD
 # in power down configuration
 # See datasheet section 4.16.3 for more information
-AVRDUDE_FUSES += -U fuse2:w:0xBF:m
+#AVRDUDE_FUSES += -U fuse2:w:0xBF:m
 
 # There is no fuse byte 3.....
 
@@ -93,7 +93,7 @@ LOCK_SPM_ON_EXIT = no
 # Communication
 USE_LED = yes
 USE_UART = yes
-USE_UART_EN_PIN = yes
+USE_UART_EN_PIN = no
 USE_I2C = no
 USE_I2C_ADDRESS_NEGOTIATION = no
 USE_ATTACH_LED = no
@@ -113,11 +113,11 @@ ENABLE_FLASH_ERASE_WRITE = yes
 ENABLE_CRC_SUPPORT = yes
 
 # API
-ENABLE_API = yes
+ENABLE_API = no
 USE_API_VERSION = 1
-ENABLE_API_LOW_LEVEL_FLASH = yes
-ENABLE_API_SPM_WRAPPER = yes
-ENABLE_API_FIRMWARE_UPDATE = yes
+ENABLE_API_LOW_LEVEL_FLASH = no
+ENABLE_API_SPM_WRAPPER = no
+ENABLE_API_FIRMWARE_UPDATE = no
 
 # Code Protection
 ENABLE_CODE_PROTECTION = no
